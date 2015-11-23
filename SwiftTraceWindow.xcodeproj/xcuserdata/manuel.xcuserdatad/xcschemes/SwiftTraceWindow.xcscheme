@@ -28,6 +28,16 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "647BBDAE1BFE5E650017A888"
+               BuildableName = "SwiftTraceWindowTests.xctest"
+               BlueprintName = "SwiftTraceWindowTests"
+               ReferencedContainer = "container:SwiftTraceWindow.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference

@@ -9,129 +9,13 @@
 import Foundation
 import simd
 
-typealias Vec = double3
-
-extension Vec {
-    func dot(b : Vec) -> Double { return simd.dot(self, b) }
-    func norm() -> Vec { return simd.normalize(self) }
-}
-
-func %  (a:Vec, b:Vec) -> Vec  { return simd.cross(a, b) }
-func == (a:Vec, b:Vec) -> Bool { return a.x==b.x && a.y==b.y && a.z==b.z }
-
-struct Ray {
-    let o, d : Vec;
-}
-
-typealias Scalar = Double
-
-extension Scalar {
-    static let epsilon : Scalar = 1e-4
-}
-
-typealias Color = double3
-
-extension Color {
-    static let Red  =  Color(1, 0, 0)
-    static let Green = Color(0, 1, 0)
-    static let Blue  = Color(0, 0, 1)
-    static let White = Color(1, 1, 1)
-    static let Black = Color(0, 0, 0)
-}
-
-typealias byte = CUnsignedChar
-
-struct PixelRGBA {
-    let a : byte
-    let r : byte
-    let g : byte
-    let b : byte
-    
-    init(color: Color) {
-        self.r = byte(min(color.x, 1.0) * Scalar(byte.max))
-        self.g = byte(min(color.y, 1.0) * Scalar(byte.max))
-        self.b = byte(min(color.z, 1.0) * Scalar(byte.max))
-        self.a = 0
-    }
-}
-
-class Framebuffer {
-    let width:Int, height: Int
-    var pixels: [Color]
-
-    init(width: Int, height:Int) {
-        self.width = width
-        self.height = height
-        
-        pixels = Array<Color>(count: width*height, repeatedValue: Color())
-    }
-
-    subscript(x:Int, y:Int) -> Color {
-        get { return pixels[y * width + x] }
-        set { pixels[y * width + x] = newValue }
-    }
-    
-    func cgImage() -> CGImage {
-        let imageData : UnsafeMutablePointer<PixelRGBA> = UnsafeMutablePointer(pixels.map({ (color) -> PixelRGBA in PixelRGBA(color: color) }))
-        let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.NoneSkipFirst.rawValue)
-        let bitmapContext = CGBitmapContextCreate(imageData, width, height, 8, width * 4, CGColorSpaceCreateDeviceRGB(), bitmapInfo.rawValue)
-        return CGBitmapContextCreateImage(bitmapContext)!
-    }
-    
-    func savePNG(name: String) -> String {
-        let texture_url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, name, CFURLPathStyle.CFURLPOSIXPathStyle, false)
-        let dest = CGImageDestinationCreateWithURL(texture_url, kUTTypePNG, 1, nil)!
-        CGImageDestinationAddImage(dest, self.cgImage(), nil)
-        let ok = CGImageDestinationFinalize(dest)
-        if ok {
-            print("png image written to path \(texture_url)")
-            return String(texture_url)
-        } else {
-            print("something went wrong")
-            return String()
-        }
-    }
-}
-
-
-enum Refl_t { case DIFF; case SPEC; case REFR }  // material types, used in radiance()
-
-struct Sphere {
-    let rad: Scalar       // radius
-    let p, e, c: Vec      // position, emission, color
-    let refl: Refl_t      // reflection type (DIFFuse, SPECular, REFRactive)
-
-    // Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0
-    // returns distance, 0 if nohit
-    func intersect(r: Ray) -> Scalar {
-        let op = p - r.o
-        let b = op.dot(r.d)
-        let det = b*b - op.dot(op) + rad*rad
-        
-        if det < 0 {
-            return 0
-        }
-        
-        let det2 = sqrt(det)
-        let t1 = b-det2
-        if t1 > Scalar.epsilon {
-            return t1
-        }
-        
-        let t2 = b+det2
-        if t2 > Scalar.epsilon {
-            return t2
-        }
-        
-        return 0
-    }
-}
-
 class Scene {
-    let objects : [Sphere]
+    let objects : [Geometry]
     let w: Int, h: Int, cx: Vec, cy: Vec, cam: Ray;
     let framebuffer: Framebuffer;
     var total_samples : Int = 0
+
+    let list: GeometryList
 
     init(w:Int, h: Int) {
         self.w = w;
@@ -150,33 +34,25 @@ class Scene {
             Sphere(rad:16.5,p:Vec(x:27,y:16.5,z:47),       e:Vec(), c:Vec(x:1,y:1,z:1)*0.999,  refl:Refl_t.SPEC),//Mirr
             Sphere(rad:16.5,p:Vec(x:73,y:16.5,z:78),       e:Vec(), c:Vec(x:1,y:1,z:1)*0.999,  refl:Refl_t.REFR),//Glas
             Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),e:Vec(x:12,y:12,z:12),   c:Vec(),  refl:Refl_t.DIFF) //Lite
-            //  Sphere(rad:1, p:Vec(x:50,y:50,z:81.6),e:Vec(x:12,y:12,z:12),   c:Vec(),  refl:Refl_t.DIFF) //Lite
+            // Sphere(rad:1, p:Vec(x:50,y:50,z:81.6),e:Vec(x:12,y:12,z:12),   c:Vec(),  refl:Refl_t.DIFF) //Lite
         ]
+        
+        list = GeometryList(list:objects, p:Vec(), e:Vec(), c:Vec(), refl:Refl_t.DIFF)
 
         cx = Vec(x:Double(w) * 0.5135 / Double(h), y:0, z:0)
         cy = (cx % cam.d).norm()*0.5135
         framebuffer = Framebuffer(width: w, height: h)
     }
-    
-    func intersect(r : Ray, inout t: Double, inout id: Int) -> Bool {
-        let n = objects.count
-        let inf = 1e20; //Double.infinity
-        t = inf
-        for (var i = n-1; i >= 0; i--) {
-            let d = objects[i].intersect(r)
-            if (d != 0.0 && d<t){
-                t=d
-                id=i
-            }
-        }
-        return t<inf
-    }
-    
+
     func radiance(r: Ray, depthIn: Int, Xi : drand) -> Vec {
-        var t : Double = 0                               // distance to intersection
-        var id : Int = 0                             // id of intersected object
-        if (!intersect(r, t: &t, id: &id)) {return Vec() } // if miss, return black
-        let obj = objects[id]        // the hit object
+        var res = RayIntersection()
+        if (!list.intersect(ray: r, result: &res)) {
+            return Vec()
+        }
+        let obj = res.object!
+        let t = res.dist
+        
+        
         let x=r.o+r.d*t
         let n=(x-obj.p).norm()
         let nl = (n.dot(r.d) < 0) ? n : n * -1
@@ -192,6 +68,7 @@ class Scene {
                 return obj.e
             }
         }
+
         switch (obj.refl) {
         case Refl_t.DIFF:                  // Ideal DIFFUSE reflection
             let r1=2*M_PI*Xi.next(), r2=Xi.next(), r2s=sqrt(r2);
@@ -224,9 +101,9 @@ class Scene {
                 radiance(reflRay,depthIn: depth,Xi: Xi) * Re + radiance(Ray(o: x, d: tdir),depthIn: depth,Xi: Xi)*Tr);
         }
     }
-    
+    /*
     func raytrace(r:Ray, depthIn:Int) -> Vec {
-        var t : Double = 0                               // distance to intersection
+        var t : Double = 0                               // distance to RayIntersection
         var id : Int = 0                             // id of intersected object
         if (!intersect(r, t: &t, id: &id)) {return Vec() } // if miss, return black
         let obj = objects[id]        // the hit object
@@ -245,7 +122,7 @@ class Scene {
                 let light = objects[i]
                 if light.e == Vec() { continue }
                 let shadow_ray = Ray(o:x, d:(light.p-x).norm())
-                var t2 : Double = 0                               // distance to intersection
+                var t2 : Double = 0                               // distance to RayIntersection
                 var id2 : Int = 0
                 if (intersect(shadow_ray, t: &t2, id: &id2)) { // it shouldn't fail
                     if (i == id2) {
@@ -276,60 +153,47 @@ class Scene {
             let Re=R0+(1-R0)*c*c*c*c*c//,Tr=1-Re,P=0.25+0.5*Re,RP=Re/P,TP=Tr/(1-P)
             return obj.c * raytrace(reflRay,depthIn: depthIn+1) * Re + raytrace(Ray(o: x, d: tdir),depthIn: depthIn+1);
         }
-    }
+    }*/
     
-    func pathtrace(x:Int, y: Int, inout r: Vec, samps: Int, Xi: drand) {
-        for (var sy=0; sy<2; sy++) {     // 2x2 subpixel rows
-            for (var sx=0; sx<2; sx++) {        // 2x2 subpixel cols
-                for (var s=0; s < samps; s++) {
-                    let r1=2*Xi.next(), dx=r1<1 ? sqrt(r1)-1: 1-sqrt(2-r1)
-                    let r2=2*Xi.next(), dy=r2<1 ? sqrt(r2)-1: 1-sqrt(2-r2)
-                    let part1 = ( ( (Double(sx)+0.5 + Double(dx))/2 + Double(x))/Double(w) - 0.5)
-                    let part2 =  ( ( (Double(sy)+0.5 + Double(dy))/2 + Double(y))/Double(h) - 0.5)
-                    let d = cx * part1
-                        + cy * part2
-                        + cam.d
-                    let rr = radiance(Ray(o:cam.o+d*140, d:d.norm()), depthIn: 0, Xi: Xi)
-                    r = r + rr * (1.0 / Double(samps))
-                } // Camera rays are pushed ^^^^^ forward to start in interior
-            }
-        }
-    }
+    func pathtrace(x:Int, y: Int, inout r: Vec, Xi: drand) {
     
-    func raytrace(x:Int, y: Int, inout r: Vec) {
         let part1 = Double(x)/Double(w) - 0.5
         let part2 = Double(y)/Double(h) - 0.5
         let d = cx * part1 + cy * part2 + cam.d
-        r = raytrace(Ray(o:cam.o+d*140, d:d.norm()), depthIn: 0)
-    }
+        r = radiance(Ray(o:cam.o+d*140, d:d.norm()), depthIn: 0, Xi: Xi)
+//        r = Vec(pow(r.x, 0.45), pow(r.y, 0.45), pow(r.z, 0.45))
     
+        return
+        /*
+        let sub = 2;
+        for (var sy=0; sy<sub; sy++) {     // 2x2 subpixel rows
+            for (var sx=0; sx<sub; sx++) {        // 2x2 subpixel cols
+                let r1=2*Xi.next(), dx=r1<1 ? sqrt(r1)-1: 1-sqrt(2-r1)
+                let r2=2*Xi.next(), dy=r2<1 ? sqrt(r2)-1: 1-sqrt(2-r2)
+                let part1 = ( ( (Double(sx)+0.5 + Double(dx))/2 + Double(x))/Double(w) - 0.5)
+                let part2 =  ( ( (Double(sy)+0.5 + Double(dy))/2 + Double(y))/Double(h) - 0.5)
+                let d = cx * part1 + cy * part2 + cam.d
+                r += (radiance(Ray(o:cam.o+d*140, d:d.norm()), depthIn: 0, Xi: Xi) * (1 / Double(sub*sub)))
+//                r = raytrace(Ray(o:cam.o+d*140, d:d.norm()), depthIn: 0)
+            } // Camera rays are pushed ^^^^^ forward to start in interior
+        }*/
+    }
+
     func render() {
         let samps = 1
         total_samples += samps
         let Xi = drand(a:UInt16(0xffff & (total_samples)))
-        let globalQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)
-        dispatch_apply(Int(h), globalQueue) {
+
+        dispatch_apply(Int(h), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let y = Int($0)
-        //for (var y = 0; y < h; y++) {
             for (var x = 0; x < self.w; x++) {   // Loop cols
                 var r = Vec()
-                
-                self.pathtrace(x, y: y, r: &r, samps: samps, Xi: Xi);
-                let result = r*0.25 // gamma correction
-                
-                let ratio : Double = (1/Double(self.total_samples))
-                let old = self.framebuffer[x, (self.h-y-1)]
-                let sample = Color(result.x, result.y, result.z)
-                self.framebuffer[x, (self.h-y-1)] = sample * ratio + old * (1 - ratio)
-                
-                
-                //raytrace(x, y: y, r: &r)
-                
-                //let result = r*0.25 // gamma correction
-                
-                //framebuffer[x, (h-y-1)] = Color(red: result.x, green: result.y, blue: result.z)
+
+                self.pathtrace(x, y: y, r: &r, Xi: Xi);
+                self.framebuffer[x, (self.h-y-1)] += Color(r.x, r.y, r.z)
             }
         }
+        self.framebuffer.samples += 1
     }
 }
 
