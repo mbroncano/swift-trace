@@ -27,6 +27,7 @@ class SwiftTraceWindowTests: XCTestCase {
         
         XCTAssert((a+b) ~= Scalar(7.4), "Adding two scalars")
         XCTAssert((a-b) ~= Scalar(-3.2), "Substracting two scalars")
+        XCTAssert(a ~= (a - Scalar.epsilon/2), "Comparing two scalars")
     }
     
     func testVector() {
@@ -36,7 +37,8 @@ class SwiftTraceWindowTests: XCTestCase {
         XCTAssert((a+b) ~= Vec(4.6, 6.0, 6.8), "Adding two vectors")
         XCTAssert((a-b) ~= Vec(1.8, -0.2, -4.2), "Substracting two vectors")
         XCTAssert((a*b) ~= Vec(4.48, 8.99, 7.15), "Multiplying two vectors")
-        XCTAssert((a%b) ~= Vec(11.92, -15.78, 5.86), "Cross product of two vectors")
+        XCTAssert(cross(a ,b) ~= Vec(11.92, -15.78, 5.86), "Cross product of two vectors")
+        XCTAssert(dot(a ,b) ~= 20.62, "Dot product of two vectors")
     }
     
     func testPixelRGBA() {
@@ -51,12 +53,23 @@ class SwiftTraceWindowTests: XCTestCase {
         let a = Sphere(rad: 10, p: Vec(100, 200, 300), e: Vec(), c: Vec(), refl: Refl_t.DIFF)
         let r1 = Ray(o: Vec(), d: Vec(1, 2, 3).norm())
         let r2 = Ray(o: Vec(), d: Vec(-1, -2, -3).norm())
-        var res = RayIntersection()
+        let res1 = a.intersect(r1)
+        let res2 = a.intersect(r2)
         
-        XCTAssert(a.intersect(ray: r1, result: &res), "Successful intersection")
-        XCTAssert(res.dist ~= 364.1657386773, "Intersection distance updated")
-        XCTAssert(!a.intersect(ray: r2, result: &res), "Unsuccessful intersection")
-        XCTAssert(res.dist ~= 364.1657386773, "Intersection distance not updated")
+        XCTAssert(res1 != nil, "Successful intersection")
+        XCTAssert(res1!.dist ~= 364.1657386773, "Intersection distance updated")
+        XCTAssert(res2 == nil, "Unsuccessful intersection")
+    }
+    
+    func testRayIntersection() {
+        let a = RayIntersection()
+        let b = RayIntersection(dist: 0, object: Sphere(rad:0, p:Vec(), e:Vec(), c:Vec(), refl:Refl_t.DIFF))
+        let c = RayIntersection(dist: 10, object: Sphere(rad:0, p:Vec(), e:Vec(), c:Vec(), refl:Refl_t.DIFF))
+        
+        XCTAssertFalse(a.isValid, "Intersection \(a) shouldn't be valid")
+        XCTAssertFalse(b.isValid, "Intersection \(b) shouldn't be valid")
+        XCTAssert(c.isValid, "Intersection \(c) should be valid")
+        
     }
     
     /*

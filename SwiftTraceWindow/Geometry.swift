@@ -8,69 +8,58 @@
 
 import simd
 
-struct RayIntersection {
+/// Result of an intersection
+struct RayIntersection: Comparable {
     var dist: Scalar = Scalar.infinity
     var object: Geometry?
+    
+    /// Returns true is the intersection is valid
+    var isValid:Bool { get { return dist.isNormal && object != nil } }
 }
 
+func == (a: RayIntersection, b: RayIntersection) -> Bool { return a.dist == b.dist }
+func <  (a: RayIntersection, b: RayIntersection) -> Bool { return a.dist < b.dist }
+
+/// Protocol to define a geometric intersecting object
 protocol Geometry {
     var p: Vec { get }     // position
     var e: Vec { get }     // emission
     var c: Vec { get }     // color
     var refl: Refl_t { get }     // reflection type (DIFFuse, SPECular, REFRactive)
     
-    func intersect(ray r: Ray, inout result res: RayIntersection) -> Bool
-    func intersect(r: Ray) -> Scalar
+    /// Returns an optional intersection structure
+    func intersect(r: Ray) -> RayIntersection?
 }
 
+/// Geometric collection of objects
 struct GeometryList: Geometry {
     let list: [Geometry]
     let p, e, c: Vec      // position, emission, color
     let refl: Refl_t      // reflection type (DIFFuse, SPECular, REFRactive)
-    
-    func intersect(ray r: Ray, inout result res: RayIntersection) -> Bool {
-        for object in list {
-            let d:Scalar = object.intersect(r)
-            if (d != 0.0 && d<res.dist){
-                res.dist=d
-                res.object=object
-            }
-        }
-        return res.dist < Double.infinity
-    }
 
-    func intersect(r: Ray) -> Scalar { return 0 }
+    func intersect(r: Ray) -> RayIntersection? { return list.flatMap{ $0.intersect(r) }.minElement() }
 }
 
+/// Geometric definition of a sphere
 struct Sphere: Geometry {
     let rad: Scalar       // radius
     let p, e, c: Vec      // position, emission, color
     let refl: Refl_t      // reflection type (DIFFuse, SPECular, REFRactive)
 
-    func intersect(ray r: Ray, inout result: RayIntersection) -> Bool {
-        let d = intersect(r)
-        
-        if (d == 0 || d > result.dist) { return false }
-        
-        result.dist = d
-        result.object = self
-        return true
-    }
-
-    // Solve t^2*d.d + 2*t*(o-p).d + (o-p).(o-p)-R^2 = 0
-    // returns distance, 0 if nohit
-    func intersect(r: Ray) -> Scalar {
+    func intersect(r: Ray) -> RayIntersection? {
         let po = r.o - p
         let b = dot(r.d, po)
         let c = dot(po, po) - (rad * rad)
         let d = b*b - c
 
-        if (d < 0) { return 0 }
+        if (d < 0) { return nil }
         
         let s = sqrt(d)
         let q = (b < 0) ? (-b-s) : (-b+s)
         let r = (q > Scalar.epsilon) ? q : 0
         
-        return r
+        if (r == 0) { return nil }
+        
+        return RayIntersection(dist: r, object: self)
     }
 }

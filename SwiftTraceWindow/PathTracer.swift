@@ -40,23 +40,25 @@ class Scene {
         list = GeometryList(list:objects, p:Vec(), e:Vec(), c:Vec(), refl:Refl_t.DIFF)
 
         cx = Vec(x:Double(w) * 0.5135 / Double(h), y:0, z:0)
-        cy = (cx % cam.d).norm()*0.5135
+        cy = cross(cx, cam.d).norm()*0.5135
         framebuffer = Framebuffer(width: w, height: h)
     }
-
+    
     func radiance(r: Ray, depthIn: Int, Xi : drand) -> Vec {
-        var res = RayIntersection()
-        if (!list.intersect(ray: r, result: &res)) {
+        let obj: Geometry
+        let t: Scalar
+
+        if let res = list.intersect(r) {
+            obj = res.object!
+            t = res.dist
+        } else {
             return Vec()
         }
-        let obj = res.object!
-        let t = res.dist
         
-        
-        let x=r.o+r.d*t
-        let n=(x-obj.p).norm()
-        let nl = (n.dot(r.d) < 0) ? n : n * -1
-        var f=obj.c
+        let x=r.o+r.d*t // hit point
+        let n=(x-obj.p).norm() // normal at hitpoint
+        let nl = (n.dot(r.d) < 0) ? n : n * -1 // corrected normal (always exterior)
+        var f=obj.c // object color
         let p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y : f.z; // max refl
         let depth = depthIn+1
         // Russian Roulette:
@@ -73,8 +75,8 @@ class Scene {
         case Refl_t.DIFF:                  // Ideal DIFFUSE reflection
             let r1=2*M_PI*Xi.next(), r2=Xi.next(), r2s=sqrt(r2);
             let w = nl
-            let u = ((fabs(w.x)>0.1 ? Vec(x:0, y:1, z:0) : Vec(x:1, y:0, z:0)) % w).norm()
-            let v = w % u
+            let u = cross((fabs(w.x)>0.1 ? Vec(x:0, y:1, z:0) : Vec(x:1, y:0, z:0)), w).norm()
+            let v = cross(w, u)
             
             let d1 = u*cos(r1)*r2s
             let d = (d1 + v*sin(r1)*r2s + w*sqrt(1-r2)).norm()
@@ -101,6 +103,15 @@ class Scene {
                 radiance(reflRay,depthIn: depth,Xi: Xi) * Re + radiance(Ray(o: x, d: tdir),depthIn: depth,Xi: Xi)*Tr);
         }
     }
+    /*
+    func raytrace(r: Ray, depthIn: Int, Xi : drand) -> Vec {
+        var res = RayIntersection()
+        if (!list.intersect(ray: r, result: &res)) {
+            return Vec()
+        }
+        
+        
+    }*/
     /*
     func raytrace(r:Ray, depthIn:Int) -> Vec {
         var t : Double = 0                               // distance to RayIntersection

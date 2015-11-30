@@ -26,9 +26,9 @@ extension Vec {
     func norm() -> Vec { return simd.normalize(self) }
 }
 
-public func %  (a:Vec, b:Vec) -> Vec  { return simd.cross(a, b) }
-public func == (a:Vec, b:Vec) -> Bool { return (a.x==b.x) && (a.y==b.y) && (a.z==b.z) }
-public func ~= (a:Vec, b:Vec) -> Bool { let c = simd.vector_abs(a-b); return c.x < Scalar.epsilon && c.y < Scalar.epsilon && c.z < Scalar.epsilon }
+//public func %  (a:Vec, b:Vec) -> Vec    { return simd.cross(a, b) }
+public func == (a:Vec, b:Vec) -> Bool   { return (a.x==b.x) && (a.y==b.y) && (a.z==b.z) }
+public func ~= (a:Vec, b:Vec) -> Bool   { let c = simd.vector_abs(a-b); return c.x < Scalar.epsilon && c.y < Scalar.epsilon && c.z < Scalar.epsilon }
 
 /// Structure containing two vector, origin and destination
 struct Ray {
@@ -58,7 +58,7 @@ typealias byte = CUnsignedChar
 
 /// Structure containing a RGBA pixel
 public struct PixelRGBA: Equatable {
-
+    /// Alpha, Red, Green, Blue
     private let a, r, g, b: byte
     
     /// Default initializer with all four members
