@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6422711D1C0E2CD4007AD481 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6422711C1C0E2CD4007AD481 /* Random.swift */; };
 		647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648D91BF9737A00C4EAC0 /* AppDelegate.swift */; };
 		647648DC1BF9737A00C4EAC0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648DB1BF9737A00C4EAC0 /* ViewController.swift */; };
 		647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 647648DD1BF9737A00C4EAC0 /* Assets.xcassets */; };
@@ -35,6 +36,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6422711C1C0E2CD4007AD481 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
 		647648D61BF9737A00C4EAC0 /* SwiftTraceWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTraceWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		647648D91BF9737A00C4EAC0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		647648DB1BF9737A00C4EAC0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				647BBDBC1BFEBB3B0017A888 /* Geometry.swift */,
 				647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */,
 				647BBDC21BFEDECD0017A888 /* Material.swift */,
+				6422711C1C0E2CD4007AD481 /* Random.swift */,
 				647648DD1BF9737A00C4EAC0 /* Assets.xcassets */,
 				647648DF1BF9737A00C4EAC0 /* Main.storyboard */,
 				647648E21BF9737A00C4EAC0 /* Info.plist */,
@@ -213,6 +216,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6422711D1C0E2CD4007AD481 /* Random.swift in Sources */,
 				647BBDC31BFEDECD0017A888 /* Material.swift in Sources */,
 				647648DC1BF9737A00C4EAC0 /* ViewController.swift in Sources */,
 				647BBDC01BFEDDB50017A888 /* Framebuffer.swift in Sources */,
@@ -355,6 +359,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
+				GCC_OPTIMIZATION_LEVEL = fast;
 				INFOPLIST_FILE = SwiftTraceWindow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MBR.SwiftTraceWindow;
@@ -418,6 +423,7 @@
 				647BBDB81BFE5E650017A888 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -7,39 +7,45 @@
 //
 
 import simd
+import Darwin
 
 /// Scalar is currently an alias for Double
 public typealias Scalar = Double
 extension Scalar {
     /// Assumed epsilon value
-    static let epsilon : Scalar = 1e-4
+    static let epsilon : Scalar = Scalar(FLT_EPSILON)
 }
 public func ~= (a:Scalar, b:Scalar) -> Bool  { return abs(a-b) < Scalar.epsilon }
 
-
 /// Vec is currenly an alias for simd.double3
+public typealias Vec2 = simd.double2
 public typealias Vec = simd.double3
 extension Vec {
+    /// Zero Vector
+    static let Zero: Vec = Vec()
+    /// Unit Vector
+    static let Unit: Vec = Vec(1, 1, 1)
     /// Dot product
-    func dot(b : Vec) -> Double { return simd.dot(self, b) }
+    func dot(b : Vec) -> Scalar { return simd.dot(self, b) }
     /// Normal vector
     func norm() -> Vec { return simd.normalize(self) }
 }
-
 //public func %  (a:Vec, b:Vec) -> Vec    { return simd.cross(a, b) }
-public func == (a:Vec, b:Vec) -> Bool   { return (a.x==b.x) && (a.y==b.y) && (a.z==b.z) }
+public func == (a:Vec, b:Vec) -> Bool   { return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) }
+public func != (a:Vec, b:Vec) -> Bool   { return (a.x != b.x) && (a.y != b.y) && (a.z != b.z) }
 public func ~= (a:Vec, b:Vec) -> Bool   { let c = simd.vector_abs(a-b); return c.x < Scalar.epsilon && c.y < Scalar.epsilon && c.z < Scalar.epsilon }
 
 /// Structure containing two vector, origin and destination
-struct Ray {
+public struct Ray {
     /// The origin vector
     let o: Vec
     /// The destination vector
     let d: Vec
 }
+public func * (a:Ray, b:Scalar) -> Vec { return a.o + a.d * b }
 
 /// Color is currently an alias for simd.double3
-typealias Color = double3
+typealias Color = Vec
 extension Color {
     /// The color red
     static let Red  =  Color(1, 0, 0)

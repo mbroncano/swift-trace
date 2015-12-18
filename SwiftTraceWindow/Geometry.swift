@@ -8,58 +8,119 @@
 
 import simd
 
-/// Result of an intersection
-struct RayIntersection: Comparable {
-    var dist: Scalar = Scalar.infinity
-    var object: Geometry?
-    
-    /// Returns true is the intersection is valid
-    var isValid:Bool { get { return dist.isNormal && object != nil } }
-}
-
-func == (a: RayIntersection, b: RayIntersection) -> Bool { return a.dist == b.dist }
-func <  (a: RayIntersection, b: RayIntersection) -> Bool { return a.dist < b.dist }
-
 /// Protocol to define a geometric intersecting object
 protocol Geometry {
     var p: Vec { get }     // position
-    var e: Vec { get }     // emission
-    var c: Vec { get }     // color
-    var refl: Refl_t { get }     // reflection type (DIFFuse, SPECular, REFRactive)
-    
+    var material: Material { get }
+
     /// Returns an optional intersection structure
-    func intersect(r: Ray) -> RayIntersection?
+    func intersectWithRay(r: Ray) -> Scalar
+    func normalAtPoint(x: Vec) -> Vec
+}
+
+protocol Intersectable {
+    func intersectsWithRay(ray: Ray, inout distance: Scalar) -> Bool
 }
 
 /// Geometric collection of objects
-struct GeometryList: Geometry {
+struct GeometryList {
     let list: [Geometry]
-    let p, e, c: Vec      // position, emission, color
-    let refl: Refl_t      // reflection type (DIFFuse, SPECular, REFRactive)
 
-    func intersect(r: Ray) -> RayIntersection? { return list.flatMap{ $0.intersect(r) }.minElement() }
+    func intersect_light(r: Ray) -> (Geometry?, Scalar) {
+        var ret: Geometry?
+        var current: Scalar = Scalar.infinity
+        
+        for object:Geometry in list {
+            if object.material.emission == Vec() { continue }
+        
+            let distance = object.intersectWithRay(r)
+            if distance < current { ret = object; current = distance }
+        }
+        
+        // TODO: refactor this
+        if ret != nil { return (ret, current) } else { return (nil, current) }
+    }
+
+    func intersect(r: Ray) -> (Geometry?, Scalar) {
+        var ret: Geometry?
+        var current: Scalar = Scalar.infinity
+        
+        for object in list {
+            let distance = object.intersectWithRay(r)
+            if distance < current { ret = object; current = distance }
+        }
+        
+        // TODO: refactor this
+        if ret != nil { return (ret, current) } else { return (nil, current) }
+    }
 }
 
 /// Geometric definition of a sphere
 struct Sphere: Geometry {
-    let rad: Scalar       // radius
-    let p, e, c: Vec      // position, emission, color
-    let refl: Refl_t      // reflection type (DIFFuse, SPECular, REFRactive)
+    let rad: Scalar         // radius
+    let p: Vec              // position
+    let material: Material  // surface type
 
-    func intersect(r: Ray) -> RayIntersection? {
+    func intersectWithRay(r: Ray) -> Scalar {
         let po = r.o - p
         let b = dot(r.d, po)
         let c = dot(po, po) - (rad * rad)
         let d = b*b - c
 
-        if (d < 0) { return nil }
+        // If the determinant is negative, there are not solutions
+        if (d < 0) { return Scalar.infinity }
         
         let s = sqrt(d)
         let q = (b < 0) ? (-b-s) : (-b+s)
-        let r = (q > Scalar.epsilon) ? q : 0
+        let t = (q > Scalar.epsilon) ? q : 0
         
-        if (r == 0) { return nil }
+        if (t == 0) { return Scalar.infinity }
         
-        return RayIntersection(dist: r, object: self)
+        return t
+    }
+    
+    func normalAtPoint(x: Vec) -> Vec {
+        return normalize(x - p)
     }
 }
+
+struct Triangle {
+    let p1, p2, p3: Vec
+    let edge1, edge2: Vec
+    let normal: Vec
+    
+    init(p1:Vec, p2:Vec, p3: Vec) {
+        self.p1 = p1
+        self.p2 = p2
+        self.p3 = p3
+    
+        // compute edges, normal
+        edge1 = p2 - p1
+        edge2 = p3 - p2
+        normal = normalize(cross(edge1, edge2))
+    }
+    
+    func intersectWithRay(r: Ray) -> Scalar {
+        /* Compute some initial values. */
+        let distance: Vec = r.o - p1;
+        let s: Vec = cross(r.d, edge2)
+        let d: Scalar = 1.0 / dot(s, edge1);
+
+        /* Calculate the first barycentric coordinate. */
+        let u: Scalar = dot(distance, s) * d;
+
+        /* Reject the intersection if the barycentric coordinate is out of range. */
+        if ((u <= -Scalar.epsilon) || (u >= 1 + Scalar.epsilon)) { return Scalar.infinity }
+
+        /* Calculate the second barycentric coordinate. */
+        let t = cross(distance, edge1)
+        let v: Scalar = dot(r.d, t) * d
+
+        /* Reject the intersection if the barycentric coordinate is out of range. */
+        if ((v <= -Scalar.epsilon) || (u + v >= 1 + Scalar.epsilon)) { return Scalar.infinity }
+
+        /* Compute the final intersection point. */
+        return dot(edge2, t) * d
+    }
+}
+

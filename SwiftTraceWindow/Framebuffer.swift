@@ -22,15 +22,17 @@ class Framebuffer {
     }
 
     subscript(x:Int, y:Int) -> Color {
-        get { return pixels[y * width + x] }
-        set { pixels[y * width + x] = newValue }
+        get { return pixels[(height - y - 1) * width + x] }
+        set { pixels[(height - y - 1) * width + x] = newValue }
     }
     
     func cgImage() -> CGImage {
-        let ratio : Double = 1 / Double(samples)
+        let ratio : Scalar = 1 / Scalar(samples)
         let imageData : UnsafeMutablePointer<PixelRGBA> = UnsafeMutablePointer(pixels.map({ (color) -> PixelRGBA in PixelRGBA(color: color * ratio) }))
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.NoneSkipFirst.rawValue)
         let bitmapContext = CGBitmapContextCreate(imageData, width, height, 8, width * 4, CGColorSpaceCreateDeviceRGB(), bitmapInfo.rawValue)
+        //CGContextTranslateCTM(bitmapContext, 0, CGFloat(height))
+        //CGContextScaleCTM(bitmapContext, 1.0, -1.0)
         return CGBitmapContextCreateImage(bitmapContext)!
     }
     
