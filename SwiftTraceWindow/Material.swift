@@ -9,8 +9,6 @@
 import Foundation
 import simd
 
-enum Refl_t { case DIFF; case SPEC; case REFR }  // material types, used in radiance()
-
 protocol Material {
     var emission: Color { get }
     var color: Color { get }
@@ -64,6 +62,7 @@ struct Specular: Material {
     let color: Color
 
     func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
+        // prob. of reflected ray is 1 (dirac function)
         return (1.0, reflect(wi, n: normal))
     }
 }
@@ -85,7 +84,7 @@ struct Lambertian: Material {
         let d1 = u * cos(r1) * r2s
         let d = (d1 + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
 
-        // importance sampled (cosine weighted), doesn't need prob. correction
+        // cosine weighted sample, doesn't need prob. correction
         return (1.0, d)
     }
 }

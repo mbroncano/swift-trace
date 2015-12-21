@@ -11,7 +11,7 @@ import simd
 /// Protocol to define a geometric intersecting object
 protocol Geometry {
     var p: Vec { get }     // position
-    var material: Material { get }
+    var material: String { get }
 
     /// Returns an optional intersection structure
     func intersectWithRay(r: Ray) -> Scalar
@@ -25,21 +25,6 @@ protocol Intersectable {
 /// Geometric collection of objects
 struct GeometryList {
     let list: [Geometry]
-
-    func intersect_light(r: Ray) -> (Geometry?, Scalar) {
-        var ret: Geometry?
-        var current: Scalar = Scalar.infinity
-        
-        for object:Geometry in list {
-            if object.material.emission == Vec() { continue }
-        
-            let distance = object.intersectWithRay(r)
-            if distance < current { ret = object; current = distance }
-        }
-        
-        // TODO: refactor this
-        if ret != nil { return (ret, current) } else { return (nil, current) }
-    }
 
     func intersect(r: Ray) -> (Geometry?, Scalar) {
         var ret: Geometry?
@@ -59,7 +44,7 @@ struct GeometryList {
 struct Sphere: Geometry {
     let rad: Scalar         // radius
     let p: Vec              // position
-    let material: Material  // surface type
+    let material: String  // surface type
 
     func intersectWithRay(r: Ray) -> Scalar {
         let po = r.o - p

@@ -33,18 +33,29 @@ class Scene {
     let list: GeometryList
     let camera: Camera
     let framebuffer: Framebuffer
+    let materials: [String: Material]
 
     init(w:Int, h: Int) {
+        materials = [
+            "Red"   : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25)), // Red diffuse
+            "Blue"  : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.25,z:0.75)), // Blue diffuse
+            "White" : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.75,z:0.75)), // White diffuse
+            "Black" : Lambertian(emission: Vec(), color:Vec()),                     // Black
+            "Mirror": Specular(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999),      // Mirror
+            "Glass" : Refractive(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999),    // Glass
+            "Lite"  : Lambertian(emission: Vec(x:12,y:12,z:12), color:Vec())        // Lite
+        ]
+    
         let objects: [Geometry] = [
-            Sphere(rad:1e5, p:Vec(x: 1e5+1,y:40.8,z:81.6), material: Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25))),//Left
-            Sphere(rad:1e5, p:Vec(x:-1e5+99,y:40.8,z:81.6),material: Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.25,z:0.75))),//Rght
-            Sphere(rad:1e5, p:Vec(x:50,y:40.8,z: 1e5),     material: Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.75,z:0.75))),//Back
-            Sphere(rad:1e5, p:Vec(x:50,y:40.8,z:-1e5+170), material: Lambertian(emission: Vec(), color:Vec())),//Frnt
-            Sphere(rad:1e5, p:Vec(x:50,y: 1e5,z: 81.6),    material: Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.75,z:0.75))),//Botm
-            Sphere(rad:1e5, p:Vec(x:50,y:-1e5+81.6,z:81.6),material: Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.75,z:0.75))),//Top
-            Sphere(rad:16.5,p:Vec(x:27,y:16.5,z:47),       material: Specular(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999)),//Mirr
-            Sphere(rad:16.5,p:Vec(x:73,y:16.5,z:78),       material: Refractive(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999)),//Glas
-            Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),        material: Lambertian(emission: Vec(x:12,y:12,z:12), color:Vec())) // Lite
+            Sphere(rad:1e5, p:Vec(x: 1e5+1,y:40.8,z:81.6),  material: "Red"),       // Left
+            Sphere(rad:1e5, p:Vec(x:-1e5+99,y:40.8,z:81.6), material: "Blue"),      // Right
+            Sphere(rad:1e5, p:Vec(x:50,y:40.8,z: 1e5),      material: "White"),     // Back
+            Sphere(rad:1e5, p:Vec(x:50,y:40.8,z:-1e5+170),  material: "Black"),     // Front
+            Sphere(rad:1e5, p:Vec(x:50,y: 1e5,z: 81.6),     material: "White"),     // Botom
+            Sphere(rad:1e5, p:Vec(x:50,y:-1e5+81.6,z:81.6), material: "White"),     // Top
+            Sphere(rad:16.5,p:Vec(x:27,y:16.5,z:47),        material: "Mirror"),    // Mirror
+            Sphere(rad:16.5,p:Vec(x:73,y:16.5,z:78),        material: "Glass"),     // Glass
+            Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),material: "Lite")       // Lite
         ]
         list = GeometryList(list:objects)
 
@@ -82,7 +93,7 @@ class Scene {
             if !t.isNormal { return Vec.Zero }
             
             let obj = o!
-            let material = obj.material
+            let material = materials[obj.material]!
             
             var f = material.color
             let p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y : f.z // max refl
@@ -93,7 +104,7 @@ class Scene {
             // Russian Roulette:
             if (depth>5) {
                 // Limit depth to 150 to avoid stack overflow.
-                if (/*depth < 150 && */Random.random()<p) {
+                if (depth < 15 && Random.random()<p) {
                     f=f*(1/p)
                 } else {
                     return cl
@@ -114,13 +125,13 @@ class Scene {
 
     func render() {
         framebuffer.samples++
-        dispatch_apply(Int(camera.ny), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-            let y = Int($0)
-            for x in 0..<Int(self.camera.nx) {
-                let ray = self.camera.generateRay(x, y)
-                let radiance = self.radiance(ray)
-                self.framebuffer[x, y] += radiance
-            }
+        
+        dispatch_apply(Int(camera.nx * camera.ny), dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+            let x = $0 % Int(self.camera.nx)
+            let y = Int(self.camera.ny) - ($0 / Int(self.camera.nx)) - 1
+            let ray = self.camera.generateRay(x, y)
+            let radiance = self.radiance(ray)
+            self.framebuffer.pixels[$0] += radiance
         }
     }
 }
