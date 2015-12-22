@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		6422711D1C0E2CD4007AD481 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6422711C1C0E2CD4007AD481 /* Random.swift */; };
+		646752A31C28BBDF0084CBE3 /* Scene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A21C28BBDF0084CBE3 /* Scene.swift */; };
+		646752A51C28BC980084CBE3 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A41C28BC980084CBE3 /* Camera.swift */; };
 		647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648D91BF9737A00C4EAC0 /* AppDelegate.swift */; };
 		647648DC1BF9737A00C4EAC0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648DB1BF9737A00C4EAC0 /* ViewController.swift */; };
 		647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 647648DD1BF9737A00C4EAC0 /* Assets.xcassets */; };
@@ -37,6 +39,8 @@
 
 /* Begin PBXFileReference section */
 		6422711C1C0E2CD4007AD481 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
+		646752A21C28BBDF0084CBE3 /* Scene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene.swift; sourceTree = "<group>"; };
+		646752A41C28BC980084CBE3 /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
 		647648D61BF9737A00C4EAC0 /* SwiftTraceWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTraceWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		647648D91BF9737A00C4EAC0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		647648DB1BF9737A00C4EAC0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -95,11 +99,13 @@
 				647648D91BF9737A00C4EAC0 /* AppDelegate.swift */,
 				647648DB1BF9737A00C4EAC0 /* ViewController.swift */,
 				64C5FCB71BFBC60C004F783E /* PathTracer.swift */,
+				646752A21C28BBDF0084CBE3 /* Scene.swift */,
 				647BBDA81BFE57A10017A888 /* Vector.swift */,
 				647BBDBC1BFEBB3B0017A888 /* Geometry.swift */,
 				647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */,
 				647BBDC21BFEDECD0017A888 /* Material.swift */,
 				6422711C1C0E2CD4007AD481 /* Random.swift */,
+				646752A41C28BC980084CBE3 /* Camera.swift */,
 				647648DD1BF9737A00C4EAC0 /* Assets.xcassets */,
 				647648DF1BF9737A00C4EAC0 /* Main.storyboard */,
 				647648E21BF9737A00C4EAC0 /* Info.plist */,
@@ -222,8 +228,10 @@
 				647BBDC01BFEDDB50017A888 /* Framebuffer.swift in Sources */,
 				647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */,
 				647BBDBA1BFE761F0017A888 /* Vector.swift in Sources */,
+				646752A51C28BC980084CBE3 /* Camera.swift in Sources */,
 				64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */,
 				647BBDBD1BFEBB3B0017A888 /* Geometry.swift in Sources */,
+				646752A31C28BBDF0084CBE3 /* Scene.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

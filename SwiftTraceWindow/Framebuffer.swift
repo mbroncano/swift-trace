@@ -28,7 +28,7 @@ class Framebuffer {
     
     func cgImage() -> CGImage {
         let ratio : Scalar = 1 / Scalar(samples)
-        let imageData : UnsafeMutablePointer<PixelRGBA> = UnsafeMutablePointer(pixels.map({ (color) -> PixelRGBA in PixelRGBA(color: color * ratio) }))
+        let imageData : UnsafeMutablePointer<PixelRGBA> = UnsafeMutablePointer(pixels.map({ (color) -> PixelRGBA in PixelRGBA(color: (color * ratio).gammaCorrected()) }))
         let bitmapInfo = CGBitmapInfo(rawValue: CGImageAlphaInfo.NoneSkipFirst.rawValue)
         let bitmapContext = CGBitmapContextCreate(imageData, width, height, 8, width * 4, CGColorSpaceCreateDeviceRGB(), bitmapInfo.rawValue)
         //CGContextTranslateCTM(bitmapContext, 0, CGFloat(height))

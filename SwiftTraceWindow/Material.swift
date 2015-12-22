@@ -9,21 +9,25 @@
 import Foundation
 import simd
 
-protocol Material {
-    var emission: Color { get }
-    var color: Color { get }
-
-    /// Evaluates material reflectance
-    func sample(wi: Vec, normal: Vec) -> (Scalar, Vec)
-}
-
-struct Refractive: Material {
+class Material {
     let emission: Color
     let color: Color
+
+    init (emission: Color, color: Color) {
+        self.emission = emission
+        self.color = color
+    }
+
+    func isLight() -> Bool { return emission != Vec.Zero }
+
+    func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) { return (0.0, Vec.Zero) }
+}
+
+class Refractive: Material {
     let nc: Scalar = 1
     let nt: Scalar = 1.5
 
-    func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
+    override func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
         let into: Bool
         let nl: Vec
         let nnt: Scalar
@@ -57,21 +61,16 @@ struct Refractive: Material {
     }
 }
 
-struct Specular: Material {
-    let emission: Color
-    let color: Color
-
-    func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
+class Specular: Material {
+    override func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
         // prob. of reflected ray is 1 (dirac function)
         return (1.0, reflect(wi, n: normal))
     }
 }
 
-struct Lambertian: Material {
-    let emission: Color
-    let color: Color
-
-    func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
+class Lambertian: Material {
+    override func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
+        // cosine weighted sampling
         // see: http://mathworld.wolfram.com/SpherePointPicking.html
         
         let r1 = 2 * Scalar(M_PI) * Random.next()
@@ -84,7 +83,6 @@ struct Lambertian: Material {
         let d1 = u * cos(r1) * r2s
         let d = (d1 + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
 
-        // cosine weighted sample, doesn't need prob. correction
         return (1.0, d)
     }
 }

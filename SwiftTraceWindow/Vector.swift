@@ -57,6 +57,11 @@ extension Color {
     static let White = Color(1, 1, 1)
     /// The color black
     static let Black = Color(0, 0, 0)
+
+    func gammaCorrected() -> Color {
+        let gamma = 0.45
+        return Color(pow(x, gamma), pow(y, gamma), pow(z, gamma))
+    }
 }
 
 /// Currently an alias to CUnsignedChar

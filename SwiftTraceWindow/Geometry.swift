@@ -10,16 +10,11 @@ import simd
 
 /// Protocol to define a geometric intersecting object
 protocol Geometry {
-    var p: Vec { get }     // position
-    var material: String { get }
+    var material: Material { get }
 
-    /// Returns an optional intersection structure
     func intersectWithRay(r: Ray) -> Scalar
     func normalAtPoint(x: Vec) -> Vec
-}
-
-protocol Intersectable {
-    func intersectsWithRay(ray: Ray, inout distance: Scalar) -> Bool
+    func sampleSurface() -> Vec
 }
 
 /// Geometric collection of objects
@@ -41,10 +36,16 @@ struct GeometryList {
 }
 
 /// Geometric definition of a sphere
-struct Sphere: Geometry {
+class Sphere: Geometry {
     let rad: Scalar         // radius
     let p: Vec              // position
-    let material: String  // surface type
+    let material: Material  // surface type
+
+    init(rad: Scalar, p: Vec, material: Material) {
+        self.rad = rad
+        self.p = p
+        self.material = material
+    }
 
     func intersectWithRay(r: Ray) -> Scalar {
         let po = r.o - p
@@ -67,17 +68,32 @@ struct Sphere: Geometry {
     func normalAtPoint(x: Vec) -> Vec {
         return normalize(x - p)
     }
+    
+    func sampleSurface() -> Vec {
+        var v: Vec
+        
+        repeat {
+            v = Vec(Random.random(), Random.random(), Random.random()) * 2 - Vec.Unit
+        } while (length(v) > 1)
+        
+        return p + normalize(v)
+    }
+
 }
 
-struct Triangle {
+class Triangle: Geometry {
     let p1, p2, p3: Vec
     let edge1, edge2: Vec
     let normal: Vec
-    
-    init(p1:Vec, p2:Vec, p3: Vec) {
+
+    let material: Material  // surface type
+
+    init(p1:Vec, p2:Vec, p3: Vec, material: Material) {
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
+        
+        self.material = material
     
         // compute edges, normal
         edge1 = p2 - p1
@@ -107,5 +123,19 @@ struct Triangle {
         /* Compute the final intersection point. */
         return dot(edge2, t) * d
     }
+
+    func normalAtPoint(x: Vec) -> Vec {
+        return normal
+    }
+    
+    func sampleSurface() -> Vec {
+        let r1 = Random.random()
+        let r2 = Random.random()
+        
+        let p = (1 - sqrt(r1)) * p1 + (sqrt(r1) * (1 - r2)) * p2 + (r2 * sqrt(r1)) * p3
+        
+        return p
+    }
+
 }
 
