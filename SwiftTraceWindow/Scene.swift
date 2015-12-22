@@ -41,9 +41,10 @@ class CornellBox: Scene {
             Sphere(rad:1e5, p:Vec(x:50,y:-1e5+81.6,z:81.6), material: materials["White"]!),     // Top
             Sphere(rad:16.5,p:Vec(x:27,y:16.5,z:47),        material: materials["Mirror"]!),    // Mirror
             Sphere(rad:16.5,p:Vec(x:73,y:16.5,z:78),        material: materials["Glass"]!),     // Glass
-//            Triangle(p1: Vec(30,10,40), p2: Vec(60,10,40), p3: Vec(30,10,120), material: materials["Green"]!),
+            Triangle(p1: Vec(x:27,y:16.5,z:47), p2: Vec(x:73,y:16.5,z:78), p3: Vec(x:30,y:11.6,z:111.6), material: materials["Green"]!),
 //            Triangle(p1: Vec(30,10,120), p2: Vec(30,10,120), p3: Vec(60,10,120), material: materials["Green"]!),
-            Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),material: materials["Lite"]!)       // Lite
+//            Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),material: materials["Lite"]!)       // Lite
+            Sphere(rad:3, p:Vec(x:60,y:11.6,z:111.6),material: materials["Lite"]!)       // Lite
         ]
         list = GeometryList(list:objects)
         lights = objects.filter({ (object) -> Bool in object.material.emission != Vec.Zero })

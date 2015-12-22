@@ -25,8 +25,11 @@ public class Camera {
         let cx = Vec(Scalar(nx) * ar / Scalar(ny), 0, 0)
         let cy = cross(cx, d).norm() * ar
     
-        let part1 = Scalar(x) / Scalar(nx) - 0.5
-        let part2 = Scalar(y) / Scalar(ny) - 0.5
+        let r1 = Random.random() - 0.5
+        let r2 = Random.random() - 0.5
+    
+        let part1 = (Scalar(x) + r1) / Scalar(nx) - 0.5
+        let part2 = (Scalar(y) + r2) / Scalar(ny) - 0.5
         let dir = cx * part1 + cy * part2 + d
         
         return Ray(o:o+dir*140, d:dir.norm())

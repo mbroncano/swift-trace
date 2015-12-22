@@ -78,7 +78,6 @@ class Sphere: Geometry {
         
         return p + normalize(v)
     }
-
 }
 
 class Triangle: Geometry {
@@ -95,13 +94,51 @@ class Triangle: Geometry {
         
         self.material = material
     
-        // compute edges, normal
+        //Find vectors for two edges sharing V1
         edge1 = p2 - p1
-        edge2 = p3 - p2
+        edge2 = p3 - p1
         normal = normalize(cross(edge1, edge2))
     }
     
+    /// https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
     func intersectWithRay(r: Ray) -> Scalar {
+        //Begin calculating determinant - also used to calculate u parameter
+        let p = cross(r.d, edge2)
+        //if determinant is near zero, ray lies in plane of triangle
+        let det = dot(edge1, p)
+        // NOT CULLING
+        if (det > -Scalar.epsilon && det < Scalar.epsilon) { return Scalar.infinity }
+
+        let inv_det = 1.0 / det;
+
+        //calculate distance from V1 to ray origin
+        let t = r.o - p1
+        //Calculate u parameter and test bound
+        let u = dot(t, p) * inv_det
+
+        //The intersection lies outside of the triangle
+        if (u < 0.0 || u > 1.0) { return Scalar.infinity }
+
+        //Prepare to test v parameter
+        let q = cross(t, edge1)
+
+        //Calculate V parameter and test bound
+        let v = dot(r.d, q) * inv_det;
+        //The intersection lies outside of the triangle
+        if (v < 0.0 || u + v  > 1.0) { return Scalar.infinity }
+
+        let t1 = dot(edge2, q) * inv_det;
+
+        if (t1 > Scalar.epsilon) { //ray intersection
+            return t1
+        }
+
+        // No hit, no win
+        return Scalar.infinity
+    }
+
+    func intersectWithRay2(r: Ray) -> Scalar {
+
         /* Compute some initial values. */
         let distance: Vec = r.o - p1;
         let s: Vec = cross(r.d, edge2)

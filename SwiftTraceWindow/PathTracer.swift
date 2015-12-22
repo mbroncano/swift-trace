@@ -35,13 +35,22 @@ class RayTracer {
         }
         
         let x = r.o + r.d * t           // hit point
-        let n = obj.normalAtPoint(x)    // normal at hitpoint
+        var n = obj.normalAtPoint(x)    // normal at hitpoint
+        if (dot(r.d, n) > 0) {
+            n = n * -1
+        }
 
         // choose a light
         let light = scene.lights[0]
-        let lray = normalize(light.sampleSurface() - x)
+        let lray = Ray(o: x, d: normalize(light.sampleSurface() - x))
+        var c: Scalar = 0
         
-        let c = max(0, dot(lray, n))
+        // check if the ray hits a surface
+        let l: Geometry?
+        (l, _) = scene.list.intersect(lray)
+        if l!.material.isLight() {
+            c = c + max(0, dot(lray.d, n))
+        }
         
         return material.color * (c + 0.1)
     }
