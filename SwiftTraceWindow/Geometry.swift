@@ -18,21 +18,37 @@ protocol Geometry {
 }
 
 /// Geometric collection of objects
+typealias GeometryListId = Int
+extension GeometryListId {
+    static var invalid = -1
+    
+    var isValid: Bool { get { return self > 0 } }
+}
+
 struct GeometryList {
     let list: [Geometry]
 
-    func intersect(r: Ray) -> (Geometry?, Scalar) {
-        var ret: Geometry?
-        var current: Scalar = Scalar.infinity
+    func intersectWithRay(r: Ray) -> (GeometryListId, Scalar) {
+    
+        return (0..<list.count).lazy.reduce((GeometryListId.invalid, Scalar.infinity)) {
+            accum, id in
+            let distance = list[id].intersectWithRay(r)
+            return (distance < accum.1) ? (id, distance) : accum
+        }
+    
+        var ret = (id: GeometryListId(), dist: Scalar.infinity)
         
-        for object in list {
-            let distance = object.intersectWithRay(r)
-            if distance < current { ret = object; current = distance }
+        for index in 0..<list.count {
+            let distance = list[index].intersectWithRay(r)
+            if distance < ret.dist {
+                ret = (index, distance)
+            }
         }
         
-        // TODO: refactor this
-        if ret != nil { return (ret, current) } else { return (nil, current) }
+        return ret
     }
+    
+    subscript(id: GeometryListId) -> Geometry? { return list[id] }
 }
 
 /// Geometric definition of a sphere

@@ -29,6 +29,8 @@ extension Vec {
     func dot(b : Vec) -> Scalar { return simd.dot(self, b) }
     /// Normal vector
     func norm() -> Vec { return simd.normalize(self) }
+    /// Hash
+    var hashValue:Int { return x.hashValue &+ (15 &* y.hashValue) &+ (127 &* z.hashValue) }
 }
 //public func %  (a:Vec, b:Vec) -> Vec    { return simd.cross(a, b) }
 public func == (a:Vec, b:Vec) -> Bool   { return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) }
