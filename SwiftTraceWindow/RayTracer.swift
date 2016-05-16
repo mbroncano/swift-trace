@@ -19,7 +19,7 @@ class RayTracer {
     }
     
     func radiance(r: Ray) -> Color {
-        let o: GeometryListId
+        let o: GeometryCollectionItemId
         let t: Scalar
         
         (o, t) = scene.list.intersectWithRay(r)
@@ -49,7 +49,7 @@ class RayTracer {
             let lray = Ray(o: x, d: normalize(light.sampleSurface() - x))
             
             // check if the ray hits a surface
-            let l: GeometryListId
+            let l: GeometryCollectionItemId
             (l, _) = scene.list.intersectWithRay(lray)
             let sl = scene.list[l]!
             

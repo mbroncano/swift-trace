@@ -32,7 +32,7 @@ class PathTracer: RayTracer {
         var depth = 0
         
         while true {
-            let o: GeometryListId
+            let o: GeometryCollectionItemId
             let t: Scalar
             
             (o, t) = scene.list.intersectWithRay(r)

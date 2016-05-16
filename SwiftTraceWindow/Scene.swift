@@ -12,7 +12,7 @@ import simd
 protocol Scene {
     var list: GeometryList { get }
     var camera: Camera { get }
-    var lights: [GeometryListId] { get }
+    var lights: [GeometryCollectionItemId] { get }
     
     var ambientLight: Vec { get }
     var backgroundColor: Color { get }
@@ -21,7 +21,7 @@ protocol Scene {
 struct CornellBox: Scene {
     let list: GeometryList
     let camera: Camera
-    let lights: [GeometryListId]
+    let lights: [GeometryCollectionItemId]
     
     let ambientLight = Vec(0.1, 0.1, 0.1)
     let backgroundColor = Color.Black
@@ -53,8 +53,8 @@ struct CornellBox: Scene {
             Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),material: materials["Lite"]!),       // Lite
             Sphere(rad:3, p:Vec(x:50,y:8,z:81.6),material: materials["Lite2"]!)       // Lite
         ]
-        list = GeometryList(list:objects)
-        lights = [GeometryListId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
+        list = GeometryList(items:objects)
+        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
         
         camera = Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
     }

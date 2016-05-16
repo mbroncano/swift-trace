@@ -8,38 +8,57 @@
 
 import simd
 
-/// Protocol to define a geometric intersecting object
+/// Protocol to define a geometric primitive
 protocol Geometry {
+    /// Material surface
     var material: Material { get }
 
+    /// Intersects with a ray, returns distance or infinity
     func intersectWithRay(r: Ray) -> Scalar
+    
+    /// Normal vector at a point over the surface
     func normalAtPoint(x: Vec) -> Vec
+    
+    /// Returns a random point over the surface
     func sampleSurface() -> Vec
 }
 
 /// Geometric collection of objects
-typealias GeometryListId = Int
-extension GeometryListId {
+typealias GeometryCollectionItemId = Int
+extension GeometryCollectionItemId {
     static var invalid = -1
     
     var isValid: Bool { get { return self > 0 } }
 }
 
-struct GeometryList {
-    let list: [Geometry]
+/// Protocol to define a geometric primitive collection
+protocol GeometryCollection {
+    /// Items in teh collection
+    var items: [Geometry] { get }
 
-    func intersectWithRay(r: Ray) -> (GeometryListId, Scalar) {
-    
+    /// Returns an item with a particular id
+    subscript(id: GeometryCollectionItemId) -> Geometry? { get }
+
+    /// Returns the first instance in the collection that intersectes with a ray and the distance
+    func intersectWithRay(r: Ray) -> (GeometryCollectionItemId, Scalar)
+}
+
+struct GeometryList: GeometryCollection {
+    let items: [Geometry]
+
+    func intersectWithRay(r: Ray) -> (GeometryCollectionItemId, Scalar) {
+        /*
+        // Functional approach, funnily enough is slower than the trivial one
         return (0..<list.count).lazy.reduce((GeometryListId.invalid, Scalar.infinity)) {
             accum, id in
             let distance = list[id].intersectWithRay(r)
             return (distance < accum.1) ? (id, distance) : accum
         }
+        */
     
-        var ret = (id: GeometryListId(), dist: Scalar.infinity)
-        
-        for index in 0..<list.count {
-            let distance = list[index].intersectWithRay(r)
+        var ret = (id: GeometryCollectionItemId(), dist: Scalar.infinity)
+        for index in 0..<items.count {
+            let distance = items[index].intersectWithRay(r)
             if distance < ret.dist {
                 ret = (index, distance)
             }
@@ -48,7 +67,7 @@ struct GeometryList {
         return ret
     }
     
-    subscript(id: GeometryListId) -> Geometry? { return list[id] }
+    subscript(id: GeometryCollectionItemId) -> Geometry? { return items[id] }
 }
 
 /// Geometric definition of a sphere
