@@ -27,6 +27,9 @@
 		647BBDC31BFEDECD0017A888 /* Material.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDC21BFEDECD0017A888 /* Material.swift */; };
 		647BBDC41BFEDECD0017A888 /* Material.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDC21BFEDECD0017A888 /* Material.swift */; };
 		64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C5FCB71BFBC60C004F783E /* PathTracer.swift */; };
+		64DBD36C1CEB661900727B71 /* EyeTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DBD36B1CEB661900727B71 /* EyeTracer.swift */; };
+		64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3751CEC24CD00727B71 /* earth.jpg */; };
+		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,6 +62,9 @@
 		647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Framebuffer.swift; sourceTree = "<group>"; };
 		647BBDC21BFEDECD0017A888 /* Material.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Material.swift; sourceTree = "<group>"; };
 		64C5FCB71BFBC60C004F783E /* PathTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathTracer.swift; sourceTree = "<group>"; };
+		64DBD36B1CEB661900727B71 /* EyeTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EyeTracer.swift; sourceTree = "<group>"; };
+		64DBD3751CEC24CD00727B71 /* earth.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth.jpg; sourceTree = "<group>"; };
+		64DBD3771CEC35DF00727B71 /* skydome.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = skydome.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +109,7 @@
 				647648D91BF9737A00C4EAC0 /* AppDelegate.swift */,
 				647648DB1BF9737A00C4EAC0 /* ViewController.swift */,
 				646752A61C2B76490084CBE3 /* RayTracer.swift */,
+				64DBD36B1CEB661900727B71 /* EyeTracer.swift */,
 				64C5FCB71BFBC60C004F783E /* PathTracer.swift */,
 				646752A21C28BBDF0084CBE3 /* Scene.swift */,
 				647BBDA81BFE57A10017A888 /* Vector.swift */,
@@ -113,6 +120,8 @@
 				646752A41C28BC980084CBE3 /* Camera.swift */,
 				647648DD1BF9737A00C4EAC0 /* Assets.xcassets */,
 				647648DF1BF9737A00C4EAC0 /* Main.storyboard */,
+				64DBD3771CEC35DF00727B71 /* skydome.jpg */,
+				64DBD3751CEC24CD00727B71 /* earth.jpg */,
 				647648E21BF9737A00C4EAC0 /* Info.plist */,
 				646752A81C2B9B4A0084CBE3 /* Primitive.swift */,
 			);
@@ -209,8 +218,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */,
 				647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */,
 				647648E11BF9737A00C4EAC0 /* Main.storyboard in Resources */,
+				64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,6 +245,7 @@
 				647BBDC01BFEDDB50017A888 /* Framebuffer.swift in Sources */,
 				647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */,
 				647BBDBA1BFE761F0017A888 /* Vector.swift in Sources */,
+				64DBD36C1CEB661900727B71 /* EyeTracer.swift in Sources */,
 				646752A51C28BC980084CBE3 /* Camera.swift in Sources */,
 				646752A91C2B9B4A0084CBE3 /* Primitive.swift in Sources */,
 				646752A71C2B76490084CBE3 /* RayTracer.swift in Sources */,
@@ -367,6 +379,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MBR.SwiftTraceWindow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};

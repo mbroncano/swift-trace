@@ -20,17 +20,21 @@ public func ~= (a:Scalar, b:Scalar) -> Bool  { return abs(a-b) < Scalar.epsilon 
 /// Vec is currenly an alias for simd.double3
 public typealias Vec2 = simd.double2
 public typealias Vec = simd.double3
-extension Vec {
+extension Vec: CustomStringConvertible {
     /// Zero Vector
     static let Zero: Vec = Vec()
     /// Unit Vector
     static let Unit: Vec = Vec(1, 1, 1)
+    /// XY Vector
+    static let XY: Vec = Vec(1, 1, 0)
     /// Dot product
     func dot(b : Vec) -> Scalar { return simd.dot(self, b) }
     /// Normal vector
     func norm() -> Vec { return simd.normalize(self) }
     /// Hash
     var hashValue:Int { return x.hashValue &+ (15 &* y.hashValue) &+ (127 &* z.hashValue) }
+    
+    public var description: String { return "<\(x),\(y),\(z)>" }
 }
 //public func %  (a:Vec, b:Vec) -> Vec    { return simd.cross(a, b) }
 public func == (a:Vec, b:Vec) -> Bool   { return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) }
@@ -38,11 +42,19 @@ public func != (a:Vec, b:Vec) -> Bool   { return (a.x != b.x) && (a.y != b.y) &&
 public func ~= (a:Vec, b:Vec) -> Bool   { let c = simd.vector_abs(a-b); return c.x < Scalar.epsilon && c.y < Scalar.epsilon && c.z < Scalar.epsilon }
 
 /// Structure containing two vector, origin and destination
-public struct Ray {
+public struct Ray: CustomStringConvertible {
     /// The origin vector
     let o: Vec
     /// The destination vector
     let d: Vec
+    /// The minimum distance this ray will travel
+//    let tmin: Scalar = Scalar.epsilon
+    /// The maximum distance this ray will travel
+//    let tmax: Scalar = Scalar.infinity
+    
+    init(o: Vec, d: Vec) { self.o = o; self.d = d }
+
+    public var description: String { return "<(\(o.x),\(o.y),\(o.z))->(\(d.x),\(d.y),\(d.z))" }
 }
 public func * (a:Ray, b:Scalar) -> Vec { return a.o + a.d * b }
 
@@ -85,10 +97,13 @@ public struct PixelRGBA: Equatable {
     /// Default initializer with Color type
     /// -Parameter color: Color type variable
     init(color: Color) {
-        self.r = byte(min(color.x, 1.0) * Scalar(byte.max))
-        self.g = byte(min(color.y, 1.0) * Scalar(byte.max))
-        self.b = byte(min(color.z, 1.0) * Scalar(byte.max))
-        self.a = 0
+        let min = simd.min(color, 1.0) * Scalar(byte.max)
+        (r, g, b, a) = (byte(min.x), byte(min.y), byte(min.z), 0)
+    }
+    
+    /// Return Color vector
+    func color() -> Color {
+        return Color(Scalar(self.r), Scalar(self.g), Scalar(self.b)) * (1.0 / Scalar(byte.max))
     }
 }
 

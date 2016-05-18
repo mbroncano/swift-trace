@@ -18,8 +18,16 @@ class ViewController: NSViewController {
         // Do any additional setup after loading the view.
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
             Random.seed(1234)
-//            let render = PathTracer(scene: CornellBox(), w: 320, h: 240)
-            let render = RayTracer(scene: CornellBox(), w: 320, h: 240)
+            
+            let width = 320, height = 240
+            
+//            let render = PathTracer(scene: CornellBox(), w: width, h: height)
+//            let render = RayTracer(scene: CornellBox(), w: width, h: height)
+//            let render = EyeTracer(scene: CornellBox(), w: width, h: height)
+
+            let render = PathTracer(scene: ThreeBall(), w: width, h: height)
+//            let render = RayTracer(scene: ThreeBall(), w: width, h: height)
+//            let render = EyeTracer(scene: ThreeBall(), w: width, h: height)
             
             while true {
                 // render another frame
@@ -29,6 +37,8 @@ class ViewController: NSViewController {
                 print("Profiler: completed in \(duration * 1000)ms")
                 
                 // update the UI
+                if render.framebuffer.samples % 10 != 1 { continue }
+                
                 let image = render.framebuffer.cgImage()
                 dispatch_async(dispatch_get_main_queue()) {
                     self.imageView!.image = NSImage(CGImage: image, size: NSZeroSize)

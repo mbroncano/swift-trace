@@ -7,20 +7,23 @@
 //
 
 import Foundation
+import Cocoa
 import simd
 
 class Material {
     let emission: Color
-    let color: Color
+    let diffuseColor: Color
 
     init (emission: Color, color: Color) {
         self.emission = emission
-        self.color = color
+        self.diffuseColor = color
     }
 
     func isLight() -> Bool { return emission != Vec.Zero }
 
     func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) { return (0.0, Vec.Zero) }
+    
+    func color(uv: Vec) -> Color { return self.diffuseColor }
 }
 
 class Refractive: Material {
@@ -61,10 +64,40 @@ class Refractive: Material {
     }
 }
 
+class Textured: Lambertian {
+    var texture: Texture? = nil
+
+    override init(emission: Color, color: Color) {
+        super.init(emission: emission, color: color)
+        
+        let bundle = NSBundle.mainBundle()
+        let fileName = bundle.pathForResource("earth", ofType: "jpg")!
+        texture = Texture(fileName: fileName)
+    }
+
+    override func color(uv: Vec) -> Color {
+        return texture![uv]
+    }
+}
+
+class Chessboard: Specular {
+
+    override func color(uv: Vec) -> Color {
+        let squares = 10.0
+        let t1 = uv.x * squares
+        let t2 = uv.y * squares
+        
+        let c = Bool((Int(t1) % 2) ^ (Int(t2) % 2))
+        return c ? (Color.White - diffuseColor) : self.diffuseColor
+    }
+}
+
 class Specular: Material {
+    let fuzz = 0.2
+
     override func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
         // prob. of reflected ray is 1 (dirac function)
-        return (1.0, reflect(wi, n: normal))
+        return (1.0, reflect(wi, n: normal) + sampleSphere() * fuzz)
     }
 }
 

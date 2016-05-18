@@ -32,40 +32,35 @@ class PathTracer: RayTracer {
         var depth = 0
         
         while true {
-            let o: GeometryCollectionItemId
-            let t: Scalar
+            // intersection with world
+            let hit: Intersection = scene.list.intersectWithRay(r)
+            guard let obj = hit.o else { return cl + cf * scene.skyColor(r) }
             
-            (o, t) = scene.list.intersectWithRay(r)
-            
-            // if there is no intersection, return the background color (black)
-            if !t.isNormal { return Vec.Zero }
-            
-            let obj:Geometry = scene.list[o]!
+            let t = hit.d
             let material = obj.material
+
+            let x = r.o + r.d * t           // hit point
             
-            var f = material.color
+            var f = material.color(obj.textureAtPoint(x))
             let p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y : f.z // max refl
 
             cl = cl + (cf * material.emission)
 
-            // Russian Roulette:
+            // Russian roulette
             depth = depth + 1
             if depth > 5 {
-                // Limit depth to 15 to avoid stack overflow.
-                if (depth < 15 && Random.random()<p) {
+                if (depth < 80 && Random.random()<p) {
                     f=f*(1/p)
                 } else {
                     return cl
                 }
             }
             
-            let x = r.o + r.d * t           // hit point
-            let n = obj.normalAtPoint(x)    // normal at hitpoint
-
+            // Sample a new ray
             let direction: Vec
             var probability: Scalar
 
-            (probability, direction) = material.sample(r.d, normal: n)
+            (probability, direction) = material.sample(r.d, normal: obj.normalAtPoint(x))
             cf = cf * f * probability
             r = Ray(o:x, d: direction)
         }

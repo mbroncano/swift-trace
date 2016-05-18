@@ -8,6 +8,26 @@
 
 import simd
 
+/// Sample a point over the surface of a sphere, rejection method
+func sampleSphere(r: Scalar = 1) -> Vec {
+    var v: Vec
+    repeat {
+        v = Vec(Scalar.Random(), Scalar.Random(), Scalar.Random())
+    } while (simd.length_squared(v) > (r*r))
+    
+    return v
+}
+
+/// Sample point in unit disk
+func sampleDisk() -> Vec {
+    var v: Vec
+    repeat {
+        v = 2.0 * Vec(Scalar.Random(), Scalar.Random(), 0) - Vec.XY
+    } while (v.dot(v) >= 1.0)
+    return v
+}
+
+
 /// Protocol to define a geometric primitive
 protocol Geometry {
     /// Material surface
@@ -21,6 +41,14 @@ protocol Geometry {
     
     /// Returns a random point over the surface
     func sampleSurface() -> Vec
+
+    /// Texture coordinates for a point on the surface
+    func textureAtPoint(x: Vec) -> Vec
+}
+
+struct Intersection {
+    var o: Geometry? = nil
+    var d: Scalar = Scalar.infinity
 }
 
 /// Geometric collection of objects
@@ -41,10 +69,28 @@ protocol GeometryCollection {
 
     /// Returns the first instance in the collection that intersectes with a ray and the distance
     func intersectWithRay(r: Ray) -> (GeometryCollectionItemId, Scalar)
+
+    func intersectWithRay(r: Ray) -> Intersection
 }
 
-struct GeometryList: GeometryCollection {
+class GeometryList: GeometryCollection {
     let items: [Geometry]
+    
+    init(items:[Geometry]) { self.items = items }
+
+    func intersectWithRay(r: Ray) -> Intersection {
+        var ret = Intersection()
+        
+        for object in items {
+            let distance = object.intersectWithRay(r)
+            if distance < ret.d {
+                ret.o = object
+                ret.d = distance
+            }
+        }
+        return ret
+    
+    }
 
     func intersectWithRay(r: Ray) -> (GeometryCollectionItemId, Scalar) {
         /*
@@ -67,7 +113,10 @@ struct GeometryList: GeometryCollection {
         return ret
     }
     
-    subscript(id: GeometryCollectionItemId) -> Geometry? { return items[id] }
+    subscript(id: GeometryCollectionItemId) -> Geometry? {
+        guard items.indices ~= id else { return nil }
+        return items[id]
+    }
 }
 
 /// Geometric definition of a sphere
@@ -89,15 +138,23 @@ class Sphere: Geometry {
         let d = b*b - c
 
         // If the determinant is negative, there are not solutions
-        if (d < 0) { return Scalar.infinity }
+        guard (d > 0) else { return Scalar.infinity }
         
         let s = sqrt(d)
         let q = (b < 0) ? (-b-s) : (-b+s)
-        let t = (q > Scalar.epsilon) ? q : 0
+
+        // Check that the distance is bigger than epsilon
+        guard (q > Scalar.epsilon) else { return Scalar.infinity }
         
-        if (t == 0) { return Scalar.infinity }
+        return q
+    }
+    
+    func textureAtPoint(x: Vec) -> Vec {
+        var n = normalAtPoint(x)
+        let u = 0.5 + atan2(n.z, n.x) / (2.0 * M_PI)
+        let v = 0.5 - asin(n.y) / M_PI
         
-        return t
+        return Vec(u, v, 0)
     }
     
     func normalAtPoint(x: Vec) -> Vec {
@@ -208,6 +265,12 @@ class Triangle: Geometry {
         
         return p
     }
+
+    // TODO
+    func textureAtPoint(x: Vec) -> Vec {
+        return Vec()
+    }
+
 
 }
 

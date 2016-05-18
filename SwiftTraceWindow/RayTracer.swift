@@ -17,52 +17,43 @@ class RayTracer {
         self.scene = scene
         framebuffer = Framebuffer(width: w, height: h)
     }
-    
-    func radiance(r: Ray) -> Color {
-        let o: GeometryCollectionItemId
-        let t: Scalar
-        
-        (o, t) = scene.list.intersectWithRay(r)
-        
-        // if there is no intersection, return the background color (black)
-        if !t.isNormal { return scene.backgroundColor }
-        
-        let obj: Geometry = scene.list[o]!
-        let material: Material = obj.material
-        
-        if material.isLight() {
-            return material.emission
-        }
-        
-        // TODO: simulate specular, refractive
-        let x = r.o + r.d * t           // hit point
-        var n = obj.normalAtPoint(x)    // normal at hitpoint
-        if (dot(r.d, n) > 0) {
-            n = n * -1
-        }
 
-        // direct ilumination
-        var c: Vec = scene.ambientLight
-        for lid in scene.lights {
-            // shadow ray to random light surface point
-            let light: Geometry = scene.list[lid]!
-            let lray = Ray(o: x, d: normalize(light.sampleSurface() - x))
+    /// Iterative brute force ray tracing
+    func radiance(ray: Ray) -> Color {
+        var depth = 5
+        var color = Color.White
+        var r = ray
+        
+        while depth > 0 {
+            /// Performs the intersection and checks both the object and the distance
+            guard let hit: Intersection = scene.list.intersectWithRay(r), let obj = hit.o
+                where hit.d.isNormal
+                else { color = color * scene.skyColor(r); break }
             
-            // check if the ray hits a surface
-            let l: GeometryCollectionItemId
-            (l, _) = scene.list.intersectWithRay(lray)
-            let sl = scene.list[l]!
-            
-            // if we hit our light or any other light
-            if (l == lid) {
-                c = c + light.material.emission.norm() * max(0, dot(lray.d, n))
-            } else if sl.material.isLight() {
-                c = c + sl.material.emission.norm() * max(0, dot(lray.d, n))
+            // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
+            let material: Material = obj.material
+            if material.isLight() {
+                color = color * material.emission
+                break
             }
             
+            // compute hitpoint, normal
+            let x = r.o + r.d * hit.d           // hit point
+            var n = obj.normalAtPoint(x)    // normal at hitpoint
+            if (dot(r.d, n) > 0) {          // correct normal direction
+                n = n * -1
+            }
+            
+            // compute scatterred ray
+            let wo: Vec
+            (_, wo) = material.sample(r.d, normal: n)
+            
+            r = Ray(o: x, d: wo)
+            depth = depth - 1
+            color = color * material.color(obj.textureAtPoint(x))
         }
         
-        return material.color * c
+        return color
     }
 
     func render() {
@@ -72,7 +63,7 @@ class RayTracer {
         let ny = framebuffer.height
         
         // process each ray in parallel
-        dispatch_apply(nx * ny, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+        dispatch_apply(nx*ny, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             // generate new ray
             let x = $0 % nx
             let y = ny - ($0 / nx) - 1
@@ -80,7 +71,7 @@ class RayTracer {
             
             // compute and accumulate radiance for the ray
             let radiance = self.radiance(ray)
-            self.framebuffer.pixels[$0] += radiance
+            self.framebuffer.ptr[$0] += radiance
         }
     }
 }
