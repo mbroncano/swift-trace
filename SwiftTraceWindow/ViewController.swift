@@ -21,6 +21,8 @@ class ViewController: NSViewController {
             
             let width = 320, height = 240
             
+            _ = ObjectLibrary(name: "cube.obj")
+            
 //            let render = PathTracer(scene: CornellBox(), w: width, h: height)
 //            let render = RayTracer(scene: CornellBox(), w: width, h: height)
 //            let render = EyeTracer(scene: CornellBox(), w: width, h: height)
