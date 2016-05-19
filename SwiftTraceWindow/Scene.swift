@@ -12,7 +12,8 @@ import simd
 protocol Scene {
     var list: GeometryList { get }
     var camera: CameraProtocol { get }
-    var lights: [GeometryCollectionItemId] { get }
+//    var lights: [GeometryCollectionItemId] { get }
+    var root: IntersecableWithRay { get }
     
     var ambientLight: Vec { get }
     var backgroundColor: Color { get }
@@ -23,7 +24,8 @@ protocol Scene {
 class ThreeBall: Scene {
     let list: GeometryList
     let camera: CameraProtocol
-    let lights: [GeometryCollectionItemId]
+//    let lights: [GeometryCollectionItemId]
+    var root: IntersecableWithRay
     
     let ambientLight = Vec(0.1, 0.1, 0.1)
     let backgroundColor = Color.Black
@@ -51,15 +53,28 @@ class ThreeBall: Scene {
             Sphere(rad:0.5, p:Vec(0, 0, -4),            material: materials["Earth"]!),
             Sphere(rad:0.5, p:Vec(1, 0, -3),         material: materials["Green"]!),
             Sphere(rad:0.5, p:Vec(2, 0, -2),          material: materials["Glass"]!),
-//            Sphere(rad:-0.45, p:Vec(2, 0, -2),          material: materials["Glass"]!),
+            Sphere(rad:-0.45, p:Vec(2, 0, -2),          material: materials["Glass"]!),
             Sphere(rad:0.15, p:Vec(2, 0, -2),          material: materials["Blue"]!),
             Sphere(rad:500, p:Vec(0, -500.5, -4),       material: materials["Mirror"]!),
             Sphere(rad:50, p:Vec(0, 110, -4),           material: materials["Lite"]!),       // Lite
         ]
-        list = GeometryList(items:objects)
-        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
+        var spheres = Array<Geometry>()
+        for _ in 0...25 {
+            var s = sampleDisk(); s.z = s.y; s.y = 0
+            let c = Vec(0, 0, -4) + s * 4
+            let sphere = Sphere(rad: 0.2, p: c, material: materials["White"]!)
+            spheres.append(sphere)
+        }
+//        spheres.append(Sphere(rad:500, p:Vec(0, -500.5, -4), material: materials["Mirror"]!))
+//        spheres.append(Sphere(rad:50, p:Vec(0, 110, -4), material: materials["Lite"]!))
         
-        camera = ComplexCamera(lookFrom: Vec(0, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.0+1.0/3.0, aperture: 0.2)
+        
+        list = GeometryList(items:spheres)
+//        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
+        
+        root = BVHNode(nodes: objects + spheres)
+        
+        camera = ComplexCamera(lookFrom: Vec(0, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.0+1.0/3.0, aperture: 0.1)
    
         let fileName = NSBundle.mainBundle().pathForResource("skydome", ofType: "jpg")!
         skydome = Texture(fileName: fileName)!
@@ -84,8 +99,9 @@ class ThreeBall: Scene {
 struct CornellBox: Scene {
     let list: GeometryList
     let camera: CameraProtocol
-    let lights: [GeometryCollectionItemId]
-    
+//    let lights: [GeometryCollectionItemId]
+    var root: IntersecableWithRay
+  
     let ambientLight = Vec(0.1, 0.1, 0.1)
     let backgroundColor = Color.Black
 
@@ -117,7 +133,8 @@ struct CornellBox: Scene {
 //            Sphere(rad:3, p:Vec(x:50,y:8,z:81.6),material: materials["Lite2"]!)       // Lite
         ]
         list = GeometryList(items:objects)
-        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
+        root = BVHNode(nodes: objects)
+//        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
         
         camera = Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
     }

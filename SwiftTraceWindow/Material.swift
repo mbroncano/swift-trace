@@ -23,7 +23,8 @@ class Material {
 
     func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) { return (0.0, Vec.Zero) }
     
-    func color(uv: Vec) -> Color { return self.diffuseColor }
+    func colorAtTextCoord(uv: Vec) -> Color { return self.diffuseColor }
+    func emissionAtTextCoord(uv: Vec) -> Color { return self.emission }
 }
 
 class Refractive: Material {
@@ -75,14 +76,14 @@ class Textured: Lambertian {
         texture = Texture(fileName: fileName)
     }
 
-    override func color(uv: Vec) -> Color {
+    override func colorAtTextCoord(uv: Vec) -> Color {
         return texture![uv]
     }
 }
 
 class Chessboard: Specular {
 
-    override func color(uv: Vec) -> Color {
+    override func colorAtTextCoord(uv: Vec) -> Color {
         let squares = 10.0
         let t1 = uv.x * squares
         let t2 = uv.y * squares

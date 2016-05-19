@@ -23,11 +23,11 @@ class RayTracer {
         var depth = 5
         var color = Color.White
         var r = ray
+        var hit = Intersection()
         
         while depth > 0 {
             /// Performs the intersection and checks both the object and the distance
-            guard let hit: Intersection = scene.list.intersectWithRay(r), let obj = hit.o
-                where hit.d.isNormal
+            guard scene.list.intersectWithRay(r, hit: &hit), let obj = hit.o
                 else { color = color * scene.skyColor(r); break }
             
             // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
@@ -50,7 +50,8 @@ class RayTracer {
             
             r = Ray(o: x, d: wo)
             depth = depth - 1
-            color = color * material.color(obj.textureAtPoint(x))
+            color = color * obj.colorAtPoint(x)
+            hit.d = Scalar.infinity
         }
         
         return color

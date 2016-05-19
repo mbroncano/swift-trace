@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6407771A1CECEB390022008A /* scene_balls.json in Resources */ = {isa = PBXBuildFile; fileRef = 640777191CECEB390022008A /* scene_balls.json */; };
 		6422711D1C0E2CD4007AD481 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6422711C1C0E2CD4007AD481 /* Random.swift */; };
 		646752A31C28BBDF0084CBE3 /* Scene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A21C28BBDF0084CBE3 /* Scene.swift */; };
 		646752A51C28BC980084CBE3 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A41C28BC980084CBE3 /* Camera.swift */; };
@@ -43,6 +44,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		640777191CECEB390022008A /* scene_balls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = scene_balls.json; sourceTree = "<group>"; };
 		6422711C1C0E2CD4007AD481 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
 		646752A21C28BBDF0084CBE3 /* Scene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene.swift; sourceTree = "<group>"; };
 		646752A41C28BC980084CBE3 /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 				64DBD3751CEC24CD00727B71 /* earth.jpg */,
 				647648E21BF9737A00C4EAC0 /* Info.plist */,
 				646752A81C2B9B4A0084CBE3 /* Primitive.swift */,
+				640777191CECEB390022008A /* scene_balls.json */,
 			);
 			path = SwiftTraceWindow;
 			sourceTree = "<group>";
@@ -218,6 +221,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6407771A1CECEB390022008A /* scene_balls.json in Resources */,
 				64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */,
 				647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */,
 				647648E11BF9737A00C4EAC0 /* Main.storyboard in Resources */,

@@ -40,6 +40,8 @@ extension Vec: CustomStringConvertible {
 public func == (a:Vec, b:Vec) -> Bool   { return (a.x == b.x) && (a.y == b.y) && (a.z == b.z) }
 public func != (a:Vec, b:Vec) -> Bool   { return (a.x != b.x) && (a.y != b.y) && (a.z != b.z) }
 public func ~= (a:Vec, b:Vec) -> Bool   { let c = simd.vector_abs(a-b); return c.x < Scalar.epsilon && c.y < Scalar.epsilon && c.z < Scalar.epsilon }
+public func /  (lhs:Vec, rhs:Scalar) -> Vec { return lhs * (1.0 / rhs) }
+public func /  (lhs:Scalar, rhs:Vec) -> Vec { return lhs * recip(rhs) }
 
 /// Structure containing two vector, origin and destination
 public struct Ray: CustomStringConvertible {
@@ -48,9 +50,9 @@ public struct Ray: CustomStringConvertible {
     /// The destination vector
     let d: Vec
     /// The minimum distance this ray will travel
-//    let tmin: Scalar = Scalar.epsilon
+    var tmin: Scalar = Scalar.epsilon
     /// The maximum distance this ray will travel
-//    let tmax: Scalar = Scalar.infinity
+    var tmax: Scalar = Scalar.infinity
     
     init(o: Vec, d: Vec) { self.o = o; self.d = d }
 

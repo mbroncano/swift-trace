@@ -30,31 +30,31 @@ class PathTracer: RayTracer {
         var cf: Vec = Vec.Unit
         var r = r
         var depth = 0
+        var hit = Intersection()
         
         while true {
             // intersection with world
-            let hit: Intersection = scene.list.intersectWithRay(r)
-            guard let obj = hit.o else { return cl + cf * scene.skyColor(r) }
+            guard scene.root.intersectWithRay(r, hit: &hit),
+                let obj = hit.o
+                else { return cl + cf * scene.skyColor(r) }
             
-            let t = hit.d
             let material = obj.material
 
-            let x = r.o + r.d * t           // hit point
-            
-            var f = material.color(obj.textureAtPoint(x))
-            let p = f.x > f.y && f.x > f.z ? f.x : f.y > f.z ? f.y : f.z // max refl
-
-            cl = cl + (cf * material.emission)
+            // hit point, compute albedo and emission
+            let x = r.o + r.d * hit.d
+            var f = obj.colorAtPoint(x)
+            cl = cl + cf * material.emission
 
             // Russian roulette
-            depth = depth + 1
             if depth > 5 {
-                if (depth < 80 && Random.random()<p) {
-                    f=f*(1/p)
+                let p = simd.reduce_max(f);
+                if (depth < 80 && Scalar.Random() < p) {
+                    f = f * (1.0 / p)
                 } else {
                     return cl
                 }
             }
+            depth = depth + 1
             
             // Sample a new ray
             let direction: Vec
@@ -63,6 +63,7 @@ class PathTracer: RayTracer {
             (probability, direction) = material.sample(r.d, normal: obj.normalAtPoint(x))
             cf = cf * f * probability
             r = Ray(o:x, d: direction)
+            hit.d = Scalar.infinity
         }
     }
 }
