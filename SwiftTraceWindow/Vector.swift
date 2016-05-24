@@ -31,8 +31,12 @@ extension Vec: CustomStringConvertible {
     func dot(b : Vec) -> Scalar { return simd.dot(self, b) }
     /// Normal vector
     func norm() -> Vec { return simd.normalize(self) }
+    /// Lenght
+    func len() -> Scalar { return simd.length(self) }
     /// Hash
     var hashValue:Int { return x.hashValue &+ (15 &* y.hashValue) &+ (127 &* z.hashValue) }
+    /// Finite
+    var isFinite: Bool { get { return self.x.isFinite && self.y.isFinite && self.z.isFinite } }
     
     public var description: String { return "<\(x),\(y),\(z)>" }
 }
@@ -55,6 +59,8 @@ public struct Ray: CustomStringConvertible {
     var tmax: Scalar = Scalar.infinity
     
     init(o: Vec, d: Vec) { self.o = o; self.d = d }
+    init(o: Vec, d: Vec, tmin: Scalar, tmax: Scalar) { self.o = o; self.d = d; self.tmin = tmin; self.tmax = tmax }
+    init(from: Vec, to: Vec) { let d = to-from; self.init(o: from, d: d.norm(), tmin: Scalar.epsilon, tmax: d.len()) }
 
     public var description: String { return "<(\(o.x),\(o.y),\(o.z))->(\(d.x),\(d.y),\(d.z))" }
 }

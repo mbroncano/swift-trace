@@ -9,10 +9,12 @@
 import Foundation
 import simd
 
+/// Implements a ray tracer
 protocol RayTracer {
     func radiance(r: Ray) -> Color
 }
 
+/// Implements a generic scene renderer
 protocol Renderer {
     var scene: Scene { get }
     var framebuffer: Framebuffer { get }
@@ -22,6 +24,7 @@ protocol Renderer {
 }
 
 extension Renderer where Self: RayTracer {
+    /// Renders a frame, dispatching pixels
     func render() {
         framebuffer.samples += 1
 
@@ -41,24 +44,28 @@ extension Renderer where Self: RayTracer {
         }
     }
     
+    /// Renders a frame, dispatching tiles
     func renderTile() {
         framebuffer.samples += 1
 
         let nx = framebuffer.width
         let ny = framebuffer.height
         
-        let size = 64
-        let tx = nx / size
-        let ty = ny / size
+        let size = 512                   // seems to be fair
+        let tx = (nx + size - 1) / size // int div round up
+        let ty = (ny + size - 1) / size
         
         // process each ray in parallel, tiled
         dispatch_apply(tx*ty, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let x = ($0 % tx) * size
             let y = ($0 / tx) * size
 
-            for i in 0..<size*size {
-                let xi = x + (i%size)
-                let yi = y + (i/size)
+            let sizex = min((nx-x), size)
+            let sizey = min((ny-y), size)
+
+            for i in 0..<sizex*sizey {
+                let xi = x + (i % sizex)
+                let yi = y + (i / sizex)
                 let ray = self.scene.camera.generateRay(x: xi, y: yi, nx: nx, ny: ny)
                 let radiance = self.radiance(ray)
                 self.framebuffer.ptr[(ny-yi-1)*nx+xi] += radiance

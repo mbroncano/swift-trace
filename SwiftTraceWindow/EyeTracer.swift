@@ -9,91 +9,52 @@
 import Foundation
 import simd
 
-/*
+
 class WhittedTracer: DistributedRayTracer {
 
-    /// http://cs.brown.edu/courses/cs224/handouts/whitted.pdf
+    // http://www.cse.chalmers.se/edu/year/2011/course/TDA361/2007/rend_eq.pdf
+    // http://cs.brown.edu/courses/cs224/handouts/whitted.pdf
     override func radiance(ray: Ray) -> Color {
-//        var hit = Intersection()
-        var hit: Intersection?
+        var hit = Intersection()
         
-        /// Performs the intersection and checks both the object and the distance
-        guard scene.root.intersectWithRay(ray, hit: &hit), let obj = hit!.o
+        guard scene.intersectWithRay(ray, hit: &hit),
+            let mid = hit.m,
+            let material = scene.materialWithId(mid)
+            
             else { return scene.skyColor(ray) }
         
-        // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
-        let material: Material = obj.material
-        if material.isLight() {
-            return material.emission
-        }
+        var Lo = material.emission + scene.ambientLight * material.colorAtTextCoord(hit.uv)
         
-        // compute hitpoint, normal
-        let x = ray.o + ray.d * hit!.d           // hit point
-        var n = obj.normalAtPoint(x)    // normal at hitpoint
-        if (dot(ray.d, n) > 0) {          // correct normal direction
-            n = n * -1
-        }
-
-        // compute scatterred ray
-//        let wo: Vec
-//        (_, wo) = material.sample(ray.d, normal: n)
-        
-        return obj.colorAtPoint(x) 
-    }
-/*
-    // direct light ray tracer, no material sampling
-    override func radiance(r: Ray) -> Color {
-  /*      let o: GeometryCollectionItemId
-        let t: Scalar
-        
-        // performs the intersection with the scene
-        (o, t) = scene.list.intersectWithRay(r)
-*/            /// Performs the intersection and checks both the object and the distance
-        guard let hit: Intersection = scene.list.intersectWithRay(r), let obj = hit.o
-            else { return scene.skyColor(r) }
-        
-        // if there is no intersection, return the sky color
-//        if !t.isNormal { return scene.skyColor(r) }
-        
-        // retrieves the object and the surface from the scene
-//        let obj: Geometry = scene.list[o]!
-        let material: Material = obj.material
-        
-        // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
-        if material.isLight() {
-            return material.emission
-        }
-        
-        // TODO: simulate specular, refractive
-        let x = r.o + r.d * hit.d       // hit point
-        var n = obj.normalAtPoint(x)    // normal at hitpoint
-        if (dot(r.d, n) > 0) {          // correct normal direction
-            n = n * -1
-        }
-
-        // direct ilumination
-        let c: Vec = scene.ambientLight
-        // FIXME: this doesn't work anymore
-    /*    for lid in scene.lights {
-            // shadow ray to random light surface point
-            let light: Geometry = scene.list[lid]!
-            let lray = Ray(o: x, d: normalize(light.sampleSurface() - x))
+        // compute the shadow ray
+        var lhit = Intersection()
+        for lite in scene.lights {
+            let p = lite.sample()
+            let r = Ray(from: hit.x, to: p)
             
-            // check if the ray hits a surface
-            let l: GeometryCollectionItemId
-            (l, _) = scene.list.intersectWithRay(lray)
-            guard let sl = scene.list[l] else { continue }
+            // we need to check that the intersection is with 'lite'
+            guard scene.intersectWithRay(r, hit: &lhit), let lmid = lhit.m, let lmat = scene.materials[lmid], let lprim = lhit.p
+            where lprim == lite // && lmat.isLight()
+            else { continue }
+
+            // weakening factor wi * n
+            let cos = dot(r.d, hit.n)
+            guard cos > 0 else { continue }
             
-            // if we hit our light or any other light
-            if (l == lid) {
-                c = c + light.material.emission.norm() * max(0, dot(lray.d, n))
-            } else if sl.material.isLight() {
-                c = c + sl.material.emission.norm() * max(0, dot(lray.d, n))
-            }
+            // incoming light
+            let rad = lhit.d
+            let area = lite.area / 1000
+            let sangle = area / (rad*rad)
+            let Li = sangle * lmat.emission
+            
+            // Lambertian BRDF
+            // FIXME: add specular, dielectric
+            let fr = material.colorAtTextCoord(hit.uv)
+            
+            Lo += fr * Li * cos
+        }
+        
+        assert(Lo.isFinite)
  
-        }
-  */
-        return obj.colorAtPoint(x) * c
-    }*/
+        return Lo
+    }
 }
-*/

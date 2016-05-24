@@ -86,7 +86,7 @@ class Textured: Lambertian {
 class Chessboard: Specular {
 
     override func colorAtTextCoord(uv: Vec) -> Color {
-        let squares = 10.0
+        let squares = 20.0
         let t1 = uv.x * squares
         let t2 = uv.y * squares
         

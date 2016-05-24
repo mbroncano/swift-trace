@@ -40,9 +40,9 @@ func sampleDisk() -> Vec {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /// The result of an intersection with a ray
 struct Intersection: Comparable {
+    weak var p: Primitive? = nil
     var m: MaterialId? = nil
     var d: Scalar = Scalar.infinity
     var x: Vec = Vec.Zero
@@ -74,15 +74,38 @@ protocol BoundingBox {
     var bbox: AABB { get }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Defines a surfaced object
+protocol Surface {
+    /// Returns the geometric center of the surface
+    var center: Vec { get }
+    /// Returns the area of the surface
+    var area: Scalar { get }
+    /// Returns a random point on the surface
+    func sample() -> Vec
+}
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Axis aligned bounding box
-struct AABB: IntersectWithRayBoolean {
+struct AABB: IntersectWithRayBoolean, Surface, Equatable {
     let min, max: Vec
+    private let preArea: Scalar
+    private let preCenter: Vec
     
-    init(a: Vec, b: Vec) { min = a; max = b }
+    init(a: Vec, b: Vec) {
+        self.min = a
+        self.max = b
+        let d = max - min
+        self.preCenter = min + d * 0.5
+        self.preArea = 2.0 * (d.x * d.y + d.x * d.z + d.y + d.z)
+    }
 
     init() { self.init(a: Vec.Zero, b: Vec.Zero) }
+
+    var center: Vec { get { return preCenter } }
+    var area: Scalar { get { return preArea } }
+
+    // TODO
+    func sample() -> Vec { return self.center }
 
     func intersectWithRay(r: Ray) -> Bool {
 
@@ -112,25 +135,28 @@ struct AABB: IntersectWithRayBoolean {
     }
 }
 
-/// Union operator
-func + (lhs:AABB, rhs: AABB) -> AABB {
-    return AABB(a: min(lhs.min, rhs.min), b: max(lhs.max, rhs.max))
-}
+func == (lhs:AABB, rhs:AABB) -> Bool { return lhs.min == rhs.min && lhs.max == rhs.max }
+func + (lhs:AABB, rhs: AABB) -> AABB { return AABB(a: min(lhs.min, rhs.min), b: max(lhs.max, rhs.max)) }
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 /// Base geometric primitive
-class Primitive: IntersectWithRayIntersection, BoundingBox {
+class Primitive: IntersectWithRayIntersection, BoundingBox, Surface, Equatable {
     /// Axis aligned bounding box
     let bbox: AABB
 
     init(bbox: AABB) { self.bbox = bbox }
     
     func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool { return bbox.intersectWithRay(r) }
+    var center: Vec { get { return bbox.center } }
+    var area: Scalar { get { return bbox.area } }
+    func sample() -> Vec { return bbox.sample() }
 }
 
+func == (lhs:Primitive, rhs:Primitive) -> Bool { return lhs.bbox == rhs.bbox }
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Bounding volume hierarchy node
 final class BVHNode: Primitive {
     let left, right: Primitive
@@ -139,7 +165,7 @@ final class BVHNode: Primitive {
         // random axis strategy
         let axis = Int(Scalar.Random() * 3.0)
 
-        let sorted = nodes.sort({ (a, b) -> Bool in return a.bbox.min[axis] > b.bbox.min[axis] })
+        let sorted = nodes.sort({ (a, b) -> Bool in return a.bbox.center[axis] > b.bbox.center[axis] })
         
         if sorted.count > 2 {
             let mid = sorted.count / 2
@@ -163,6 +189,8 @@ final class BVHNode: Primitive {
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Simple linear primitive list collection
 final class PrimitiveList: Primitive {
     let list: [Primitive]
@@ -189,8 +217,8 @@ final class PrimitiveList: Primitive {
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Geometric definition of a sphere
 final class Sphere: Primitive {
     /// The radius of the sphere
@@ -199,13 +227,20 @@ final class Sphere: Primitive {
     let p: Vec
     /// Material identifier
     let material: MaterialId
+    
+    private let preArea: Scalar
 
     init(rad: Scalar, p: Vec, material: MaterialId) {
         self.rad = rad
         self.p = p
         self.material = material
+        self.preArea = 4 / 3 * M_PI * pow(rad, 3)
         super.init(bbox: AABB(a: p - Vec(rad), b: p + Vec(rad)))
     }
+
+    override var center: Vec { get { return p } }
+    override var area: Scalar { get { return preArea } }
+    override func sample() -> Vec { return self.p + sampleSphere(self.rad) }
 
     override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
         let po = r.o - p
@@ -225,6 +260,7 @@ final class Sphere: Primitive {
         // note this, it's not the usual behaviour
         // do we want to return true is it's not the case?
         if (d < hit.d) {
+            hit.p = self
             hit.d = d
 
             let x = r.o + r.d * d
@@ -241,35 +277,47 @@ final class Sphere: Primitive {
         return true
     }
 }
-/*
-class Triangle: Geometry {
+
+func == (lhs: Sphere, rhs: Sphere) -> Bool { return lhs.p == rhs.p && lhs.rad == rhs.rad && lhs.material == rhs.material }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// Geometric definition of a triangle
+final class Triangle: Primitive {
     let p1, p2, p3: Vec
     let edge1, edge2: Vec
     let normal: Vec
 
-    let material: Material  // surface type
+    /// Material identifier
+    let material: MaterialId
 
-    init(p1:Vec, p2:Vec, p3: Vec, material: Material) {
+    init(p1:Vec, p2:Vec, p3: Vec, material: MaterialId) {
         self.p1 = p1
         self.p2 = p2
         self.p3 = p3
         
         self.material = material
     
-        //Find vectors for two edges sharing V1
+        // find vectors for two edges sharing V1
         edge1 = p2 - p1
         edge2 = p3 - p1
         normal = normalize(cross(edge1, edge2))
+        
+        // compute bounding box
+        let _min = min(min(p1, p2), min(p2, p3))
+        let _max = max(max(p1, p2), max(p2, p3))
+        super.init(bbox: AABB(a: _min, b: _max))
     }
     
     /// https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
-    func intersectWithRay(r: Ray) -> Scalar {
-        //Begin calculating determinant - also used to calculate u parameter
+    override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
+        // begin calculating determinant - also used to calculate u parameter
         let p = cross(r.d, edge2)
-        //if determinant is near zero, ray lies in plane of triangle
+        
+        // if determinant is near zero, ray lies in plane of triangle
         let det = dot(edge1, p)
+        
         // NOT CULLING
-        if (det > -Scalar.epsilon && det < Scalar.epsilon) { return Scalar.infinity }
+        if (det > -Scalar.epsilon && det < Scalar.epsilon) { return false }
 
         let inv_det = 1.0 / det;
 
@@ -279,7 +327,7 @@ class Triangle: Geometry {
         let u = dot(t, p) * inv_det
 
         //The intersection lies outside of the triangle
-        if (u < 0.0 || u > 1.0) { return Scalar.infinity }
+        if (u < 0.0 || u > 1.0) { return false }
 
         //Prepare to test v parameter
         let q = cross(t, edge1)
@@ -287,42 +335,72 @@ class Triangle: Geometry {
         //Calculate V parameter and test bound
         let v = dot(r.d, q) * inv_det;
         //The intersection lies outside of the triangle
-        if (v < 0.0 || u + v  > 1.0) { return Scalar.infinity }
+        if (v < 0.0 || u + v  > 1.0) { return false }
 
         let t1 = dot(edge2, q) * inv_det;
 
         if (t1 > Scalar.epsilon) { //ray intersection
-            return t1
+            if (t1 < hit.d) {
+                hit.p = self
+                hit.d = t1
+                
+                let x = r.o + r.d * t1
+                
+                hit.x = x
+                hit.m = material
+                hit.n = normal
+                hit.uv = Vec(u, v, 0)
+            }
+            return true
         }
 
         // No hit, no win
-        return Scalar.infinity
+        return false
     }
+    /*
+    override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
 
-    func intersectWithRay2(r: Ray) -> Scalar {
+        // find vectors for two edges sharing p1
+        // let edge1 = p2 - p1
+        // let edge2 = p3 - p1
 
-        /* Compute some initial values. */
-        let distance: Vec = r.o - p1;
+        // compute some initial values
+        let distance: Vec = r.o - p1
         let s: Vec = cross(r.d, edge2)
-        let d: Scalar = 1.0 / dot(s, edge1);
+        let d: Scalar = simd.recip(dot(s, edge1))
 
-        /* Calculate the first barycentric coordinate. */
+        // calculate the first barycentric coordinate
         let u: Scalar = dot(distance, s) * d;
 
-        /* Reject the intersection if the barycentric coordinate is out of range. */
-        if ((u <= -Scalar.epsilon) || (u >= 1 + Scalar.epsilon)) { return Scalar.infinity }
+        // reject the intersection if the barycentric coordinate is out of range
+        guard u <= -Scalar.epsilon || u >= (1 + Scalar.epsilon) else { return false }
 
-        /* Calculate the second barycentric coordinate. */
-        let t = cross(distance, edge1)
+        // calculate the second barycentric coordinate
+        let t: Vec = cross(distance, edge1)
         let v: Scalar = dot(r.d, t) * d
 
-        /* Reject the intersection if the barycentric coordinate is out of range. */
-        if ((v <= -Scalar.epsilon) || (u + v >= 1 + Scalar.epsilon)) { return Scalar.infinity }
+        // reject the intersection if the barycentric coordinate is out of range
+        guard v <= -Scalar.epsilon || (u + v) >= (1 + Scalar.epsilon) else { return false }
 
-        /* Compute the final intersection point. */
-        return dot(edge2, t) * d
+        // compute the final intersection point
+        let dist: Scalar = dot(edge2, t) * d
+        
+        if (dist < hit.d) {
+            hit.p = self
+            hit.d = dist
+
+            let x = r.o + r.d * dist
+            
+            hit.x = x
+            hit.m = material
+            hit.n = normal
+            hit.uv = Vec(u, v, 0)
+        }
+        
+        return true
     }
-
+    */
+    /*
     func normalAtPoint(x: Vec) -> Vec {
         return normal
     }
@@ -339,6 +417,6 @@ class Triangle: Geometry {
     // TODO
     func textureAtPoint(x: Vec) -> Vec {
         return Vec()
-    }
+    }*/
 }
-*/
+

@@ -12,9 +12,11 @@ import simd
 struct Scene: IntersectWithRayIntersection {
     let camera: CameraProtocol
     let root: Primitive
+    let objects: [Primitive]
+    let lights: [Primitive]
     
-    let ambientLight: Vec = Vec.Zero
-    let backgroundColor: Vec = Vec.Zero
+    let ambientLight: Color = Color(0.01, 0.01, 0.01)
+    let backgroundColor: Color = Color.Black
     
     let materials: [MaterialId: Material]
     var skydome: Texture? = nil
@@ -49,33 +51,44 @@ struct Scene: IntersectWithRayIntersection {
             "Mirror": Specular(emission: Vec(), color:Vec(0.3, 0.3, 0.3)),      // Mirror
             "Glass" : Refractive(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999),    // Glass
             "Lite"  : Lambertian(emission: Vec(x:8,y:8,z:8), color:Vec()),       // Lite
-            "Lite2" : Lambertian(emission: Vec(x:12,y:8,z:8), color:Vec()),          // Lite
+            "Lite2" : Lambertian(emission: Vec(x:8,y:1,z:1), color:Vec()),          // Lite
             "Chess" : Chessboard(emission: Vec(), color:Vec(0.05, 0.05, 0.05)),          // Lite
             "Earth" : Textured(emission: Vec(), color:Vec())          // Lite
         ]
     
-        var objects: [Primitive] = [
-            Sphere(rad:0.5, p:Vec(-2, 0, -6),         material: "Red"),
-            Sphere(rad:0.5, p:Vec(-1, 0, -5),        material: "Chess"),
-            Sphere(rad:0.5, p:Vec(0, 0, -4),            material: "Earth"),
-            Sphere(rad:0.5, p:Vec(1, 0, -3),         material: "Green"),
-            Sphere(rad:0.5, p:Vec(2, 0, -2),          material: "Glass"),
-            Sphere(rad:-0.45, p:Vec(2, 0, -2),          material: "Glass"),
-            Sphere(rad:0.15, p:Vec(2, 0, -2),          material:  "Blue"),
-            Sphere(rad:500, p:Vec(0, -500.5, -4),       material: "Mirror"),
-            Sphere(rad:50, p:Vec(0, 110, -4),           material: "Lite"),       // Lite
+        let spheres: [Primitive] = [
+            Sphere(rad:0.5,   p:Vec(-3, 0.5, 2), material: "Red"),
+            Sphere(rad:0.5,   p:Vec(-1.5, 0.5, 2), material: "Chess"),
+            Sphere(rad:0.5,   p:Vec(0, 0.5, 2),  material: "Earth"),
+            Sphere(rad:0.5,   p:Vec(1.5, 0.5, 2),  material: "Green"),
+            Sphere(rad:0.5,   p:Vec(3, 0.5, 2),  material: "Glass"),
+//            Sphere(rad:-0.4,  p:Vec(3, 0.5, 2),  material: "Glass"),
+//            Sphere(rad:0.15,  p:Vec(3, 0.5, 2),  material:  "Blue"),
+//            Sphere(rad:500, p:Vec(0, -500.5, -4),       material: "Mirror"),
+            Triangle(p1: Vec(-10, 0, -10), p2: Vec(10, 0, -10), p3: Vec(-10, 0, 10), material: "Chess"),
+            Triangle(p1: Vec(10, 0, 10),   p2: Vec(10, 0, -10), p3: Vec(-10, 0, 10), material: "Chess"),
         ]
+        /*
         for _ in 0...25 {
             var s = sampleDisk(); s.z = s.y; s.y = 0
             let c = Vec(0, 0, -4) + s * 4
             let sphere = Sphere(rad: 0.2, p: c, material: "White")
-            objects.append(sphere)
-        }
+            spheres.append(sphere)
+        }*/
+        
+        let lites: [Primitive] = [
+            Sphere(rad:0.1, p:Vec(-4, 4, -10),           material: "Lite"),       // Lite
+            Sphere(rad:0.1, p:Vec( 4, 4, -10),           material: "Lite2"),       // Lite
+        ]
+        
+        self.objects = spheres + lites
+        self.lights = lites
 
 //        root = BVHNode(nodes: objects)
-        root = PrimitiveList(nodes: objects)
+        root = PrimitiveList(nodes: self.objects)
         
-        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
+//        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
+        camera = ComplexCamera(lookFrom: Vec(0, 2.8, 8), lookAt: Vec(0, 0.5, 2), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
    
         let fileName = NSBundle.mainBundle().pathForResource("skydome", ofType: "jpg")!
         skydome = Texture(fileName: fileName)
