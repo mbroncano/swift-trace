@@ -42,53 +42,53 @@ func sampleDisk() -> Vec {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /// The result of an intersection with a ray
-struct Intersection {
-    var o: Geometry? = nil
+struct Intersection: Comparable {
+    var m: MaterialId? = nil
     var d: Scalar = Scalar.infinity
-    //var m: Material? = nil
+    var x: Vec = Vec.Zero
+    var n: Vec = Vec.Zero
+    var uv: Vec = Vec.Zero
+    
+    mutating func reset() { m = nil; d = Scalar.infinity; x = Vec.Zero; n = Vec.Zero; uv = Vec.Zero }
 }
 
+func ==(lhs: Intersection, rhs: Intersection) -> Bool { return lhs.d == rhs.d }
+func < (lhs: Intersection, rhs: Intersection) -> Bool { return lhs.d < rhs.d }
 
-/// The object provides intersection with ray primitive
-protocol IntersecableWithRay {
-    var bbox: AABB { get }
-
+/// The object intersects with a ray, updating an intersection descriptor, and returns a boolean
+protocol IntersectWithRayIntersection {
     func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+protocol IntersectWithRayDistance {
+    func intersectWithRay(ray: Ray) -> Scalar
+}
 
-/// The object provides a surface
-protocol Surface {
-    /// Surface material
-    var material: Material { get }
-    
-    /// Normal vector at a point over the surface
-    func normalAtPoint(x: Vec) -> Vec
+protocol IntersectWithRayBoolean {
+    func intersectWithRay(ray: Ray) -> Bool
+}
 
-    /// Color at a point over the surface
-    func colorAtPoint(x: Vec) -> Color
-    
-    /// Emission at a point over the surface
-    func emissionAtPoint(x: Vec) -> Color
-    
-    /// Returns a random point over the surface
-    func sampleSurface() -> Vec
-
-    /// Texture coordinates for a point on the surface
-    func textureAtPoint(x: Vec) -> Vec
+/// The object provides a bounding box
+protocol BoundingBox {
+    /// Bouding box
+    var bbox: AABB { get }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class AABB: IntersecableWithRay {
+/// Axis aligned bounding box
+struct AABB: IntersectWithRayBoolean {
     let min, max: Vec
-    var bbox: AABB { get { return self } }
     
     init(a: Vec, b: Vec) { min = a; max = b }
-    
-    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
-      /*  for a in 0...2 {
+
+    init() { self.init(a: Vec.Zero, b: Vec.Zero) }
+
+    func intersectWithRay(r: Ray) -> Bool {
+
+        // Iterative version (test)
+        /*
+        for a in 0...2 {
             let inv = 1.0 / r.d[a]
             var t0 = (min[a] - r.o[a]) * inv
             var t1 = (max[a] - r.o[a]) * inv
@@ -99,8 +99,9 @@ class AABB: IntersecableWithRay {
             if (tmax <= tmin) { return false }
         }
         return true
-    */
+        */
     
+        // SIMD version
         let inv = simd.recip(r.d)
         let t0 = (min - r.o) * inv
         let t1 = (max - r.o) * inv
@@ -111,230 +112,133 @@ class AABB: IntersecableWithRay {
     }
 }
 
+/// Union operator
 func + (lhs:AABB, rhs: AABB) -> AABB {
     return AABB(a: min(lhs.min, rhs.min), b: max(lhs.max, rhs.max))
 }
 
-class BVHNode: IntersecableWithRay {
-    let left: IntersecableWithRay
-    let right: IntersecableWithRay
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Base geometric primitive
+class Primitive: IntersectWithRayIntersection, BoundingBox {
+    /// Axis aligned bounding box
     let bbox: AABB
+
+    init(bbox: AABB) { self.bbox = bbox }
     
-    init(nodes: [Geometry]) {
-        // choose a random axis
+    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool { return bbox.intersectWithRay(r) }
+}
+
+/// Bounding volume hierarchy node
+final class BVHNode: Primitive {
+    let left, right: Primitive
+    
+    init(nodes: [Primitive]) {
+        // random axis strategy
         let axis = Int(Scalar.Random() * 3.0)
 
-        let sorted = nodes.sort({ (a, b) -> Bool in
-            if axis == 0 {
-                return a.bbox.min.x > b.bbox.min.x
-            } else if axis == 1 {
-                return a.bbox.min.y > b.bbox.min.y
-            } else {
-                return a.bbox.min.z > b.bbox.min.z
-            }
-        })
+        let sorted = nodes.sort({ (a, b) -> Bool in return a.bbox.min[axis] > b.bbox.min[axis] })
         
-        let count = sorted.count
-        
-        if count == 1 {
-            left = sorted[0]
-            right = sorted[0]
-        } else if count == 2 {
-            left = sorted[0]
-            right = sorted[1]
-        } else {
-            let mid = count / 2
+        if sorted.count > 2 {
+            let mid = sorted.count / 2
             left = BVHNode(nodes: [] + sorted[0..<mid])
-            right = BVHNode(nodes: [] + sorted[mid..<count])
-        }
-        
-        bbox = AABB(a: min(left.bbox.min, right.bbox.min), b: max(left.bbox.max, right.bbox.max))
-    }
-    
-    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
-        if bbox.intersectWithRay(r, hit: &hit) {
-            var lhit = Intersection()
-            var rhit = Intersection()
-        
-            let lbool = left.intersectWithRay(r, hit: &lhit)
-            let rbool = right.intersectWithRay(r, hit: &rhit)
-            
-            if (lbool && rbool) {
-                if lhit.d < rhit.d {
-                    hit = lhit
-                } else {
-                    hit = rhit
-                }
-
-                return true
-            } else if lbool {
-                hit = lhit
-                return true
-            } else if rbool {
-                hit = rhit
-                return true
-            } else {
-                return false
-            }
+            right = BVHNode(nodes: [] + sorted[mid..<sorted.count])
         } else {
-            return false
+            left = sorted[0]
+            right = sorted[sorted.count - 1]
         }
+        
+        super.init(bbox: left.bbox + right.bbox)
     }
 
+    override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
+        guard bbox.intersectWithRay(r) else { return false }
+
+        let lbool = left.intersectWithRay(r, hit: &hit)
+        let rbool = right.intersectWithRay(r, hit: &hit)
+        
+        return lbool || rbool
+    }
+}
+
+/// Simple linear primitive list collection
+final class PrimitiveList: Primitive {
+    let list: [Primitive]
+    
+    init(nodes: [Primitive]) {
+        list = nodes
+        super.init(bbox: nodes.reduce(AABB()) { (box, node) -> AABB in
+            return box + node.bbox
+        })
+    }
+
+    override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
+        guard bbox.intersectWithRay(r) else { return false }
+
+        // only one positive intersect is needed to acknoledge the hit
+        // but we need to traverse the list anyway to find the nearest primitive
+        var result = false
+        for n in list {
+            guard n.intersectWithRay(r, hit: &hit) else { continue }
+            result = true
+        }
+        
+        return result
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-protocol Geometry: Surface, IntersecableWithRay { }
-
-/// Geometric collection of objects
-/*
-typealias GeometryCollectionItemId = Int
-extension GeometryCollectionItemId {
-    static var invalid = -1
-    
-    var isValid: Bool { get { return self > 0 } }
-}*/
-
-/// Protocol to define a geometric primitive collection
-protocol GeometryCollection {
-    /// Items in teh collection
-    var items: [Geometry] { get }
-
-    /// Returns an item with a particular id
-//    subscript(id: GeometryCollectionItemId) -> Geometry? { get }
-
-    /// Returns the first instance in the collection that intersectes with a ray and the distance
-    //func intersectWithRay(r: Ray) -> (GeometryCollectionItemId, Scalar)
-
-    func intersectWithRay(r: Ray) -> Intersection
-}
-
-class GeometryList: GeometryCollection, IntersecableWithRay {
-    // FIXME
-    let bbox: AABB = AABB(a: Vec.Zero, b: Vec.Zero)
-    let items: [Geometry]
-    
-    init(items:[Geometry]) { self.items = items }
-
-    // Deprecated!!
-    func intersectWithRay(r: Ray) -> Intersection {
-        var ret = Intersection()
-        var tmp = Intersection()
-        
-        for object in items {
-            if object.intersectWithRay(r, hit: &tmp) {
-                if tmp.d < ret.d {
-                    ret = tmp
-                }
-            }
-        }
-        return ret
-    }
-
-    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
-        var tmp = Intersection()
-        
-        for object in items {
-            if object.intersectWithRay(r, hit: &tmp) {
-                if tmp.d < hit.d {
-                    hit = tmp
-                }
-            }
-        }
-        return tmp.d.isFinite
-    }
-    
-    
-/*
-    func intersectWithRay(r: Ray) -> (GeometryCollectionItemId, Scalar) {
-        /*
-        // Functional approach, funnily enough is slower than the trivial one
-        return (0..<list.count).lazy.reduce((GeometryListId.invalid, Scalar.infinity)) {
-            accum, id in
-            let distance = list[id].intersectWithRay(r)
-            return (distance < accum.1) ? (id, distance) : accum
-        }
-        */
-    
-        var ret = (id: GeometryCollectionItemId(), dist: Scalar.infinity)
-        for index in 0..<items.count {
-            let distance = items[index].intersectWithRay(r)
-            if distance < ret.dist {
-                ret = (index, distance)
-            }
-        }
-        
-        return ret
-    }
-  */
-  /*
-    subscript(id: GeometryCollectionItemId) -> Geometry? {
-        guard items.indices ~= id else { return nil }
-        return items[id]
-    }*/
-}
-
 /// Geometric definition of a sphere
-class Sphere: Geometry {
-    let rad: Scalar         // radius
-    let p: Vec              // position
-    let material: Material  // surface type
-    let bbox: AABB          // axis-aligned bounding box
+final class Sphere: Primitive {
+    /// The radius of the sphere
+    let rad: Scalar
+    /// The center of the sphere
+    let p: Vec
+    /// Material identifier
+    let material: MaterialId
 
-    init(rad: Scalar, p: Vec, material: Material) {
+    init(rad: Scalar, p: Vec, material: MaterialId) {
         self.rad = rad
         self.p = p
         self.material = material
-        self.bbox = AABB(a: p - Vec(rad), b: p + Vec(rad))
+        super.init(bbox: AABB(a: p - Vec(rad), b: p + Vec(rad)))
     }
 
-    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
+    override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
         let po = r.o - p
         let b = dot(r.d, po)
         let c = dot(po, po) - (rad * rad)
         let t = b*b - c
 
-        // If the determinant is negative, there are not solutions
+        // if the determinant is negative, there are not solutions
         guard (t > 0) else { return false }
         
         let s = sqrt(t)
         let d = (b < 0) ? (-b-s) : (-b+s)
 
-        // Check that the distance is bigger than epsilon
-        guard (d > Scalar.epsilon) else { return false }
+        // check that the distance fits the ray boundaries
+        guard d > r.tmin && d < r.tmax else { return false }
         
-        hit.o = self
-        hit.d = d
+        // note this, it's not the usual behaviour
+        // do we want to return true is it's not the case?
+        if (d < hit.d) {
+            hit.d = d
+
+            let x = r.o + r.d * d
+            let n = normalize(x - p)
+            let u = 0.5 + atan2(n.z, n.x) / (2.0 * M_PI)
+            let v = 0.5 - asin(n.y) / M_PI
+            
+            hit.x = x
+            hit.m = material
+            hit.n = n
+            hit.uv = Vec(u, v, 0)
+        }
         
         return true
-    }
-    
-    func textureAtPoint(x: Vec) -> Vec {
-        var n = normalAtPoint(x)
-        let u = 0.5 + atan2(n.z, n.x) / (2.0 * M_PI)
-        let v = 0.5 - asin(n.y) / M_PI
-        
-        return Vec(u, v, 0)
-    }
-    
-    func colorAtPoint(x: Vec) -> Color {
-        let uv = textureAtPoint(x)
-        return material.colorAtTextCoord(uv)
-    }
-
-    func emissionAtPoint(x: Vec) -> Color {
-        let uv = textureAtPoint(x)
-        return material.emissionAtTextCoord(uv)
-    }
-    
-    func normalAtPoint(x: Vec) -> Vec {
-        return normalize(x - p)
-    }
-    
-    func sampleSurface() -> Vec {
-        return p + sampleSphere(rad)
     }
 }
 /*

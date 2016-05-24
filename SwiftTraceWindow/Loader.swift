@@ -29,8 +29,10 @@ struct Normal: CustomStringConvertible {
     var description: String { get { return "(\(i), \(j), \(k))" } }
 }
 
-struct FaceElement {
-    let vi, ti, ni: Int32
+struct FaceElement: CustomStringConvertible {
+    let vi, ti, ni: Int?
+
+    var description: String { get { return "(\(vi), \(ti), \(ni))" } }
 }
 
 struct Group {
@@ -55,6 +57,20 @@ struct MaterialElement {
     let properties: Dictionary<MaterialElementKey, AnyObject>
 }
 
+
+struct BaseLoader {
+    let scanner: NSScanner
+
+    init?(name: String) {
+        guard
+            let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
+            let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
+            else { print("Error reading file: \(name)"); return nil }
+    
+        scanner = NSScanner(string: text as String)
+    }
+    
+}
 
 // https://people.cs.clemson.edu/~dhouse/courses/405/docs/brief-mtl-file-format.html
 struct MaterialLibrary {
@@ -160,49 +176,59 @@ struct ObjectLibrary {
             let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
         else { return nil }
         
+        let scanner = NSScanner(string: text as String)
+        
+        var start = NSDate().timeIntervalSince1970
+
         // iterate over text file lines
-        for line in text.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet()) {
-            let scanner = NSScanner(string: line)
+        var line: NSString?
+        while scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet(), intoString: &line) {
             
-            if scanner.scanString("#", intoString: nil) {
-                if let lib = scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet()) {
-                    print("[\(name):comment]\t\(lib)")
-                }
-            }
-
-            else if scanner.scanString("mtllib ", intoString: nil) {
-                if let lib = scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet()) {
-                    print("[\(name):mtllib]\t\(lib)")
-                    materials[lib] = MaterialLibrary(name: lib)
-                }
-            }
-
-            else if scanner.scanString("usemtl ", intoString: nil) {
-                if let lib = scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet()) {
-                    // TODO
-                    print("[\(name):usemtl]\t\(lib)")
-                }
+            if (NSDate().timeIntervalSince1970 - start) > 1 {
+                start = NSDate().timeIntervalSince1970
+                let percentage = 100 * scanner.scanLocation / text.length
+                print("[\(name):loading]\t\(percentage)%")
             }
             
-            else if scanner.scanString("g ", intoString: nil) {
-                if let gname = scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet()) {
-                    groups.append(Group(name: gname, faces: []))
-                
-                    print("[\(name):grname]\t\(groups.last!.name)")
-                }
+            guard var tokenArray = line?.componentsSeparatedByCharactersInSet(NSCharacterSet.whitespaceCharacterSet()) else { return nil }
+            tokenArray = tokenArray.filter({ (s: String) -> Bool in
+                s.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0
+            })
+            let token = tokenArray.removeFirst()
+
+            if token == "#" {
+                print("[\(name):comment]\t\(line)")
             }
 
-            else if scanner.scanString("f ", intoString: nil) {
+            else if token == "mtllib" {
+                let lib = tokenArray[0]
+                materials[lib] = MaterialLibrary(name: lib)
+                print("[\(name):mtllib]\t\(lib)")
+            }
+
+            else if token == "usemtl" {
+                let lib = tokenArray[0]
+                print("[\(name):usemtl]\t\(lib)")
+            }
+            
+            else if token == "g" {
+                let gname = tokenArray[0]
+                groups.append(Group(name: gname, faces: []))
+                print("[\(name):grname]\t\(groups.last!.name)")
+            }
+
+            else if token == "f" {
                 var face = [FaceElement]()
-                while !scanner.atEnd {
-                    if let vi = scanner.scanInt(), _ = scanner.scanString("/") {
-                        if let _ = scanner.scanString("/"), let ni = scanner.scanInt() {
-                            face.append(FaceElement(vi: vi, ti: 0, ni: ni))
-                            
-                        } else if let ti = scanner.scanInt(), let _ = scanner.scanString("/"), let ni = scanner.scanInt() {
-                            face.append(FaceElement(vi: vi, ti: ti, ni: ni))
-                        }
-                    }
+                
+                let separator = NSCharacterSet.init(charactersInString: "/")
+                for item in tokenArray {
+                    let elems = item.componentsSeparatedByCharactersInSet(separator)
+                
+                    let vi = (elems.count > 0) ? Int(elems[0]) : nil
+                    let ni = (elems.count > 1) ? Int(elems[1]) : nil
+                    let ti = (elems.count > 2) ? Int(elems[2]) : nil
+
+                    face.append(FaceElement(vi: vi, ti: ti, ni: ni))
                 }
 
                 // I'd rather not mutate anything
@@ -210,44 +236,67 @@ struct ObjectLibrary {
                     groups.append(Group(name: g.name, faces: g.faces + [face]))
                 }
                 
-                print("[\(name):face]\t<face>")
-            }
-                
-            else if scanner.scanString("v ", intoString : nil) {
-                if let x = scanner.scanDouble(), let y = scanner.scanDouble(), let z = scanner.scanDouble() {
-                    if let w = scanner.scanDouble() {
-                        vertices.append(Vertex(x: x, y: y, z: z, w: w))
-                    } else {
-                        vertices.append(Vertex(x: x, y: y, z: z, w: 1.0))
-                    }
-                    print("[\(name):vertex]\t\(vertices.last!)")
-                }
-            }
-            
-            else if scanner.scanString("vt ", intoString : nil) {
-                if let u = scanner.scanDouble(), let v = scanner.scanDouble() {
-                    if let w = scanner.scanDouble() {
-                        textvert.append(TextureVertex(u: u, v: v, w: w))
-                    } else {
-                        textvert.append(TextureVertex(u: u, v: v, w: 1.0))
-                    }
-                    print("[\(name):texver]\t\(textvert.last!)")
-                }
+                print("[\(name):face]\t\(face)")
             }
 
-            else if scanner.scanString("vn ", intoString : nil) {
-                if let i = scanner.scanDouble(), let j = scanner.scanDouble(), let k = scanner.scanDouble() {
-                    normals.append(Normal(i: i, j: j, k: k))
-                    print("[\(name):normal]\t\(normals.last!)")
+            else if token == "v" {
+                guard 3...4 ~= tokenArray.count,
+                      let x = Double(tokenArray[0]),
+                      let y = Double(tokenArray[1]),
+                      let z = Double(tokenArray[2])
+                else {
+                    print("[\(name):vertex]\t error parsing <\(line)>")
+                    continue;
+                    }
+            
+                if tokenArray.count == 4 {
+                    guard let w = Double(tokenArray[3]) else { continue }
+                    vertices.append(Vertex(x: x, y: y, z: z, w: w))
+                } else {
+                    vertices.append(Vertex(x: x, y: y, z: z, w: 1.0))
                 }
+                    print("[\(name):vertex]\t\(vertices.last!)")
+            }
+            
+            else if token == "vt" {
+                guard 2...3 ~= tokenArray.count,
+                      let u = Double(tokenArray[0]),
+                      let v = Double(tokenArray[1])
+                else {
+                    print("[\(name):vtext]\t error parsing <\(line)>")
+                    continue;
+                    }
+
+                if tokenArray.count == 3 {
+                    guard let w = Double(tokenArray[2]) else { continue }
+                    textvert.append(TextureVertex(u: u, v: v, w: w))
+                } else {
+                    textvert.append(TextureVertex(u: u, v: v, w: 0.0))
+                }
+
+                print("[\(name):texver]\t\(textvert.last!)")
+            }
+
+            else if token == "vn" {
+                guard 3 ~= tokenArray.count,
+                      let i = Double(tokenArray[0]),
+                      let j = Double(tokenArray[1]),
+                      let k = Double(tokenArray[2])
+                else {
+                    print("[\(name):vnorm]\t error parsing <\(line)>")
+                    continue;
+                    }
+
+                normals.append(Normal(i: i, j: j, k: k))
+                print("[\(name):normal]\t\(normals.last!)")
             }
             
             else {
-                print("[\(name):?]\t\(scanner.string)")
+                print("[\(name):?]\t\(line)")
             }
             
         }
         
-        print("\(vertices)")
+//        print("\(vertices)")
     }
 }

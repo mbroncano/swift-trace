@@ -27,8 +27,8 @@ public class Camera: CameraProtocol {
         let cx = Vec(Scalar(nx) * ar / Scalar(ny), 0, 0)
         let cy = cross(cx, d).norm() * ar
     
-        let r1 = Random.random() - 0.5
-        let r2 = Random.random() - 0.5
+        let r1 = Scalar.Random() - 0.5
+        let r2 = Scalar.Random() - 0.5
     
         let part1 = (Scalar(x) + r1) / Scalar(nx) - 0.5
         let part2 = (Scalar(y) + r2) / Scalar(ny) - 0.5
@@ -94,8 +94,8 @@ public class ComplexCamera: CameraProtocol {
         let lens = sampleDisk() * lensRadius
         let ofs = u * lens.x + v * lens.y
     
-        let r1 = Random.random() - 0.5
-        let r2 = Random.random() - 0.5
+        let r1 = Scalar.Random() - 0.5
+        let r2 = Scalar.Random() - 0.5
 
         let s = (Scalar(x) + r1) / Scalar(nx-1)
         let t = (Scalar(y) + r2) / Scalar(ny-1)

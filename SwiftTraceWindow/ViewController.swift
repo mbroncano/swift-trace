@@ -17,26 +17,31 @@ class ViewController: NSViewController {
 
         // Do any additional setup after loading the view.
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
-            Random.seed(1234)
+//            Random.seed(1234)
             
-            let width = 320, height = 240
+            let width = 320, height = 256
             
+            let start = NSDate().timeIntervalSince1970
             _ = ObjectLibrary(name: "cube.obj")
+            let duration = NSDate().timeIntervalSince1970 - start
+            print("Load object: completed in \(duration * 1000)ms")
             
 //            let render = PathTracer(scene: CornellBox(), w: width, h: height)
 //            let render = RayTracer(scene: CornellBox(), w: width, h: height)
-//            let render = EyeTracer(scene: CornellBox(), w: width, h: height)
+//            let render = WhittedTracer(scene: CornellBox(), w: width, h: height)
 
-            let render = PathTracer(scene: ThreeBall(), w: width, h: height)
+            let render = PathTracer(scene: Scene(), w: width, h: height)
 //            let render = RayTracer(scene: ThreeBall(), w: width, h: height)
-//            let render = EyeTracer(scene: ThreeBall(), w: width, h: height)
+//            let render = WhittedTracer(scene: ThreeBall(), w: width, h: height)
             
+            var avg:NSTimeInterval = 0
             while true {
                 // render another frame
                 let start = NSDate().timeIntervalSince1970
-                render.render()
+                render.renderTile()
                 let duration = NSDate().timeIntervalSince1970 - start
-                print("Profiler: completed in \(duration * 1000)ms")
+                avg = avg + duration
+                print("Profiler: completed in \(Int(duration * 1000))ms, \(Int(avg * 1000 / Double(render.framebuffer.samples)))ms")
                 
                 // update the UI
                 if render.framebuffer.samples % 10 != 1 { continue }

@@ -9,31 +9,38 @@
 import Foundation
 import simd
 
-protocol Scene {
-    var list: GeometryList { get }
-    var camera: CameraProtocol { get }
-//    var lights: [GeometryCollectionItemId] { get }
-    var root: IntersecableWithRay { get }
-    
-    var ambientLight: Vec { get }
-    var backgroundColor: Color { get }
-    
-    func skyColor(r: Ray) -> Color
-}
-
-class ThreeBall: Scene {
-    let list: GeometryList
+struct Scene: IntersectWithRayIntersection {
     let camera: CameraProtocol
-//    let lights: [GeometryCollectionItemId]
-    var root: IntersecableWithRay
+    let root: Primitive
     
-    let ambientLight = Vec(0.1, 0.1, 0.1)
-    let backgroundColor = Color.Black
+    let ambientLight: Vec = Vec.Zero
+    let backgroundColor: Vec = Vec.Zero
+    
+    let materials: [MaterialId: Material]
+    var skydome: Texture? = nil
 
-    let skydome: Texture
+    func skyColor(r: Ray) -> Color {
+        guard skydome != nil else { return backgroundColor }
     
+        var n = r.d.norm()
+        let u = 0.5 + atan2(n.z, n.x) / (2.0 * M_PI)
+        let v = 0.5 - asin(n.y) / M_PI
+        
+        return skydome![Vec(u, v * 2, 0)]
+    }
+    
+    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
+        return root.intersectWithRay(r, hit: &hit)
+    }
+
+    func materialWithId(mid: MaterialId) -> Material? {
+        guard let material = materials[mid] else { return nil }
+        return material
+    }
+
     init() {
-        let materials: [String: Material] = [
+
+        self.materials = [
             "Red"   : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25)), // Red diffuse
             "Blue"  : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.25,z:0.75)), // Blue diffuse
             "Green" : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.75,z:0.25)), // Green diffuse
@@ -47,60 +54,39 @@ class ThreeBall: Scene {
             "Earth" : Textured(emission: Vec(), color:Vec())          // Lite
         ]
     
-        let objects: [Geometry] = [
-            Sphere(rad:0.5, p:Vec(-2, 0, -6),         material: materials["Red"]!),
-            Sphere(rad:0.5, p:Vec(-1, 0, -5),        material: materials["Chess"]!),
-            Sphere(rad:0.5, p:Vec(0, 0, -4),            material: materials["Earth"]!),
-            Sphere(rad:0.5, p:Vec(1, 0, -3),         material: materials["Green"]!),
-            Sphere(rad:0.5, p:Vec(2, 0, -2),          material: materials["Glass"]!),
-            Sphere(rad:-0.45, p:Vec(2, 0, -2),          material: materials["Glass"]!),
-            Sphere(rad:0.15, p:Vec(2, 0, -2),          material: materials["Blue"]!),
-            Sphere(rad:500, p:Vec(0, -500.5, -4),       material: materials["Mirror"]!),
-            Sphere(rad:50, p:Vec(0, 110, -4),           material: materials["Lite"]!),       // Lite
+        var objects: [Primitive] = [
+            Sphere(rad:0.5, p:Vec(-2, 0, -6),         material: "Red"),
+            Sphere(rad:0.5, p:Vec(-1, 0, -5),        material: "Chess"),
+            Sphere(rad:0.5, p:Vec(0, 0, -4),            material: "Earth"),
+            Sphere(rad:0.5, p:Vec(1, 0, -3),         material: "Green"),
+            Sphere(rad:0.5, p:Vec(2, 0, -2),          material: "Glass"),
+            Sphere(rad:-0.45, p:Vec(2, 0, -2),          material: "Glass"),
+            Sphere(rad:0.15, p:Vec(2, 0, -2),          material:  "Blue"),
+            Sphere(rad:500, p:Vec(0, -500.5, -4),       material: "Mirror"),
+            Sphere(rad:50, p:Vec(0, 110, -4),           material: "Lite"),       // Lite
         ]
-        var spheres = Array<Geometry>()
         for _ in 0...25 {
             var s = sampleDisk(); s.z = s.y; s.y = 0
             let c = Vec(0, 0, -4) + s * 4
-            let sphere = Sphere(rad: 0.2, p: c, material: materials["White"]!)
-            spheres.append(sphere)
+            let sphere = Sphere(rad: 0.2, p: c, material: "White")
+            objects.append(sphere)
         }
-//        spheres.append(Sphere(rad:500, p:Vec(0, -500.5, -4), material: materials["Mirror"]!))
-//        spheres.append(Sphere(rad:50, p:Vec(0, 110, -4), material: materials["Lite"]!))
+
+//        root = BVHNode(nodes: objects)
+        root = PrimitiveList(nodes: objects)
         
-        
-        list = GeometryList(items:spheres)
-//        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
-        
-        root = BVHNode(nodes: objects + spheres)
-        
-        camera = ComplexCamera(lookFrom: Vec(0, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.0+1.0/3.0, aperture: 0.1)
+        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
    
         let fileName = NSBundle.mainBundle().pathForResource("skydome", ofType: "jpg")!
-        skydome = Texture(fileName: fileName)!
-    }
-
-    func skyColor(r: Ray) -> Color {
-        var n = r.d.norm()
-        let u = 0.5 + atan2(n.z, n.x) / (2.0 * M_PI)
-        let v = 0.5 - asin(n.y) / M_PI
-        
-        return skydome[Vec(u, v * 2, 0)]
-    /*
-        let unitDirection = r.d.norm()
-        let t = 0.5 * (unitDirection.y + 1.0)
-        let c = (1 - t) * Vec(1, 1, 1) + t * Vec(0.5, 0.7, 1)
-        
-        return c
-        */
+        skydome = Texture(fileName: fileName)
     }
 }
-
+/*
 struct CornellBox: Scene {
-    let list: GeometryList
+//    let list: GeometryList
     let camera: CameraProtocol
 //    let lights: [GeometryCollectionItemId]
-    var root: IntersecableWithRay
+    var root: Primitive
   
     let ambientLight = Vec(0.1, 0.1, 0.1)
     let backgroundColor = Color.Black
@@ -118,7 +104,7 @@ struct CornellBox: Scene {
             "Lite2" : Lambertian(emission: Vec(x:12,y:8,z:8), color:Vec())        // Lite
         ]
     
-        let objects: [Geometry] = [
+        let objects: [Primitive] = [
             Sphere(rad:1e5, p:Vec(x: 1e5+1,y:40.8,z:81.6),  material: materials["Red"]!),       // Left
             Sphere(rad:1e5, p:Vec(x:-1e5+99,y:40.8,z:81.6), material: materials["Blue"]!),      // Right
             Sphere(rad:1e5, p:Vec(x:50,y:40.8,z: 1e5),      material: materials["White"]!),     // Back
@@ -132,7 +118,7 @@ struct CornellBox: Scene {
             Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),material: materials["Lite"]!),       // Lite
 //            Sphere(rad:3, p:Vec(x:50,y:8,z:81.6),material: materials["Lite2"]!)       // Lite
         ]
-        list = GeometryList(items:objects)
+//        list = GeometryList(items:objects)
         root = BVHNode(nodes: objects)
 //        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
         
@@ -142,3 +128,4 @@ struct CornellBox: Scene {
     func skyColor(r: Ray) -> Color { return self.backgroundColor }
 
 }
+*/

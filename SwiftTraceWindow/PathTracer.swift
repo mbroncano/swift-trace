@@ -9,7 +9,7 @@
 import Foundation
 import simd
 
-class PathTracer: RayTracer {
+class PathTracer: DistributedRayTracer {
 
     // non-recursive path tracing
     override func radiance(r: Ray) -> Color {
@@ -34,15 +34,13 @@ class PathTracer: RayTracer {
         
         while true {
             // intersection with world
-            guard scene.root.intersectWithRay(r, hit: &hit),
-                let obj = hit.o
+            guard scene.intersectWithRay(r, hit: &hit),
+                  let mid = hit.m,
+                  let material = scene.materialWithId(mid)
+            
                 else { return cl + cf * scene.skyColor(r) }
             
-            let material = obj.material
-
-            // hit point, compute albedo and emission
-            let x = r.o + r.d * hit.d
-            var f = obj.colorAtPoint(x)
+            var f = material.colorAtTextCoord(hit.uv)
             cl = cl + cf * material.emission
 
             // Russian roulette
@@ -60,10 +58,10 @@ class PathTracer: RayTracer {
             let direction: Vec
             var probability: Scalar
 
-            (probability, direction) = material.sample(r.d, normal: obj.normalAtPoint(x))
+            (probability, direction) = material.sample(r.d, normal: hit.n)
             cf = cf * f * probability
-            r = Ray(o:x, d: direction)
-            hit.d = Scalar.infinity
+            r = Ray(o:hit.x, d: direction)
+            hit.reset()
         }
     }
 }

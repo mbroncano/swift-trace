@@ -10,6 +10,8 @@ import Foundation
 import Cocoa
 import simd
 
+typealias MaterialId = String
+
 class Material {
     let emission: Color
     let diffuseColor: Color
@@ -61,7 +63,7 @@ class Refractive: Material {
         let RP = Re / P
         let TP = Tr / (1 - P)
 
-        return (Random.random() < P) ? (RP, reflect(wi, n: normal)) : (TP, tdir)
+        return (Scalar.Random() < P) ? (RP, reflect(wi, n: normal)) : (TP, tdir)
     }
 }
 
@@ -107,8 +109,8 @@ class Lambertian: Material {
         // cosine weighted sampling
         // see: http://mathworld.wolfram.com/SpherePointPicking.html
         
-        let r1 = 2 * Scalar(M_PI) * Random.next()
-        let r2 = Random.next()
+        let r1 = 2 * Scalar(M_PI) * Scalar.Random()
+        let r2 = Scalar.Random()
         let r2s = sqrt(r2)
         let w = dot(normal, wi) < 0 ? normal: normal * -1 // corrected normal (always exterior)
         let u = cross((fabs(w.x)>Scalar.epsilon ? Vec(0, 1, 0) : Vec(1, 0, 0)), w).norm()

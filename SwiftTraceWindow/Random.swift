@@ -9,6 +9,7 @@
 import Foundation
 
 /// Random number generator
+/*
 struct Random {
     static let pbuffer = UnsafeMutablePointer<UInt16>.alloc(3)
     
@@ -23,14 +24,4 @@ struct Random {
     static func random() -> Scalar {
         return Scalar(drand48())
     }
-}
-
-extension Scalar {
-    static func Random() -> Scalar { return Scalar(drand48()) }
-}
-
-extension Vec {
-    static func Random() -> Vec {
-        return Vec(Scalar.Random(), Scalar.Random(), Scalar.Random())
-    }
-}
+}*/

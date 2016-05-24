@@ -36,6 +36,7 @@ struct _Triangle {
 // b) classes: dynamic dispatch overhead, mutability
 // c) enums + struct: cumbersome to initialize
 // d) enums: cannot store precomputed properties
+/*
 enum Primitive {
     case Sphere(rad: Scalar, p: Vec)
     case Triangle(p1: Vec, p2:Vec, p3: Vec)
@@ -156,3 +157,4 @@ func intersectTriangleWithRay(r: Ray, p1: Vec, p2: Vec, p3: Vec) -> Scalar {
 
 
 
+*/

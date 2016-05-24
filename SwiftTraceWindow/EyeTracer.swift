@@ -9,8 +9,38 @@
 import Foundation
 import simd
 
-class EyeTracer: RayTracer {
+/*
+class WhittedTracer: DistributedRayTracer {
 
+    /// http://cs.brown.edu/courses/cs224/handouts/whitted.pdf
+    override func radiance(ray: Ray) -> Color {
+//        var hit = Intersection()
+        var hit: Intersection?
+        
+        /// Performs the intersection and checks both the object and the distance
+        guard scene.root.intersectWithRay(ray, hit: &hit), let obj = hit!.o
+            else { return scene.skyColor(ray) }
+        
+        // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
+        let material: Material = obj.material
+        if material.isLight() {
+            return material.emission
+        }
+        
+        // compute hitpoint, normal
+        let x = ray.o + ray.d * hit!.d           // hit point
+        var n = obj.normalAtPoint(x)    // normal at hitpoint
+        if (dot(ray.d, n) > 0) {          // correct normal direction
+            n = n * -1
+        }
+
+        // compute scatterred ray
+//        let wo: Vec
+//        (_, wo) = material.sample(ray.d, normal: n)
+        
+        return obj.colorAtPoint(x) 
+    }
+/*
     // direct light ray tracer, no material sampling
     override func radiance(r: Ray) -> Color {
   /*      let o: GeometryCollectionItemId
@@ -64,5 +94,6 @@ class EyeTracer: RayTracer {
         }
   */
         return obj.colorAtPoint(x) * c
-    }
+    }*/
 }
+*/

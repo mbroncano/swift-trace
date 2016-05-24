@@ -110,3 +110,14 @@ public struct PixelRGBA: Equatable {
 }
 
 public func == (a:PixelRGBA, b:PixelRGBA) -> Bool { return a.a == b.a && a.r == b.r && a.g == b.g && a.b == b.b }
+
+
+extension Scalar {
+    static func Random() -> Scalar { return Scalar(drand48()) }
+}
+
+extension Vec {
+    static func Random() -> Vec {
+        return Vec(Scalar.Random(), Scalar.Random(), Scalar.Random())
+    }
+}
