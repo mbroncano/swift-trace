@@ -30,15 +30,15 @@ class ViewController: NSViewController {
 //            let render = RayTracer(scene: CornellBox(), w: width, h: height)
 //            let render = WhittedTracer(scene: CornellBox(), w: width, h: height)
 
-            let render = PathTracer(scene: Scene(), w: width, h: height)
-//            let render = RayTracer(scene: ThreeBall(), w: width, h: height)
-//            let render = WhittedTracer(scene: Scene(), w: width, h: height)
+//            let render = PathTracer(scene: Scene(), w: width, h: height)
+//            let render = DistributedRayTracer(scene: Scene(), w: width, h: height)
+            let render = WhittedTracer(scene: Scene(), w: width, h: height)
             
             var avg:NSTimeInterval = 0
             while true {
                 // render another frame
                 let start = NSDate().timeIntervalSince1970
-                render.renderTile()
+                render.renderTile(size: 512)
                 let duration = NSDate().timeIntervalSince1970 - start
                 avg = avg + duration
                 print("Profiler: frame in \(Int(duration * 1000))ms, avg. \(Int(avg * 1000 / Double(render.framebuffer.samples)))ms")

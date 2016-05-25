@@ -131,7 +131,7 @@ struct AABB: IntersectWithRayBoolean, Surface, Equatable {
         let tmin = simd.max(simd.min(t0, t1), r.tmin)
         let tmax = simd.min(simd.max(t0, t1), r.tmax)
         let s = simd.sign(tmax - tmin)
-        return simd.reduce_min(s) > 0
+        return simd.reduce_min(s) >= 0
     }
 }
 
@@ -160,17 +160,23 @@ func == (lhs:Primitive, rhs:Primitive) -> Bool { return lhs.bbox == rhs.bbox }
 /// Bounding volume hierarchy node
 final class BVHNode: Primitive {
     let left, right: Primitive
+
+    // used only for debuggin
+    let pid: Int
     
-    init(nodes: [Primitive]) {
+    init(nodes: [Primitive], inout id: Int) {
         // random axis strategy
         let axis = Int(Scalar.Random() * 3.0)
+        self.pid = id
 
         let sorted = nodes.sort({ (a, b) -> Bool in return a.bbox.center[axis] > b.bbox.center[axis] })
         
         if sorted.count > 2 {
             let mid = sorted.count / 2
-            left = BVHNode(nodes: [] + sorted[0..<mid])
-            right = BVHNode(nodes: [] + sorted[mid..<sorted.count])
+            id = id + 1
+            left = BVHNode(nodes: [] + sorted[0..<mid], id: &id)
+            id = id + 1
+            right = BVHNode(nodes: [] + sorted[mid..<sorted.count], id: &id)
         } else {
             left = sorted[0]
             right = sorted[sorted.count - 1]
@@ -234,7 +240,7 @@ final class Sphere: Primitive {
         self.rad = rad
         self.p = p
         self.material = material
-        self.preArea = 4 / 3 * M_PI * pow(rad, 3)
+        self.preArea = 4 * M_PI * (rad * rad)
         super.init(bbox: AABB(a: p - Vec(rad), b: p + Vec(rad)))
     }
 
@@ -289,6 +295,11 @@ final class Triangle: Primitive {
 
     /// Material identifier
     let material: MaterialId
+
+    // TODO: precompute center
+    override var center: Vec { get { return (edge2 + edge1) * 0.5 } }
+    // same as bbox
+//    override var area: Scalar { get { return edge1.len() * edge2.len() * 2.0 } }
 
     init(p1:Vec, p2:Vec, p3: Vec, material: MaterialId) {
         self.p1 = p1

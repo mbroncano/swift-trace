@@ -20,7 +20,7 @@ protocol Renderer {
     var framebuffer: Framebuffer { get }
     
     func render()
-    func renderTile()
+    func renderTile(size size: Int)
 }
 
 extension Renderer where Self: RayTracer {
@@ -45,13 +45,12 @@ extension Renderer where Self: RayTracer {
     }
     
     /// Renders a frame, dispatching tiles
-    func renderTile() {
+    func renderTile(size size: Int = 16) {
         framebuffer.samples += 1
 
         let nx = framebuffer.width
         let ny = framebuffer.height
         
-        let size = 512                   // seems to be fair
         let tx = (nx + size - 1) / size // int div round up
         let ty = (ny + size - 1) / size
         
@@ -86,7 +85,7 @@ class DistributedRayTracer: Renderer, RayTracer {
 
     /// Iterative brute force ray tracing
     func radiance(ray: Ray) -> Color {
-        var depth = 5
+        var depth = 8
         var color = Color.White
         var r = ray
         var hit = Intersection()
@@ -95,37 +94,27 @@ class DistributedRayTracer: Renderer, RayTracer {
             /// Performs the intersection and checks both the object and the distance
             guard
                 scene.root.intersectWithRay(r, hit: &hit),
-//                let obj = hit.o,
                 let mid = hit.m,
                 let material = scene.materials[mid]
                 else {
                     color = color * scene.skyColor(r);
                     break
             }
-            
-            
+                        
             // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
             if material.isLight() {
                 color = color * material.emission
                 break
             }
             
-            // compute hitpoint, normal
-//            let x = r.o + r.d * hit.d           // hit point
-//            var n = obj.normalAtPoint(x)    // normal at hitpoint
-            let x = hit.x
-            var normal = hit.n
-            if (dot(r.d, normal) > 0) {          // correct normal direction
-                normal = normal * -1
-            }
-            
             // compute scatterred ray
             let wo: Vec
-            (_, wo) = material.sample(r.d, normal: normal)
+            let p: Scalar
+            (p, wo) = material.sample(r.d, normal: hit.n)
             
-            r = Ray(o: x, d: wo)
+            r = Ray(o: hit.x, d: wo)
             depth = depth - 1
-            color = color * material.colorAtTextCoord(hit.uv)
+            color = color * material.colorAtTextCoord(hit.uv) * p
             hit.reset()
         }
         

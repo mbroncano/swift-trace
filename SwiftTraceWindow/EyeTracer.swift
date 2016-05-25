@@ -42,7 +42,7 @@ class WhittedTracer: DistributedRayTracer {
             
             // incoming light
             let rad = lhit.d
-            let area = lite.area / 1000
+            let area = lite.area // 1000
             let sangle = area / (rad*rad)
             let Li = sangle * lmat.emission
             
