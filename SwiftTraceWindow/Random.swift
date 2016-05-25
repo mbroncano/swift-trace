@@ -25,3 +25,13 @@ struct Random {
         return Scalar(drand48())
     }
 }*/
+
+extension Scalar {
+    static func Random() -> Scalar { return Scalar(drand48()) }
+}
+
+extension Vec {
+    static func Random() -> Vec {
+        return Vec(Scalar.Random(), Scalar.Random(), Scalar.Random())
+    }
+}

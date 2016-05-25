@@ -25,8 +25,8 @@ struct Scene: IntersectWithRayIntersection {
         guard skydome != nil else { return backgroundColor }
     
         var n = r.d.norm()
-        let u = 0.5 + atan2(n.z, n.x) / (2.0 * M_PI)
-        let v = 0.5 - asin(n.y) / M_PI
+        let u = 0.5 + atan2(n.z, n.x) / (2.0 * Scalar(M_PI))
+        let v = 0.5 - asin(n.y) / Scalar(M_PI)
         
         return skydome![Vec(u, v * 2, 0)]
     }
@@ -50,10 +50,12 @@ struct Scene: IntersectWithRayIntersection {
             "Black" : Lambertian(emission: Vec(), color:Vec()),                     // Black
             "Mirror": Specular(emission: Vec(), color:Vec(0.3, 0.3, 0.3)),      // Mirror
             "Glass" : Refractive(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999),    // Glass
+            "DarkGlass" : Refractive(emission: Vec(), color: Color.Blue * 0.8),    // Glass
             "Lite"  : Lambertian(emission: Vec(x:8,y:8,z:8), color:Vec()),       // Lite
             "Lite2" : Lambertian(emission: Vec(x:8,y:4,z:4), color:Vec()),          // Lite
             "Lite3" : Lambertian(emission: Vec(x:4,y:4,z:8), color:Vec()),          // Lite
-            "Chess" : Chessboard(emission: Vec(), color:Vec(0.05, 0.05, 0.05)),          // Lite
+            "Chess" : Chessboard(squares: 10, white: Color.White, black:Vec(0.05, 0.05, 0.05)),          // Lite
+            "Chess20" : Chessboard(squares: 20, white: Color.White, black:Vec(0.05, 0.05, 0.05)),          // Lite
             "Earth" : Textured(emission: Vec(), color:Vec())          // Lite
         ]
     
@@ -66,9 +68,12 @@ struct Scene: IntersectWithRayIntersection {
             Sphere(rad:-0.4,  p:Vec(3, 0.5, 2),  material: "Glass"),
             Sphere(rad:0.15,  p:Vec(3, 0.5, 2),  material:  "Blue"),
 //            Sphere(rad:500, p:Vec(0, -500.5, -4),       material: "Mirror"),
-            Triangle(p1: Vec(-10, 0, -10), p2: Vec(-10, 0, 10), p3: Vec(10, 0, -10), material: "Chess"),
-            Triangle(p1: Vec(10, 0, 10),   p2: Vec(10, 0, -10), p3: Vec(-10, 0, 10), material: "Chess"),
-        ]
+//        ]
+        
+//        let floor: [Primitive] = [
+            Triangle(p1: Vec(-10, 0, -10), p2: Vec(-10, 0, 10), p3: Vec(10, 0, -10), material: "Chess20"),
+            Triangle(p1: Vec(10, 0, 10),   p2: Vec(10, 0, -10), p3: Vec(-10, 0, 10), material: "Chess20"),
+//            ]
         /*
         for _ in 0...25 {
             var s = sampleDisk(); s.z = s.y; s.y = 0
@@ -76,16 +81,40 @@ struct Scene: IntersectWithRayIntersection {
             let sphere = Sphere(rad: 0.2, p: c, material: "White")
             spheres.append(sphere)
         }*/
+        /*
+        let start = NSDate().timeIntervalSince1970
+        let lib = ObjectLibrary(name: "cube.obj")
+        let meshes = lib?.mesh("DarkGlass")[0] as! [Triangle]
+        let t = Transform(scale: Vec(10, 4, 0.5)) + Transform(rotate: Vec(0.0, 0.0, 0)) + Transform(translate: Vec(0, 0, -2))
+        let cube = meshes.map { (triangle) -> Primitive in
+            return t.apply(triangle)
+        }
         
-        let lites: [Primitive] = [
-            Sphere(rad:1, p:Vec(-4, 10, -10),           material: "Lite3"),       // Lite
+        let duration = NSDate().timeIntervalSince1970 - start
+        print("Load object: completed in \(duration * 1000)ms")
+ 
+        let tb = Transform(scale: Vec(15)) + Transform(rotate: Vec(0, 0.4, 0)) + Transform(translate: Vec(0, -2, 2))
+        let ob = ObjectLibrary(name: "bunny.obj")
+        let bunny = ob?.mesh("Mirror")[0] as! [Triangle]
+        
+        let bunny_ = bunny.map { (triangle) -> Primitive in
+            return tb.apply(triangle)
+        }*/
+
+//        let lites: [Primitive] = [
+//            Sphere(rad:1, p:Vec(-4, 10, -10),           material: "Lite3"),       // Lite
             Sphere(rad:1, p:Vec( 4, 10, -10),           material: "Lite2"),       // Lite
         ]
         
-        self.objects = spheres + lites
-        self.lights = lites
+        self.objects =
+            spheres  //+
+//            floor +
+//            lites
+//            cube +
+//            bunny_
+        self.lights = [] //lites
 
-        var id = 0; root = BVHNode(nodes: objects, id: &id)
+        var id = 0; root = BVHNode(nodes: objects, id: &id); print("bvh contains \(id) nodes")
 //        root = PrimitiveList(nodes: self.objects)
         
 //        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)

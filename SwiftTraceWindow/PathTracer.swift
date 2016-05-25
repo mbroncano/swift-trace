@@ -9,6 +9,13 @@
 import Foundation
 import simd
 
+func hsvtorgb(h: Scalar, _ s: Scalar, _ v: Scalar) -> Color {
+    let r=v*(1+s*(cos(h)-1))
+    let g=v*(1+s*(cos(h-2.09439)-1))
+    let b=v*(1+s*(cos(h+2.09439)-1))
+    return Color(r, g, b)
+}
+
 class PathTracer: DistributedRayTracer {
 
     // non-recursive path tracing
@@ -31,6 +38,11 @@ class PathTracer: DistributedRayTracer {
         var r = r
         var depth = 0
         var hit = Intersection()
+
+        // debug
+//        scene.intersectWithRay(r, hit: &hit)
+//        if Int(Scalar.Random() * 100000) == 1 { print("hit: \(hit.count)") }
+//        return hsvtorgb(Scalar(hit.count) / 9 * Scalar(M_PI), 0.5, 0.5)
         
         while true {
             // intersection with world

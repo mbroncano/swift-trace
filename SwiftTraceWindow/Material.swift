@@ -84,19 +84,28 @@ class Textured: Lambertian {
 }
 
 class Chessboard: Specular {
+    let squares: Scalar
+    let white: Color
+    let black: Color
+
+    init(squares: Scalar = 20, white: Color = Color.White, black: Color = Color.Black) {
+        self.squares = squares
+        self.white = white
+        self.black = black
+        super.init(emission: Vec.Zero, color: white)
+    }
 
     override func colorAtTextCoord(uv: Vec) -> Color {
-        let squares = 20.0
         let t1 = uv.x * squares
         let t2 = uv.y * squares
         
         let c = Bool((Int(t1) % 2) ^ (Int(t2) % 2))
-        return c ? (Color.White - diffuseColor) : self.diffuseColor
+        return c ? white : black
     }
 }
 
 class Specular: Material {
-    let fuzz = 0.2
+    let fuzz: Scalar = 0.2
 
     override func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
         // prob. of reflected ray is 1 (dirac function)

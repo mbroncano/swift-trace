@@ -23,7 +23,7 @@ public class Camera: CameraProtocol {
     }
     
     func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> Ray {
-        let ar = 0.5135
+        let ar: Scalar = 0.5135
         let cx = Vec(Scalar(nx) * ar / Scalar(ny), 0, 0)
         let cy = cross(cx, d).norm() * ar
     
@@ -52,11 +52,11 @@ public class SimpleCamera: CameraProtocol {
         let cx = Vec(1, 0, 0)
         let cy = cross(cx, d) * ar
 
-        let r1 = 0.0//Random.random() - 0.5
-        let r2 = 0.0//Random.random() - 0.5
+//        let r1 = 0.0//Random.random() - 0.5
+//        let r2 = 0.0//Random.random() - 0.5
     
-        let u = (Scalar(x) + r1) / Scalar(nx-1) - 0.5
-        let v = (Scalar(y) + r2) / Scalar(ny-1) - 0.5
+        let u = (Scalar(x) /*+ r1*/) / Scalar(nx-1) - 0.5
+        let v = (Scalar(y) /*+ r2*/) / Scalar(ny-1) - 0.5
         let dir = d + cx * u + cy * v
         
         return Ray(o:o, d:dir.norm())
@@ -78,7 +78,7 @@ public class ComplexCamera: CameraProtocol {
         let focusDist = length(lookFrom - lookAt)
         lensRadius = aperture / 2.0
 
-        let theta = fov * M_PI/180
+        let theta = fov * Scalar(M_PI) / 180
         let halfHeight = tan(theta/2)
         let halfWidth = aspect * halfHeight
         w = (lookFrom - lookAt).norm()

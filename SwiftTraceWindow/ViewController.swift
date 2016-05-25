@@ -20,31 +20,27 @@ class ViewController: NSViewController {
 //            Random.seed(1234)
             
             let width = 320, height = 240
-            
-            let start = NSDate().timeIntervalSince1970
-            _ = ObjectLibrary(name: "cube.obj")
-            let duration = NSDate().timeIntervalSince1970 - start
-            print("Load object: completed in \(duration * 1000)ms")
+
             
 //            let render = PathTracer(scene: CornellBox(), w: width, h: height)
 //            let render = RayTracer(scene: CornellBox(), w: width, h: height)
 //            let render = WhittedTracer(scene: CornellBox(), w: width, h: height)
 
-//            let render = PathTracer(scene: Scene(), w: width, h: height)
+            let render = PathTracer(scene: Scene(), w: width, h: height)
 //            let render = DistributedRayTracer(scene: Scene(), w: width, h: height)
-            let render = WhittedTracer(scene: Scene(), w: width, h: height)
+//            let render = WhittedTracer(scene: Scene(), w: width, h: height)
             
             var avg:NSTimeInterval = 0
             while true {
                 // render another frame
                 let start = NSDate().timeIntervalSince1970
-                render.renderTile(size: 512)
+                render.renderTile(size: 64)
                 let duration = NSDate().timeIntervalSince1970 - start
                 avg = avg + duration
                 print("Profiler: frame in \(Int(duration * 1000))ms, avg. \(Int(avg * 1000 / Double(render.framebuffer.samples)))ms")
                 
                 // update the UI
-                if render.framebuffer.samples % 10 != 1 { continue }
+                if duration < 1.0 && (render.framebuffer.samples % 10 != 1) { continue }
                 
                 let image = render.framebuffer.cgImage()
                 dispatch_async(dispatch_get_main_queue()) {

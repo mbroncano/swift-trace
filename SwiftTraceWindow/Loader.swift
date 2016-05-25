@@ -17,10 +17,18 @@ struct Vertex: CustomStringConvertible {
     var description: String { get { return "(\(x), \(y), \(z), \(w))" } }
 }
 
+extension Vertex {
+    func Vector() -> Vec { return Vec(x, y, z) }
+}
+
 struct TextureVertex: CustomStringConvertible {
     let u, v, w: Scalar
     
     var description: String { get { return "(\(u), \(v), \(w))" } }
+}
+
+extension TextureVertex {
+    func Vector() -> Vec { return Vec(u, v, w) }
 }
 
 struct Normal: CustomStringConvertible {
@@ -30,7 +38,7 @@ struct Normal: CustomStringConvertible {
 }
 
 struct FaceElement: CustomStringConvertible {
-    let vi, ti, ni: Int?
+    let vi, ti, ni: Int
 
     var description: String { get { return "(\(vi), \(ti), \(ni))" } }
 }
@@ -170,6 +178,38 @@ struct ObjectLibrary {
     var groups: [Group] = []
     var materials = [String: MaterialLibrary]()
 
+    // FIXME: support different materials
+    func mesh(mid: MaterialId) -> [[Primitive]] {
+        var ret = [[Primitive]]()
+    
+        for group in groups {
+            var list = [Primitive]()
+            
+            for face in group.faces {
+                // FIXME: check the vertex index is correct
+                let p1 = vertices[face[0].vi-1].Vector()
+                let p2 = vertices[face[1].vi-1].Vector()
+                let p3 = vertices[face[2].vi-1].Vector()
+
+                // FIXME: this will fail
+                if textvert.count > 0 {
+                    let t1 = textvert[face[0].ti-1].Vector()
+                    let t2 = textvert[face[1].ti-1].Vector()
+                    let t3 = textvert[face[2].ti-1].Vector()
+                    
+                    // FIXME: support normal indices
+                    list.append(Triangle(p1, p2, p3, mid, t1, t2, t3))
+                } else {
+                    list.append(Triangle(p1, p2, p3, mid))
+                }
+            }
+            
+            ret.append(list)
+        }
+        
+        return ret
+    }
+
     init?(name: String) {
         guard
             let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
@@ -218,85 +258,98 @@ struct ObjectLibrary {
             }
 
             else if token == "f" {
+                // FIXME: support faces with more elements
+                guard tokenArray.count == 3 else {
+                    print("[\(name):face]\t error parsing <\(line)>")
+                    continue
+                }
+            
                 var face = [FaceElement]()
                 
                 let separator = NSCharacterSet.init(charactersInString: "/")
                 for item in tokenArray {
                     let elems = item.componentsSeparatedByCharactersInSet(separator)
                 
-                    let vi = (elems.count > 0) ? Int(elems[0]) : nil
-                    let ni = (elems.count > 1) ? Int(elems[1]) : nil
-                    let ti = (elems.count > 2) ? Int(elems[2]) : nil
+                    var vi = (elems.count > 0) ? Int(elems[0])! : 0
+                    var ti = (elems.count > 1) ? Int(elems[1])! : 0
+                    var ni = (elems.count > 2) ? Int(elems[2])! : 0
+                    
+                    vi = vi < 0 ? vi + vertices.count + 1: vi
+                    ti = ti < 0 ? ti + textvert.count + 1: ti
+                    ni = ni < 0 ? ni + normals.count + 1: ni
 
                     face.append(FaceElement(vi: vi, ti: ti, ni: ni))
                 }
 
                 // I'd rather not mutate anything
-                if let g = groups.popLast() {
+                if groups.count == 0 {
+                    groups.append(Group(name: name, faces: [face]))
+                } else if let g = groups.popLast() {
                     groups.append(Group(name: g.name, faces: g.faces + [face]))
+                } else {
+                    print("[\(name):face]\t error add face <\(line)>")
+                    continue
                 }
                 
-                print("[\(name):face]\t\(face)")
+//                print("[\(name):face]\t\(face)")
             }
 
             else if token == "v" {
                 guard 3...4 ~= tokenArray.count,
-                      let x = Double(tokenArray[0]),
-                      let y = Double(tokenArray[1]),
-                      let z = Double(tokenArray[2])
+                      let x = Scalar(tokenArray[0]),
+                      let y = Scalar(tokenArray[1]),
+                      let z = Scalar(tokenArray[2])
                 else {
                     print("[\(name):vertex]\t error parsing <\(line)>")
-                    continue;
+                    continue
                     }
             
                 if tokenArray.count == 4 {
-                    guard let w = Double(tokenArray[3]) else { continue }
+                    guard let w = Scalar(tokenArray[3]) else { continue }
                     vertices.append(Vertex(x: x, y: y, z: z, w: w))
                 } else {
                     vertices.append(Vertex(x: x, y: y, z: z, w: 1.0))
                 }
-                    print("[\(name):vertex]\t\(vertices.last!)")
+//                    print("[\(name):vertex]\t{\(vertices.count)}\(vertices.last!)")
             }
             
             else if token == "vt" {
                 guard 2...3 ~= tokenArray.count,
-                      let u = Double(tokenArray[0]),
-                      let v = Double(tokenArray[1])
+                      let u = Scalar(tokenArray[0]),
+                      let v = Scalar(tokenArray[1])
                 else {
                     print("[\(name):vtext]\t error parsing <\(line)>")
                     continue;
                     }
 
                 if tokenArray.count == 3 {
-                    guard let w = Double(tokenArray[2]) else { continue }
+                    guard let w = Scalar(tokenArray[2]) else { continue }
                     textvert.append(TextureVertex(u: u, v: v, w: w))
                 } else {
                     textvert.append(TextureVertex(u: u, v: v, w: 0.0))
                 }
 
-                print("[\(name):texver]\t\(textvert.last!)")
+//                print("[\(name):texver]\t{\(textvert.count)}\(textvert.last!)")
             }
 
             else if token == "vn" {
                 guard 3 ~= tokenArray.count,
-                      let i = Double(tokenArray[0]),
-                      let j = Double(tokenArray[1]),
-                      let k = Double(tokenArray[2])
+                      let i = Scalar(tokenArray[0]),
+                      let j = Scalar(tokenArray[1]),
+                      let k = Scalar(tokenArray[2])
                 else {
                     print("[\(name):vnorm]\t error parsing <\(line)>")
                     continue;
                     }
 
                 normals.append(Normal(i: i, j: j, k: k))
-                print("[\(name):normal]\t\(normals.last!)")
+                
+//                print("[\(name):normal]\t{\(normals.count)}\(normals.last!)")
             }
             
             else {
                 print("[\(name):?]\t\(line)")
             }
-            
         }
-        
-//        print("\(vertices)")
     }
 }

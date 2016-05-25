@@ -14,11 +14,12 @@
 		6407772F1CEE4EF50022008A /* default.png in Resources */ = {isa = PBXBuildFile; fileRef = 6407772E1CEE4EF50022008A /* default.png */; };
 		640777341CEF5E3D0022008A /* dragon.mtl in Resources */ = {isa = PBXBuildFile; fileRef = 640777321CEF5E3D0022008A /* dragon.mtl */; };
 		640777351CEF5E3D0022008A /* dragon.obj in Resources */ = {isa = PBXBuildFile; fileRef = 640777331CEF5E3D0022008A /* dragon.obj */; };
+		642247A61CF5769200A35907 /* bunny.obj in Resources */ = {isa = PBXBuildFile; fileRef = 642247A51CF5769200A35907 /* bunny.obj */; };
 		6422711D1C0E2CD4007AD481 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6422711C1C0E2CD4007AD481 /* Random.swift */; };
 		646752A31C28BBDF0084CBE3 /* Scene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A21C28BBDF0084CBE3 /* Scene.swift */; };
 		646752A51C28BC980084CBE3 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A41C28BC980084CBE3 /* Camera.swift */; };
 		646752A71C2B76490084CBE3 /* RayTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A61C2B76490084CBE3 /* RayTracer.swift */; };
-		646752A91C2B9B4A0084CBE3 /* Primitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A81C2B9B4A0084CBE3 /* Primitive.swift */; };
+		646752A91C2B9B4A0084CBE3 /* Primitive_.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A81C2B9B4A0084CBE3 /* Primitive_.swift */; };
 		647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648D91BF9737A00C4EAC0 /* AppDelegate.swift */; };
 		647648DC1BF9737A00C4EAC0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648DB1BF9737A00C4EAC0 /* ViewController.swift */; };
 		647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 647648DD1BF9737A00C4EAC0 /* Assets.xcassets */; };
@@ -37,6 +38,17 @@
 		64DBD36C1CEB661900727B71 /* EyeTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DBD36B1CEB661900727B71 /* EyeTracer.swift */; };
 		64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3751CEC24CD00727B71 /* earth.jpg */; };
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
+		64E910C51CF59E1C008D8BBC /* Triangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910C41CF59E1C008D8BBC /* Triangle.swift */; };
+		64E910C71CF59E44008D8BBC /* Sphere.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910C61CF59E44008D8BBC /* Sphere.swift */; };
+		64E910CA1CF59E82008D8BBC /* PrimitiveList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910C91CF59E82008D8BBC /* PrimitiveList.swift */; };
+		64E910CC1CF59EA1008D8BBC /* Primitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910CB1CF59EA1008D8BBC /* Primitive.swift */; };
+		64E910CE1CF59EC3008D8BBC /* BVHNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910CD1CF59EC3008D8BBC /* BVHNode.swift */; };
+		64E910D01CF59EE5008D8BBC /* AABB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910CF1CF59EE5008D8BBC /* AABB.swift */; };
+		64E910D21CF59F2E008D8BBC /* Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910D11CF59F2E008D8BBC /* Transform.swift */; };
+		64E910D41CF59F59008D8BBC /* Intersection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910D31CF59F59008D8BBC /* Intersection.swift */; };
+		64E910D61CF5A003008D8BBC /* PixelRGBA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910D51CF5A003008D8BBC /* PixelRGBA.swift */; };
+		64E910D91CF5A04B008D8BBC /* Ray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910D81CF5A04B008D8BBC /* Ray.swift */; };
+		64E910DB1CF5A06C008D8BBC /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910DA1CF5A06C008D8BBC /* Color.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,11 +71,12 @@
 		6407772E1CEE4EF50022008A /* default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = default.png; path = cube/default.png; sourceTree = "<group>"; };
 		640777321CEF5E3D0022008A /* dragon.mtl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dragon.mtl; sourceTree = "<group>"; };
 		640777331CEF5E3D0022008A /* dragon.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dragon.obj; sourceTree = "<group>"; };
+		642247A51CF5769200A35907 /* bunny.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bunny.obj; sourceTree = "<group>"; };
 		6422711C1C0E2CD4007AD481 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
 		646752A21C28BBDF0084CBE3 /* Scene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene.swift; sourceTree = "<group>"; };
 		646752A41C28BC980084CBE3 /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
 		646752A61C2B76490084CBE3 /* RayTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RayTracer.swift; sourceTree = "<group>"; };
-		646752A81C2B9B4A0084CBE3 /* Primitive.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Primitive.swift; sourceTree = "<group>"; };
+		646752A81C2B9B4A0084CBE3 /* Primitive_.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Primitive_.swift; sourceTree = "<group>"; };
 		647648D61BF9737A00C4EAC0 /* SwiftTraceWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTraceWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		647648D91BF9737A00C4EAC0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		647648DB1BF9737A00C4EAC0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -81,6 +94,17 @@
 		64DBD36B1CEB661900727B71 /* EyeTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EyeTracer.swift; sourceTree = "<group>"; };
 		64DBD3751CEC24CD00727B71 /* earth.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth.jpg; sourceTree = "<group>"; };
 		64DBD3771CEC35DF00727B71 /* skydome.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = skydome.jpg; sourceTree = "<group>"; };
+		64E910C41CF59E1C008D8BBC /* Triangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Triangle.swift; sourceTree = "<group>"; };
+		64E910C61CF59E44008D8BBC /* Sphere.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sphere.swift; sourceTree = "<group>"; };
+		64E910C91CF59E82008D8BBC /* PrimitiveList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrimitiveList.swift; sourceTree = "<group>"; };
+		64E910CB1CF59EA1008D8BBC /* Primitive.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Primitive.swift; sourceTree = "<group>"; };
+		64E910CD1CF59EC3008D8BBC /* BVHNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BVHNode.swift; sourceTree = "<group>"; };
+		64E910CF1CF59EE5008D8BBC /* AABB.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AABB.swift; sourceTree = "<group>"; };
+		64E910D11CF59F2E008D8BBC /* Transform.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Transform.swift; sourceTree = "<group>"; };
+		64E910D31CF59F59008D8BBC /* Intersection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Intersection.swift; sourceTree = "<group>"; };
+		64E910D51CF5A003008D8BBC /* PixelRGBA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PixelRGBA.swift; sourceTree = "<group>"; };
+		64E910D81CF5A04B008D8BBC /* Ray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ray.swift; sourceTree = "<group>"; };
+		64E910DA1CF5A06C008D8BBC /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,31 +148,14 @@
 			children = (
 				647648D91BF9737A00C4EAC0 /* AppDelegate.swift */,
 				647648DB1BF9737A00C4EAC0 /* ViewController.swift */,
-				646752A61C2B76490084CBE3 /* RayTracer.swift */,
-				64DBD36B1CEB661900727B71 /* EyeTracer.swift */,
-				64C5FCB71BFBC60C004F783E /* PathTracer.swift */,
-				646752A21C28BBDF0084CBE3 /* Scene.swift */,
-				647BBDA81BFE57A10017A888 /* Vector.swift */,
-				647BBDBC1BFEBB3B0017A888 /* Geometry.swift */,
-				647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */,
-				647BBDC21BFEDECD0017A888 /* Material.swift */,
-				6422711C1C0E2CD4007AD481 /* Random.swift */,
-				646752A41C28BC980084CBE3 /* Camera.swift */,
-				6407771B1CEE10E60022008A /* Loader.swift */,
-				640777211CEE1E3B0022008A /* NSScanner+Swift.swift */,
+				64E910DC1CF5A155008D8BBC /* Render */,
+				64E910D71CF5A01E008D8BBC /* Math */,
+				64E910C81CF59E5C008D8BBC /* Geometry */,
+				64E910DD1CF5A16A008D8BBC /* Loader */,
+				64E910DE1CF5A18D008D8BBC /* Models */,
 				647648DD1BF9737A00C4EAC0 /* Assets.xcassets */,
 				647648DF1BF9737A00C4EAC0 /* Main.storyboard */,
-				64DBD3771CEC35DF00727B71 /* skydome.jpg */,
-				6407772E1CEE4EF50022008A /* default.png */,
-				6407772C1CEE4EF00022008A /* default.mtl */,
-				6407772A1CEE4EEB0022008A /* cube.obj */,
-				640777321CEF5E3D0022008A /* dragon.mtl */,
-				640777331CEF5E3D0022008A /* dragon.obj */,
-				64DBD3751CEC24CD00727B71 /* earth.jpg */,
 				647648E21BF9737A00C4EAC0 /* Info.plist */,
-				646752A81C2B9B4A0084CBE3 /* Primitive.swift */,
-				640777191CECEB390022008A /* scene_balls.json */,
-				6407771D1CEE148D0022008A /* wavefront.txt */,
 			);
 			path = SwiftTraceWindow;
 			sourceTree = "<group>";
@@ -160,6 +167,75 @@
 				647BBDB31BFE5E650017A888 /* Info.plist */,
 			);
 			path = SwiftTraceWindowTests;
+			sourceTree = "<group>";
+		};
+		64E910C81CF59E5C008D8BBC /* Geometry */ = {
+			isa = PBXGroup;
+			children = (
+				647BBDBC1BFEBB3B0017A888 /* Geometry.swift */,
+				64E910CB1CF59EA1008D8BBC /* Primitive.swift */,
+				64E910C61CF59E44008D8BBC /* Sphere.swift */,
+				64E910C41CF59E1C008D8BBC /* Triangle.swift */,
+				64E910C91CF59E82008D8BBC /* PrimitiveList.swift */,
+				64E910CD1CF59EC3008D8BBC /* BVHNode.swift */,
+				64E910CF1CF59EE5008D8BBC /* AABB.swift */,
+				64E910D11CF59F2E008D8BBC /* Transform.swift */,
+				64E910D31CF59F59008D8BBC /* Intersection.swift */,
+				646752A81C2B9B4A0084CBE3 /* Primitive_.swift */,
+			);
+			name = Geometry;
+			sourceTree = "<group>";
+		};
+		64E910D71CF5A01E008D8BBC /* Math */ = {
+			isa = PBXGroup;
+			children = (
+				647BBDA81BFE57A10017A888 /* Vector.swift */,
+				64E910D51CF5A003008D8BBC /* PixelRGBA.swift */,
+				64E910D81CF5A04B008D8BBC /* Ray.swift */,
+				64E910DA1CF5A06C008D8BBC /* Color.swift */,
+				6422711C1C0E2CD4007AD481 /* Random.swift */,
+			);
+			name = Math;
+			sourceTree = "<group>";
+		};
+		64E910DC1CF5A155008D8BBC /* Render */ = {
+			isa = PBXGroup;
+			children = (
+				646752A61C2B76490084CBE3 /* RayTracer.swift */,
+				64DBD36B1CEB661900727B71 /* EyeTracer.swift */,
+				64C5FCB71BFBC60C004F783E /* PathTracer.swift */,
+				646752A21C28BBDF0084CBE3 /* Scene.swift */,
+				647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */,
+				646752A41C28BC980084CBE3 /* Camera.swift */,
+				647BBDC21BFEDECD0017A888 /* Material.swift */,
+			);
+			name = Render;
+			sourceTree = "<group>";
+		};
+		64E910DD1CF5A16A008D8BBC /* Loader */ = {
+			isa = PBXGroup;
+			children = (
+				6407771B1CEE10E60022008A /* Loader.swift */,
+				640777211CEE1E3B0022008A /* NSScanner+Swift.swift */,
+			);
+			name = Loader;
+			sourceTree = "<group>";
+		};
+		64E910DE1CF5A18D008D8BBC /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				64DBD3771CEC35DF00727B71 /* skydome.jpg */,
+				6407772E1CEE4EF50022008A /* default.png */,
+				6407772C1CEE4EF00022008A /* default.mtl */,
+				6407772A1CEE4EEB0022008A /* cube.obj */,
+				640777321CEF5E3D0022008A /* dragon.mtl */,
+				640777331CEF5E3D0022008A /* dragon.obj */,
+				64DBD3751CEC24CD00727B71 /* earth.jpg */,
+				640777191CECEB390022008A /* scene_balls.json */,
+				6407771D1CEE148D0022008A /* wavefront.txt */,
+				642247A51CF5769200A35907 /* bunny.obj */,
+			);
+			name = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -249,6 +325,7 @@
 				6407772F1CEE4EF50022008A /* default.png in Resources */,
 				647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */,
 				647648E11BF9737A00C4EAC0 /* Main.storyboard in Resources */,
+				642247A61CF5769200A35907 /* bunny.obj in Resources */,
 				640777351CEF5E3D0022008A /* dragon.obj in Resources */,
 				64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */,
 				6407772D1CEE4EF00022008A /* default.mtl in Resources */,
@@ -269,8 +346,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64E910D61CF5A003008D8BBC /* PixelRGBA.swift in Sources */,
+				64E910D21CF59F2E008D8BBC /* Transform.swift in Sources */,
 				6422711D1C0E2CD4007AD481 /* Random.swift in Sources */,
+				64E910D01CF59EE5008D8BBC /* AABB.swift in Sources */,
+				64E910D91CF5A04B008D8BBC /* Ray.swift in Sources */,
+				64E910D41CF59F59008D8BBC /* Intersection.swift in Sources */,
 				647BBDC31BFEDECD0017A888 /* Material.swift in Sources */,
+				64E910CE1CF59EC3008D8BBC /* BVHNode.swift in Sources */,
 				647648DC1BF9737A00C4EAC0 /* ViewController.swift in Sources */,
 				647BBDC01BFEDDB50017A888 /* Framebuffer.swift in Sources */,
 				647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */,
@@ -278,12 +361,17 @@
 				640777221CEE1E3B0022008A /* NSScanner+Swift.swift in Sources */,
 				64DBD36C1CEB661900727B71 /* EyeTracer.swift in Sources */,
 				646752A51C28BC980084CBE3 /* Camera.swift in Sources */,
-				646752A91C2B9B4A0084CBE3 /* Primitive.swift in Sources */,
+				646752A91C2B9B4A0084CBE3 /* Primitive_.swift in Sources */,
 				646752A71C2B76490084CBE3 /* RayTracer.swift in Sources */,
+				64E910DB1CF5A06C008D8BBC /* Color.swift in Sources */,
+				64E910CC1CF59EA1008D8BBC /* Primitive.swift in Sources */,
 				64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */,
 				647BBDBD1BFEBB3B0017A888 /* Geometry.swift in Sources */,
 				6407771C1CEE10E60022008A /* Loader.swift in Sources */,
 				646752A31C28BBDF0084CBE3 /* Scene.swift in Sources */,
+				64E910C71CF59E44008D8BBC /* Sphere.swift in Sources */,
+				64E910C51CF59E1C008D8BBC /* Triangle.swift in Sources */,
+				64E910CA1CF59E82008D8BBC /* PrimitiveList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
