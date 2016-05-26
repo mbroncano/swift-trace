@@ -52,6 +52,9 @@
 		64E910E01CF5F2C1008D8BBC /* Serializable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910DF1CF5F2C1008D8BBC /* Serializable.swift */; };
 		64E911141CF66517008D8BBC /* scene.json in Resources */ = {isa = PBXBuildFile; fileRef = 640777191CECEB390022008A /* scene.json */; };
 		64E911161CF67464008D8BBC /* cornell.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E911151CF67464008D8BBC /* cornell.json */; };
+		64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */; };
+		64E9111C1CF75E39008D8BBC /* cornell_box.mtl in Resources */ = {isa = PBXBuildFile; fileRef = 64E9111B1CF75E39008D8BBC /* cornell_box.mtl */; };
+		64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E9111D1CF75F69008D8BBC /* cornell_box.obj */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -160,6 +163,9 @@
 		64E910DF1CF5F2C1008D8BBC /* Serializable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serializable.swift; sourceTree = "<group>"; };
 		64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Decodable.xcodeproj; path = ../Decodable/Decodable.xcodeproj; sourceTree = "<group>"; };
 		64E911151CF67464008D8BBC /* cornell.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = cornell.json; sourceTree = "<group>"; };
+		64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cornell_box_multimaterial.obj; sourceTree = "<group>"; };
+		64E9111B1CF75E39008D8BBC /* cornell_box.mtl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cornell_box.mtl; sourceTree = "<group>"; };
+		64E9111D1CF75F69008D8BBC /* cornell_box.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cornell_box.obj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -264,7 +270,6 @@
 				647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */,
 				646752A41C28BC980084CBE3 /* Camera.swift */,
 				647BBDC21BFEDECD0017A888 /* Material.swift */,
-				64E910DF1CF5F2C1008D8BBC /* Serializable.swift */,
 			);
 			name = Render;
 			sourceTree = "<group>";
@@ -272,6 +277,7 @@
 		64E910DD1CF5A16A008D8BBC /* Loader */ = {
 			isa = PBXGroup;
 			children = (
+				64E910DF1CF5F2C1008D8BBC /* Serializable.swift */,
 				6407771B1CEE10E60022008A /* Loader.swift */,
 				640777211CEE1E3B0022008A /* NSScanner+Swift.swift */,
 			);
@@ -292,6 +298,9 @@
 				64E911151CF67464008D8BBC /* cornell.json */,
 				6407771D1CEE148D0022008A /* wavefront.txt */,
 				642247A51CF5769200A35907 /* bunny.obj */,
+				64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */,
+				64E9111B1CF75E39008D8BBC /* cornell_box.mtl */,
+				64E9111D1CF75F69008D8BBC /* cornell_box.obj */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -442,6 +451,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */,
+				64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */,
 				64E911141CF66517008D8BBC /* scene.json in Resources */,
 				640777341CEF5E3D0022008A /* dragon.mtl in Resources */,
 				64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */,
@@ -452,6 +463,7 @@
 				647648E11BF9737A00C4EAC0 /* Main.storyboard in Resources */,
 				642247A61CF5769200A35907 /* bunny.obj in Resources */,
 				640777351CEF5E3D0022008A /* dragon.obj in Resources */,
+				64E9111C1CF75E39008D8BBC /* cornell_box.mtl in Resources */,
 				64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */,
 				6407772D1CEE4EF00022008A /* default.mtl in Resources */,
 			);

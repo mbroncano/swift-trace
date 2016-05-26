@@ -74,6 +74,15 @@ final public class ComplexCamera: GenerateRay {
     let lensRadius: Scalar
     let u, v, w: Vec
     
+    convenience init(pos: Vec, dir: Vec, up:Vec, focalLenght: Scalar, width: Scalar, height: Scalar) {
+        self.init(lookFrom: pos,
+                  lookAt: pos+dir*(1/focalLenght),
+                   vecUp: up,
+                    fov: 180*asin(width * focalLenght) / M_PI,
+                    aspect: 0)
+        
+    }
+    
     init(lookFrom: Vec, lookAt: Vec, vecUp: Vec, fov: Scalar, aspect: Scalar, aperture: Scalar = 0.0) {
         origin = lookFrom
         let focusDist = length(lookFrom - lookAt)

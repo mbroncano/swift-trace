@@ -80,16 +80,23 @@ public struct Scene: IntersectWithRayIntersection {
             return tb.apply(triangle)
         }
         */
+
     }
     
-    init(camera: ComplexCamera, objects: [Primitive]) {
+    init(camera: ComplexCamera, objects: [Primitive]) throws {
         self.camera = camera //Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
-        self.objects = objects
+        
+        let cube = try ObjectLibrary(name: "cube.obj")
+        let trans = Transform(scale: Vec(10, 4, 0.5)) + Transform(rotate: Vec(0.0, 0.0, 0)) + Transform(translate: Vec(0, 0, -2))
+        let cube_m = try cube.mesh("DarkGlass")
+        let cube_t = cube_m.map { t in trans.apply(t as! Triangle) }
+
+        self.objects = objects + cube_t
         
         // HACK!
         defer { defaultMaterials() }
 
-        var id = 0; root = BVHNode(nodes: objects, id: &id); print("bvh contains \(id) nodes")
+        var id = 0; root = BVHNode(nodes: self.objects, id: &id); print("bvh contains \(id) nodes")
 //        root = PrimitiveList(nodes: self.objects)
         
 //        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)

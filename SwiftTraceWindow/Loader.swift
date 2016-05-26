@@ -10,211 +10,207 @@ import Foundation
 
 // http://www.martinreddy.net/gfx/3d/OBJ.spec
 
+extension Vec {
+    init(_ v: Vertex)        { self.init(v.x, v.y, v.z) }
+    init(_ v: TextureVertex) { self.init(v.u, v.v, v.w) }
+    init(_ v: VertexNormal)  { self.init(v.i, v.j, v.k) }
+}
 
-struct Vertex: CustomStringConvertible {
+enum ObjectLoaderError: ErrorType {
+    case InvalidVertex(String)
+    case InvalidFace(String)
+    case InvalidFile(String)
+}
+
+typealias FaceVertexIndex = Int
+extension FaceVertexIndex {
+    var isValid: Bool { get { return self != 0 } }
+
+    init(str: String) throws {
+        guard str != "" else { self = 0; return } // empty string is a valid case
+        
+        guard let int = Int(str) where (int != 0)
+        else { throw ObjectLoaderError.InvalidVertex("vertex index must not be zero") }
+        
+        self = int
+    }
+}
+
+typealias VertexCoordinate = Double
+extension VertexCoordinate {
+    init(str: String) throws {
+        guard str.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0
+        else { throw ObjectLoaderError.InvalidVertex("vertex coordinate must not be empty") } // empty string is a *not* valid case
+        
+        guard let dbl = Double(str) where (dbl.isFinite)
+        else { throw ObjectLoaderError.InvalidVertex("invalid vertex coordinate <\(str)>") }
+        
+        self = dbl
+    }
+}
+
+protocol FaceVertex {
+    init(_ array: [String]) throws
+}
+
+struct Vertex: FaceVertex, CustomStringConvertible {
     let x, y, z, w: Scalar
-    
     var description: String { get { return "(\(x), \(y), \(z), \(w))" } }
+    
+    init(_ array: [String]) throws {
+        guard 3...4 ~= array.count
+        else { throw ObjectLoaderError.InvalidVertex("invalid vertex coordinate count") }
+        
+        self.x = try VertexCoordinate(str: array[0])
+        self.y = try VertexCoordinate(str: array[1])
+        self.z = try VertexCoordinate(str: array[2])
+        self.w = array.count == 4 ? try VertexCoordinate(str: array[3]) : 1.0
+    }
 }
 
-extension Vertex {
-    func Vector() -> Vec { return Vec(x, y, z) }
-}
-
-struct TextureVertex: CustomStringConvertible {
+struct TextureVertex: FaceVertex, CustomStringConvertible {
     let u, v, w: Scalar
-    
     var description: String { get { return "(\(u), \(v), \(w))" } }
+
+    init(_ array: [String]) throws {
+        guard 2...3 ~= array.count
+        else { throw ObjectLoaderError.InvalidVertex("invalid texture vertex coordinate count") }
+        
+        self.u = try VertexCoordinate(str: array[0])
+        self.v = try VertexCoordinate(str: array[1])
+        self.w = array.count == 3 ? try VertexCoordinate(str: array[2]) : 0.0
+    }
 }
 
-extension TextureVertex {
-    func Vector() -> Vec { return Vec(u, v, w) }
-}
-
-struct Normal: CustomStringConvertible {
+struct VertexNormal: FaceVertex, CustomStringConvertible {
     let i, j, k: Scalar
-    
     var description: String { get { return "(\(i), \(j), \(k))" } }
+
+    init(_ array: [String]) throws {
+        guard 3 == array.count
+        else { throw ObjectLoaderError.InvalidVertex("invalid vertex normal coordinate count") }
+        
+        self.i = try VertexCoordinate(str: array[0])
+        self.j = try VertexCoordinate(str: array[1])
+        self.k = try VertexCoordinate(str: array[2])
+    }
 }
 
 struct FaceElement: CustomStringConvertible {
-    let vi, ti, ni: Int
-
-    var description: String { get { return "(\(vi), \(ti), \(ni))" } }
-}
-
-struct Group {
-    let name: String
-    let faces: [[FaceElement]]
-}
-
-enum MaterialElementKey: String {
-    case Illum, Ka, Kd, Ks, Ke, Ns, Ni, Map_Kd
-}
-
-struct MaterialElement {
-    struct MaterialElementColor {
-        let r, g, b: Scalar
-    }
-
-    enum MaterialElementIllum: Int {
-        case Constant = 0, Lambertian, BlinnPhong
-    }
-
-    let name: String
-    let properties: Dictionary<MaterialElementKey, AnyObject>
-}
-
-
-struct BaseLoader {
-    let scanner: NSScanner
-
-    init?(name: String) {
-        guard
-            let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
-            let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-            else { print("Error reading file: \(name)"); return nil }
-    
-        scanner = NSScanner(string: text as String)
+    enum FaceElementType: Int {
+        case VertexOnly = 1
+        case VertexAndTexture = 3
+        case VertexAndNormal = 5
+        case VertexAndTextureAndNormal = 7
     }
     
-}
-
-// https://people.cs.clemson.edu/~dhouse/courses/405/docs/brief-mtl-file-format.html
-struct MaterialLibrary {
-    var materials = [MaterialElement]()
-
-    init?(name: String) {
-        guard
-            let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
-            let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-            else { return nil }
-        
-        for line in text.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet()) {
-            let scanner = NSScanner(string: line)
+    var type: FaceElementType? { // it'd be a waste to store this
+        get {
+            let v = Int(vi != 0)
+            let t = Int(ti != 0) * 2
+            let n = Int(ni != 0) * 4
             
-            if scanner.scanString("#", intoString: nil) {
-                if let comment = scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet()) {
-                    print("[\(name):comment]\t\(comment)")
-                }
-            }
-
-            else if scanner.scanString("newmtl ", intoString: nil) {
-                if let newmtl = scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet()) {
-                    materials.append(MaterialElement(name: newmtl, properties: Dictionary<MaterialElementKey, AnyObject>()))
-                    print("[\(name):newmtl]\t\(newmtl)")
-                }
-            }
-            
-            else if scanner.scanString("illum ", intoString: nil) {
-                if let illum = scanner.scanInt() {
-                    if let m = materials.popLast() {
-                        var d = m.properties
-                        d[.Illum] = NSNumber(int: illum)
-                        materials.append(MaterialElement(name: m.name, properties: d))
-                    }
-                    print("[\(name):illum]\t\(illum)")
-                }
-            }
-
-            else if scanner.scanString("illum ", intoString: nil) {
-                if let illum = scanner.scanInt() {
-                    if let m = materials.popLast() {
-                        var d = m.properties
-                        d[.Illum] = NSNumber(int: illum)
-                        materials.append(MaterialElement(name: m.name, properties: d))
-                    }
-                    print("[\(name):illum]\t\(illum)")
-                }
-            }
-
-            else if scanner.scanString("Ns ", intoString: nil) {
-                if let ns = scanner.scanDouble() {
-                    if let m = materials.popLast() {
-                        var d = m.properties
-                        d[.Ns] = NSNumber(double: ns)
-                        materials.append(MaterialElement(name: m.name, properties: d))
-                    }
-                    print("[\(name):ns]\t\(ns)")
-                }
-            }
-
-            else if scanner.scanString("Ni ", intoString: nil) {
-                if let ni = scanner.scanDouble() {
-                    if let m = materials.popLast() {
-                        var d = m.properties
-                        d[.Ni] = NSNumber(double: ni)
-                        materials.append(MaterialElement(name: m.name, properties: d))
-                    }
-                    print("[\(name):ni]\t\(ni)")
-                }
-            }
-            
-            else if scanner.scanString("map_Kd ", intoString: nil) {
-                if let map_kd = scanner.scanUpToCharactersFromSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()) {
-                    if let m = materials.popLast() {
-                        var d = m.properties
-                        d[.Map_Kd] = map_kd
-                        materials.append(MaterialElement(name: m.name, properties: d))
-                    }
-                    print("[\(name):map_kd]\t\(map_kd)")
-                }
-            }
-            
-            // TODO: rest of the stuff
-
-            else {
-                print("[\(name):?]\t\(scanner.string)")
-            }
-            
+            return FaceElementType(rawValue: v+t+n)
         }
+    }
+
+    let vi, ti, ni: FaceVertexIndex
+    var description: String { get { return "(\(vi), \(ti), \(ni))" } }
+
+    private static let slash = NSCharacterSet(charactersInString: "/")
+    
+    init(str: String) throws {
+        let indices = str.componentsSeparatedByCharactersInSet(FaceElement.slash)
+        guard 1...3 ~= indices.count else { throw ObjectLoaderError.InvalidVertex("Invalid string") }
+        
+        self.vi = try FaceVertexIndex(str: indices[0])
+        self.ti = indices.count > 1 ? try FaceVertexIndex(str: indices[1]) : 0
+        self.ni = indices.count > 2 ? try FaceVertexIndex(str: indices[2]) : 0
+    }
+}
+
+struct Face {
+    let elements: [FaceElement]
+
+    init(_ array: [String]) throws {
+        guard array.count >= 3 else { throw ObjectLoaderError.InvalidFace("A face need at least three elements") }
+    
+        var temp = [FaceElement]()
+    
+        for str in array {
+            let element = try FaceElement(str: str)
+            
+            if temp.count > 0 {
+            guard let type = element.type where /*temp.count > 0 &&*/ type == temp[0].type!
+            else { throw ObjectLoaderError.InvalidFace("Face element types must be the same within a single face")  }
+            }
+         
+            temp.append(element)
+         }
+        
+         self.elements = temp // we want for it to be a constant member
+    }
+}
+
+extension _ArrayType where Generator.Element: FaceVertex {
+    subscript(index index: FaceVertexIndex) -> Generator.Element? {
+        guard index.isValid else { return nil }
+        let ofs = index < 0 ? index.advancedBy(self.count) : index.advancedBy(-1)
+        guard ofs < self.count else { return nil }
+        
+        return self[ofs]
     }
 }
 
 struct ObjectLibrary {
-    var vertices: [Vertex] = []
-    var textvert: [TextureVertex] = []
-    var normals: [Normal] = []
-    var groups: [Group] = []
-    var materials = [String: MaterialLibrary]()
+    var vertices = [Vertex]()
+    var textvert = [TextureVertex]()
+    var normals = [VertexNormal]()
+    var faces = [Face]()
 
-    // FIXME: support different materials
-    func mesh(mid: MaterialId) -> [[Primitive]] {
-        var ret = [[Primitive]]()
-    
-        for group in groups {
-            var list = [Primitive]()
-            
-            for face in group.faces {
-                // FIXME: check the vertex index is correct
-                let p1 = vertices[face[0].vi-1].Vector()
-                let p2 = vertices[face[1].vi-1].Vector()
-                let p3 = vertices[face[2].vi-1].Vector()
-
-                // FIXME: this will fail
-                if textvert.count > 0 {
-                    let t1 = textvert[face[0].ti-1].Vector()
-                    let t2 = textvert[face[1].ti-1].Vector()
-                    let t3 = textvert[face[2].ti-1].Vector()
+    func mesh(mid: MaterialId) throws -> [Primitive] {
+        var ret = [Primitive]()
+        
+        try faces.forEach { face in
+            guard let type = face.elements[0].type else { throw ObjectLoaderError.InvalidFace("Invalid type for face") }
+        
+            for index in 2..<face.elements.count {
+                let slice = face.elements[(index-2)...index]
+        
+                var p = [Vec]()
+                var t = [Vec]()
+                var n = [Vec]()
+                
+                for element in slice {
+                    guard let pi = vertices[index: element.vi]
+                    else { throw ObjectLoaderError.InvalidFace("invalid vertex index") }
                     
-                    // FIXME: support normal indices
-                    list.append(Triangle(p1, p2, p3, mid, t1, t2, t3))
-                } else {
-                    list.append(Triangle(p1, p2, p3, mid))
+                    p.append(Vec(pi))
+                    
+                    // FIXME: this won't detect whether the index is out of bouds or zero
+                    if let ti = textvert[index: element.ti] { t.append(Vec(ti)) }
+                    if let ni = normals[index: element.ni] { n.append(Vec(ni)) }
+                }
+                
+                // FIXME: add normals for triangle primitive
+                switch type {
+                case .VertexAndNormal: fallthrough
+                case .VertexOnly:
+                    ret.append(Triangle(p1: p[0], p2: p[1], p3: p[2], material: mid))
+                case .VertexAndTextureAndNormal: fallthrough
+                case .VertexAndTexture:
+                    ret.append(Triangle(p[0], p[1], p[2], mid, t[0], t[1], t[2]))
                 }
             }
-            
-            ret.append(list)
         }
-        
         return ret
     }
 
-    init?(name: String) {
+    init(name: String) throws {
         guard
             let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
             let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-        else { return nil }
+        else { throw ObjectLoaderError.InvalidFile("object file not found") }
         
         let scanner = NSScanner(string: text as String)
         
@@ -230,125 +226,46 @@ struct ObjectLibrary {
                 print("[\(name):loading]\t\(percentage)%")
             }
             
-            guard var tokenArray = line?.componentsSeparatedByCharactersInSet(NSCharacterSet.whitespaceCharacterSet()) else { return nil }
-            tokenArray = tokenArray.filter({ (s: String) -> Bool in
-                s.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0
-            })
+            guard var tokenArray = line?.componentsSeparatedByCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
+            else { throw ObjectLoaderError.InvalidFile("invalid file line") }
+            
+            tokenArray = tokenArray.filter({ s in s != "" })
             let token = tokenArray.removeFirst()
 
-            if token == "#" {
+            switch token {
+            case "f":
+                faces.append(try Face(tokenArray))
+//                print("[\(name):face]\t\(face)")
+
+            case "v":
+                vertices.append(try Vertex(tokenArray))
+//                print("[\(name):vertex]\t{\(vertices.count)}\(vertices.last!)")
+            
+            case "vt":
+                textvert.append(try TextureVertex(tokenArray))
+//                print("[\(name):texver]\t{\(textvert.count)}\(textvert.last!)")
+
+            case "vn":
+                normals.append(try VertexNormal(tokenArray))
+//                print("[\(name):normal]\t{\(normals.count)}\(normals.last!)")
+
+            case "#":
                 print("[\(name):comment]\t\(line)")
-            }
 
-            else if token == "mtllib" {
+            case "mtllib":
                 let lib = tokenArray[0]
-                materials[lib] = MaterialLibrary(name: lib)
                 print("[\(name):mtllib]\t\(lib)")
-            }
-
-            else if token == "usemtl" {
+            
+            case "usemtl":
                 let lib = tokenArray[0]
                 print("[\(name):usemtl]\t\(lib)")
-            }
             
-            else if token == "g" {
+            case "g":
                 let gname = tokenArray[0]
-                groups.append(Group(name: gname, faces: []))
-                print("[\(name):grname]\t\(groups.last!.name)")
-            }
+                print("[\(name):grname]\t\(gname)")
 
-            else if token == "f" {
-                // FIXME: support faces with more elements
-                guard tokenArray.count == 3 else {
-                    print("[\(name):face]\t error parsing <\(line)>")
-                    continue
-                }
-            
-                var face = [FaceElement]()
-                
-                let separator = NSCharacterSet.init(charactersInString: "/")
-                for item in tokenArray {
-                    let elems = item.componentsSeparatedByCharactersInSet(separator)
-                
-                    var vi = (elems.count > 0) ? Int(elems[0])! : 0
-                    var ti = (elems.count > 1) ? Int(elems[1])! : 0
-                    var ni = (elems.count > 2) ? Int(elems[2])! : 0
-                    
-                    vi = vi < 0 ? vi + vertices.count + 1: vi
-                    ti = ti < 0 ? ti + textvert.count + 1: ti
-                    ni = ni < 0 ? ni + normals.count + 1: ni
-
-                    face.append(FaceElement(vi: vi, ti: ti, ni: ni))
-                }
-
-                // I'd rather not mutate anything
-                if groups.count == 0 {
-                    groups.append(Group(name: name, faces: [face]))
-                } else if let g = groups.popLast() {
-                    groups.append(Group(name: g.name, faces: g.faces + [face]))
-                } else {
-                    print("[\(name):face]\t error add face <\(line)>")
-                    continue
-                }
-                
-//                print("[\(name):face]\t\(face)")
-            }
-
-            else if token == "v" {
-                guard 3...4 ~= tokenArray.count,
-                      let x = Scalar(tokenArray[0]),
-                      let y = Scalar(tokenArray[1]),
-                      let z = Scalar(tokenArray[2])
-                else {
-                    print("[\(name):vertex]\t error parsing <\(line)>")
-                    continue
-                    }
-            
-                if tokenArray.count == 4 {
-                    guard let w = Scalar(tokenArray[3]) else { continue }
-                    vertices.append(Vertex(x: x, y: y, z: z, w: w))
-                } else {
-                    vertices.append(Vertex(x: x, y: y, z: z, w: 1.0))
-                }
-//                    print("[\(name):vertex]\t{\(vertices.count)}\(vertices.last!)")
-            }
-            
-            else if token == "vt" {
-                guard 2...3 ~= tokenArray.count,
-                      let u = Scalar(tokenArray[0]),
-                      let v = Scalar(tokenArray[1])
-                else {
-                    print("[\(name):vtext]\t error parsing <\(line)>")
-                    continue;
-                    }
-
-                if tokenArray.count == 3 {
-                    guard let w = Scalar(tokenArray[2]) else { continue }
-                    textvert.append(TextureVertex(u: u, v: v, w: w))
-                } else {
-                    textvert.append(TextureVertex(u: u, v: v, w: 0.0))
-                }
-
-//                print("[\(name):texver]\t{\(textvert.count)}\(textvert.last!)")
-            }
-
-            else if token == "vn" {
-                guard 3 ~= tokenArray.count,
-                      let i = Scalar(tokenArray[0]),
-                      let j = Scalar(tokenArray[1]),
-                      let k = Scalar(tokenArray[2])
-                else {
-                    print("[\(name):vnorm]\t error parsing <\(line)>")
-                    continue;
-                    }
-
-                normals.append(Normal(i: i, j: j, k: k))
-                
-//                print("[\(name):normal]\t{\(normals.count)}\(normals.last!)")
-            }
-            
-            else {
-                print("[\(name):?]\t\(line)")
+            default:
+                print("[\(name):????]\t\(line)")
             }
         }
     }
