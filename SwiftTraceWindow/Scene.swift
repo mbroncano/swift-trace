@@ -9,16 +9,16 @@
 import Foundation
 import simd
 
-struct Scene: IntersectWithRayIntersection {
-    let camera: CameraProtocol
-    let root: Primitive
-    let objects: [Primitive]
-    let lights: [Primitive]
+public struct Scene: IntersectWithRayIntersection {
+    var camera: GenerateRay
+    var root: Primitive
+    var objects: [Primitive] = []
+    var lights: [Primitive] = []
     
     let ambientLight: Color = Color(0.1, 0.1, 0.1)
     let backgroundColor: Color = Color.Black
     
-    let materials: [MaterialId: Material]
+    var materials: [MaterialId: Material] = [:]
     var skydome: Texture? = nil
 
     func skyColor(r: Ray) -> Color {
@@ -39,10 +39,9 @@ struct Scene: IntersectWithRayIntersection {
         guard let material = materials[mid] else { return nil }
         return material
     }
-
-    init() {
-
-        self.materials = [
+  
+    mutating func defaultMaterials() {
+        materials = [
             "Red"   : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25)), // Red diffuse
             "Blue"  : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.25,z:0.75)), // Blue diffuse
             "Green" : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.75,z:0.25)), // Green diffuse
@@ -58,29 +57,9 @@ struct Scene: IntersectWithRayIntersection {
             "Chess20" : Chessboard(squares: 20, white: Color.White, black:Vec(0.05, 0.05, 0.05)),          // Lite
             "Earth" : Textured(emission: Vec(), color:Vec())          // Lite
         ]
-    
-        let spheres: [Primitive] = [
-            Sphere(rad:0.5,   p:Vec(-3, 0.5, 2), material: "Red"),
-            Sphere(rad:0.5,   p:Vec(-1.5, 0.5, 2), material: "Chess"),
-            Sphere(rad:0.5,   p:Vec(0, 0.5, 2),  material: "Earth"),
-            Sphere(rad:0.5,   p:Vec(1.5, 0.5, 2),  material: "Green"),
-            Sphere(rad:0.5,   p:Vec(3, 0.5, 2),  material: "Glass"),
-            Sphere(rad:-0.4,  p:Vec(3, 0.5, 2),  material: "Glass"),
-            Sphere(rad:0.15,  p:Vec(3, 0.5, 2),  material:  "Blue"),
-//            Sphere(rad:500, p:Vec(0, -500.5, -4),       material: "Mirror"),
-//        ]
-        
-//        let floor: [Primitive] = [
-            Triangle(p1: Vec(-10, 0, -10), p2: Vec(-10, 0, 10), p3: Vec(10, 0, -10), material: "Chess20"),
-            Triangle(p1: Vec(10, 0, 10),   p2: Vec(10, 0, -10), p3: Vec(-10, 0, 10), material: "Chess20"),
-//            ]
-        /*
-        for _ in 0...25 {
-            var s = sampleDisk(); s.z = s.y; s.y = 0
-            let c = Vec(0, 0, -4) + s * 4
-            let sphere = Sphere(rad: 0.2, p: c, material: "White")
-            spheres.append(sphere)
-        }*/
+    }
+
+    func loadObjects() {
         /*
         let start = NSDate().timeIntervalSince1970
         let lib = ObjectLibrary(name: "cube.obj")
@@ -99,26 +78,22 @@ struct Scene: IntersectWithRayIntersection {
         
         let bunny_ = bunny.map { (triangle) -> Primitive in
             return tb.apply(triangle)
-        }*/
-
-//        let lites: [Primitive] = [
-//            Sphere(rad:1, p:Vec(-4, 10, -10),           material: "Lite3"),       // Lite
-            Sphere(rad:1, p:Vec( 4, 10, -10),           material: "Lite2"),       // Lite
-        ]
+        }
+        */
+    }
+    
+    init(camera: ComplexCamera, objects: [Primitive]) {
+        self.camera = camera //Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
+        self.objects = objects
         
-        self.objects =
-            spheres  //+
-//            floor +
-//            lites
-//            cube +
-//            bunny_
-        self.lights = [] //lites
+        // HACK!
+        defer { defaultMaterials() }
 
         var id = 0; root = BVHNode(nodes: objects, id: &id); print("bvh contains \(id) nodes")
 //        root = PrimitiveList(nodes: self.objects)
         
 //        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
-        camera = ComplexCamera(lookFrom: Vec(0, 2.8, 8), lookAt: Vec(0, 0.5, 2), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
+//        self.camera = ComplexCamera(lookFrom: Vec(0, 2.8, 8), lookAt: Vec(0, 0.5, 2), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
    
         let fileName = NSBundle.mainBundle().pathForResource("skydome", ofType: "jpg")!
         skydome = Texture(fileName: fileName)

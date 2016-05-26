@@ -19,15 +19,16 @@ final class BVHNode: Primitive {
     init(nodes: [Primitive], inout id: Int) {
         // random axis strategy
         let axis = Int(Scalar.Random() * 3.0)
+        
+        // debug
         self.pid = id
-
+        id = id + 1
+        
         let sorted = nodes.sort({ (a, b) -> Bool in return a.bbox.center[axis] > b.bbox.center[axis] })
         
         if sorted.count > 2 {
             let mid = sorted.count / 2
-            id = id + 1
             left = BVHNode(nodes: [] + sorted[0..<mid], id: &id)
-            id = id + 1
             right = BVHNode(nodes: [] + sorted[mid..<sorted.count], id: &id)
         } else {
             left = sorted[0]

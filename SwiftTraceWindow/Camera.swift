@@ -9,12 +9,12 @@
 import Foundation
 import simd
 
-protocol CameraProtocol {
+protocol GenerateRay {
     func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> Ray
 }
 
 /// Simple, axis aligned camera with antialias
-public class Camera: CameraProtocol {
+public class Camera: GenerateRay {
     let o, d: Vec
     
     init(o: Vec, d: Vec) {
@@ -39,7 +39,7 @@ public class Camera: CameraProtocol {
 }
 
 /// Simple axis aligned camera with antialias
-public class SimpleCamera: CameraProtocol {
+public class SimpleCamera: GenerateRay {
     let o, d: Vec
     
     init(o: Vec, d: Vec) {
@@ -65,7 +65,8 @@ public class SimpleCamera: CameraProtocol {
 
 
 // Complex camera with arbitrary positioning, DOF/antialias
-public class ComplexCamera: CameraProtocol {
+final public class ComplexCamera: GenerateRay {
+    private
     let origin: Vec
     let lowerLeftCorner: Vec
     let horizontal: Vec

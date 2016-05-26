@@ -49,6 +49,9 @@
 		64E910D61CF5A003008D8BBC /* PixelRGBA.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910D51CF5A003008D8BBC /* PixelRGBA.swift */; };
 		64E910D91CF5A04B008D8BBC /* Ray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910D81CF5A04B008D8BBC /* Ray.swift */; };
 		64E910DB1CF5A06C008D8BBC /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910DA1CF5A06C008D8BBC /* Color.swift */; };
+		64E910E01CF5F2C1008D8BBC /* Serializable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910DF1CF5F2C1008D8BBC /* Serializable.swift */; };
+		64E911141CF66517008D8BBC /* scene.json in Resources */ = {isa = PBXBuildFile; fileRef = 640777191CECEB390022008A /* scene.json */; };
+		64E911161CF67464008D8BBC /* cornell.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E911151CF67464008D8BBC /* cornell.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -59,10 +62,59 @@
 			remoteGlobalIDString = 647648D51BF9737A00C4EAC0;
 			remoteInfo = SwiftTraceWindow;
 		};
+		64E911061CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8FE7B5621B4C9FB900837609;
+			remoteInfo = "Decodable-iOS";
+		};
+		64E911081CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8FE7B56C1B4C9FB900837609;
+			remoteInfo = "DecodableTests-iOS";
+		};
+		64E9110A1CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 17FB80F71B530FED0012F106;
+			remoteInfo = "Decodable-Mac";
+		};
+		64E9110C1CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 17FB81001B530FED0012F106;
+			remoteInfo = "DecodableTests-Mac";
+		};
+		64E9110E1CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D0DC546F1B7814D200F79CB0;
+			remoteInfo = "Decodable-watchOS";
+		};
+		64E911101CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 57FCDE651BA283C900130C48;
+			remoteInfo = "Decodable-tvOS";
+		};
+		64E911121CF65B9B008D8BBC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 17FB80F61B530FED0012F106;
+			remoteInfo = "Decodable-Mac";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		640777191CECEB390022008A /* scene_balls.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = scene_balls.json; sourceTree = "<group>"; };
+		640777191CECEB390022008A /* scene.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = scene.json; sourceTree = "<group>"; };
 		6407771B1CEE10E60022008A /* Loader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Loader.swift; sourceTree = "<group>"; };
 		6407771D1CEE148D0022008A /* wavefront.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = wavefront.txt; path = ../wavefront.txt; sourceTree = "<group>"; };
 		640777211CEE1E3B0022008A /* NSScanner+Swift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSScanner+Swift.swift"; sourceTree = "<group>"; };
@@ -105,6 +157,9 @@
 		64E910D51CF5A003008D8BBC /* PixelRGBA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PixelRGBA.swift; sourceTree = "<group>"; };
 		64E910D81CF5A04B008D8BBC /* Ray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ray.swift; sourceTree = "<group>"; };
 		64E910DA1CF5A06C008D8BBC /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
+		64E910DF1CF5F2C1008D8BBC /* Serializable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serializable.swift; sourceTree = "<group>"; };
+		64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Decodable.xcodeproj; path = ../Decodable/Decodable.xcodeproj; sourceTree = "<group>"; };
+		64E911151CF67464008D8BBC /* cornell.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = cornell.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +183,7 @@
 		647648CD1BF9737A00C4EAC0 = {
 			isa = PBXGroup;
 			children = (
+				64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */,
 				647648D81BF9737A00C4EAC0 /* SwiftTraceWindow */,
 				647BBDB01BFE5E650017A888 /* SwiftTraceWindowTests */,
 				647648D71BF9737A00C4EAC0 /* Products */,
@@ -208,6 +264,7 @@
 				647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */,
 				646752A41C28BC980084CBE3 /* Camera.swift */,
 				647BBDC21BFEDECD0017A888 /* Material.swift */,
+				64E910DF1CF5F2C1008D8BBC /* Serializable.swift */,
 			);
 			name = Render;
 			sourceTree = "<group>";
@@ -231,11 +288,25 @@
 				640777321CEF5E3D0022008A /* dragon.mtl */,
 				640777331CEF5E3D0022008A /* dragon.obj */,
 				64DBD3751CEC24CD00727B71 /* earth.jpg */,
-				640777191CECEB390022008A /* scene_balls.json */,
+				640777191CECEB390022008A /* scene.json */,
+				64E911151CF67464008D8BBC /* cornell.json */,
 				6407771D1CEE148D0022008A /* wavefront.txt */,
 				642247A51CF5769200A35907 /* bunny.obj */,
 			);
 			name = Models;
+			sourceTree = "<group>";
+		};
+		64E910FE1CF65B6B008D8BBC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				64E911071CF65B6B008D8BBC /* Decodable.framework */,
+				64E911091CF65B6B008D8BBC /* DecodableTests-iOS.xctest */,
+				64E9110B1CF65B6B008D8BBC /* Decodable.framework */,
+				64E9110D1CF65B6B008D8BBC /* DecodableTests-Mac.xctest */,
+				64E9110F1CF65B6B008D8BBC /* Decodable.framework */,
+				64E911111CF65B6B008D8BBC /* Decodable.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -252,6 +323,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				64E911131CF65B9B008D8BBC /* PBXTargetDependency */,
 			);
 			name = SwiftTraceWindow;
 			productName = SwiftTraceWindow;
@@ -306,6 +378,12 @@
 			mainGroup = 647648CD1BF9737A00C4EAC0;
 			productRefGroup = 647648D71BF9737A00C4EAC0 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 64E910FE1CF65B6B008D8BBC /* Products */;
+					ProjectRef = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				647648D51BF9737A00C4EAC0 /* SwiftTraceWindow */,
@@ -314,13 +392,60 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXReferenceProxy section */
+		64E911071CF65B6B008D8BBC /* Decodable.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Decodable.framework;
+			remoteRef = 64E911061CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		64E911091CF65B6B008D8BBC /* DecodableTests-iOS.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "DecodableTests-iOS.xctest";
+			remoteRef = 64E911081CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		64E9110B1CF65B6B008D8BBC /* Decodable.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Decodable.framework;
+			remoteRef = 64E9110A1CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		64E9110D1CF65B6B008D8BBC /* DecodableTests-Mac.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = "DecodableTests-Mac.xctest";
+			remoteRef = 64E9110C1CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		64E9110F1CF65B6B008D8BBC /* Decodable.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Decodable.framework;
+			remoteRef = 64E9110E1CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		64E911111CF65B6B008D8BBC /* Decodable.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Decodable.framework;
+			remoteRef = 64E911101CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
 /* Begin PBXResourcesBuildPhase section */
 		647648D41BF9737A00C4EAC0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64E911141CF66517008D8BBC /* scene.json in Resources */,
 				640777341CEF5E3D0022008A /* dragon.mtl in Resources */,
 				64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */,
+				64E911161CF67464008D8BBC /* cornell.json in Resources */,
 				6407772B1CEE4EEB0022008A /* cube.obj in Resources */,
 				6407772F1CEE4EF50022008A /* default.png in Resources */,
 				647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */,
@@ -358,6 +483,7 @@
 				647BBDC01BFEDDB50017A888 /* Framebuffer.swift in Sources */,
 				647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */,
 				647BBDBA1BFE761F0017A888 /* Vector.swift in Sources */,
+				64E910E01CF5F2C1008D8BBC /* Serializable.swift in Sources */,
 				640777221CEE1E3B0022008A /* NSScanner+Swift.swift in Sources */,
 				64DBD36C1CEB661900727B71 /* EyeTracer.swift in Sources */,
 				646752A51C28BC980084CBE3 /* Camera.swift in Sources */,
@@ -395,6 +521,11 @@
 			isa = PBXTargetDependency;
 			target = 647648D51BF9737A00C4EAC0 /* SwiftTraceWindow */;
 			targetProxy = 647BBDB41BFE5E650017A888 /* PBXContainerItemProxy */;
+		};
+		64E911131CF65B9B008D8BBC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "Decodable-Mac";
+			targetProxy = 64E911121CF65B9B008D8BBC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

@@ -20,13 +20,22 @@ class ViewController: NSViewController {
 //            Random.seed(1234)
             
             let width = 320, height = 240
+            var scene: Scene
 
-            
+            do {
+                let file = NSBundle.mainBundle().pathForResource("scene", ofType: "json")!
+                let data = NSData(contentsOfFile: file)!
+                let json = try NSJSONSerialization.JSONObjectWithData(data, options: [])
+                scene = try Scene.decode(json)
+            } catch {
+                print(error)
+                return
+            }
 //            let render = PathTracer(scene: CornellBox(), w: width, h: height)
 //            let render = RayTracer(scene: CornellBox(), w: width, h: height)
 //            let render = WhittedTracer(scene: CornellBox(), w: width, h: height)
 
-            let render = PathTracer(scene: Scene(), w: width, h: height)
+            let render = PathTracer(scene: scene, w: width, h: height)
 //            let render = DistributedRayTracer(scene: Scene(), w: width, h: height)
 //            let render = WhittedTracer(scene: Scene(), w: width, h: height)
             
