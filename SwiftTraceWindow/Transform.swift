@@ -48,6 +48,10 @@ struct Transform {
         Row(0, 0, 1, 0),
         Row(0, 0, 0, 1)])
     }
+
+    func apply(array: [Triangle]) -> [Triangle] {
+        return array.map({ t in self.apply(t) })
+    }
     
     func apply(t: Triangle) -> Triangle {
         let p1 = Vec(Col(t.p1.x, t.p1.y, t.p1.z, 1) * transform)

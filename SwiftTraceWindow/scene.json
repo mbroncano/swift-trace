@@ -20,6 +20,10 @@
         "triangles": [
             { "p1": [-10, 0, -10], "p2": [-10, 0, 10], "p3": [10, 0, -10], "m": "Chess20" },
             { "p1": [10, 0, 10], "p2": [10, 0, -10], "p3": [-10, 0, 10], "m": "Chess20" },
+        ],
+        "objects" : [
+            { "file": "cube.obj", "m": "DarkGlass", "transform": { "scale": [10, 4, 0.5], "rotate": [], "translate": [0, 0, -2] } },
+            { "file": "bunny.obj", "m": "Mirror", "transform": { "scale": [5], "rotate": [0, 0.4, 0], "translate": [-1, 0, 3] } }
         ]
     }
 }

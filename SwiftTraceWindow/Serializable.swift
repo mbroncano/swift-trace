@@ -10,11 +10,28 @@ import Foundation
 import Decodable
 import simd
 
+enum SceneLoaderError: ErrorType {
+    case InvalidVector(String)
+    case InvalidFace(String)
+    case InvalidFile(String)
+}
+
+
 extension Vec: Decodable {
-    init(v: [Double]) { self.init(v[0], v[1], v[2]) }
+    init(v: [Double]) throws {
+        if v.count == 0 {
+            self.init(0, 0, 0)
+        } else if v.count == 1 {
+            self.init(v[0], v[0], v[0])
+        } else if v.count == 3 {
+            self.init(v[0], v[1], v[2])
+        } else {
+            throw SceneLoaderError.InvalidVector("Vector can only have 0, 1 or 3 elements")
+        }
+    }
     
     public static func decode(json: AnyObject) throws -> Vec {
-        return Vec(v: json as! [Double])
+        return try Vec(v: json as! [Double])
     }
 }
 
@@ -49,19 +66,48 @@ extension Triangle: Decodable {
         )}
 }
 
+extension Transform: Decodable {
+    internal static func decode(json: AnyObject) throws -> Transform {
+        let scale: Vec = try json => "scale"
+        let rotate: Vec = try json => "rotate"
+        let translate: Vec = try json => "translate"
+        
+        return Transform(scale: scale) +
+               Transform(rotate: rotate) +
+               Transform(translate: translate)
+        }
+}
+
+struct ObjectAndTransform: Decodable {
+    let object: ObjectLibrary
+    let transform: Transform
+    let material: MaterialId
+
+    internal static func decode(json: AnyObject) throws -> ObjectAndTransform {
+        let transform = try Transform.decode(json => "transform")
+        let object = try ObjectLibrary(name: json => "file")
+        let material = try MaterialId(json => "m")
+        
+        return ObjectAndTransform(object: object, transform: transform, material: material)
+    }
+    
+    func mesh() throws -> [Triangle] {
+        return transform.apply(try object.mesh(material) as! [Triangle])
+    }
+}
+
 extension Scene: Decodable {
     public static func decode(json: AnyObject) throws -> Scene {
     
         // WTF!!
         let spheres: [Sphere] = try json => "primitives" => "spheres"
         let triangles: [Triangle] = try json => "primitives" => "triangles"
-        var objects: [Primitive] = []
-        triangles.forEach { (t) in
-            objects.append(t)
-        }
-        spheres.forEach { (s) in
-            objects.append(s)
-        }
+        let object_transform: [ObjectAndTransform] = try json => "primitives" => "objects"
+    
+        var objects = [Primitive]()
+        triangles.forEach { (t) in objects.append(t) }
+        spheres.forEach { (s) in objects.append(s) }
+        try object_transform.forEach { (o) in let mesh = try o.mesh(); mesh.forEach({ t in objects.append(t) }) }
     
         return try Scene(
             camera: json => "camera",

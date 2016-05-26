@@ -59,41 +59,11 @@ public struct Scene: IntersectWithRayIntersection {
         ]
     }
 
-    func loadObjects() {
-        /*
-        let start = NSDate().timeIntervalSince1970
-        let lib = ObjectLibrary(name: "cube.obj")
-        let meshes = lib?.mesh("DarkGlass")[0] as! [Triangle]
-        let t = Transform(scale: Vec(10, 4, 0.5)) + Transform(rotate: Vec(0.0, 0.0, 0)) + Transform(translate: Vec(0, 0, -2))
-        let cube = meshes.map { (triangle) -> Primitive in
-            return t.apply(triangle)
-        }
-        
-        let duration = NSDate().timeIntervalSince1970 - start
-        print("Load object: completed in \(duration * 1000)ms")
- 
-        let tb = Transform(scale: Vec(15)) + Transform(rotate: Vec(0, 0.4, 0)) + Transform(translate: Vec(0, -2, 2))
-        let ob = ObjectLibrary(name: "bunny.obj")
-        let bunny = ob?.mesh("Mirror")[0] as! [Triangle]
-        
-        let bunny_ = bunny.map { (triangle) -> Primitive in
-            return tb.apply(triangle)
-        }
-        */
-
-    }
-    
-    init(camera: ComplexCamera, objects: [Primitive]) throws {
+   init(camera: ComplexCamera, objects: [Primitive]) throws {
         self.camera = camera //Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
+        self.objects = objects
         
-        let cube = try ObjectLibrary(name: "cube.obj")
-        let trans = Transform(scale: Vec(10, 4, 0.5)) + Transform(rotate: Vec(0.0, 0.0, 0)) + Transform(translate: Vec(0, 0, -2))
-        let cube_m = try cube.mesh("DarkGlass")
-        let cube_t = cube_m.map { t in trans.apply(t as! Triangle) }
-
-        self.objects = objects + cube_t
-        
-        // HACK!
+        // HACK! We need to load them from the json
         defer { defaultMaterials() }
 
         var id = 0; root = BVHNode(nodes: self.objects, id: &id); print("bvh contains \(id) nodes")
