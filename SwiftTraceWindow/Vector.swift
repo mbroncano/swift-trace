@@ -21,7 +21,6 @@ extension Scalar {
 public func ~= (a:Scalar, b:Scalar) -> Bool  { return abs(a-b) < Scalar.epsilon }
 
 /// Vec is currenly an alias for simd.double3
-public typealias Vec2 = simd.double2
 public typealias Vec = simd.double3
 extension Vec: CustomStringConvertible {
     /// Zero Vector
@@ -64,7 +63,7 @@ typealias Col = double4
 extension Col {
     static let Zero = Col(0, 0, 0, 0)
     
-    init(_ v: Vec) { self.init(v.x, v.y, v.z, 1.0) }
+    init(_ v: Vec) { self.init(v.x, v.y, v.z, Scalar(1.0)) }
 }
 
 extension Vec {

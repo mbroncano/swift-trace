@@ -12,16 +12,46 @@ import simd
 
 typealias MaterialId = String
 
-class Material {
+protocol MaterialProtocol {
+    var emission: Color { get }
+    var isLight: Bool { get }
+    func colorAtTextCoord(uv: Vec) -> Color
+    func sample(wi: Vec, normal: Vec) -> (Scalar, Vec)
+}
+
+extension MaterialTemplate: MaterialProtocol {
+    var emission: Color { get { return Ke } }
+    var isLight: Bool { get { return emission != Vec.Zero } }
+    func colorAtTextCoord(uv: Vec) -> Color {
+        // FIXME: implement texture support
+        return Kd
+    }
+    func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
+        // FIXME: implement all models
+        let r1 = 2 * Scalar(M_PI) * Scalar.Random()
+        let r2 = Scalar.Random()
+        let r2s = sqrt(r2)
+        let w = dot(normal, wi) < 0 ? normal: normal * -1 // corrected normal (always exterior)
+        let u = cross((fabs(w.x)>Scalar.epsilon ? Vec(0, 1, 0) : Vec(1, 0, 0)), w).norm()
+        let v = cross(w, u)
+        
+        let d1 = u * cos(r1) * r2s
+        let d = (d1 + v * sin(r1) * r2s + w * sqrt(1 - r2)).norm()
+
+        return (1.0, d)
+    }
+}
+
+class Material: MaterialProtocol {
     let emission: Color
     let diffuseColor: Color
 
-    init (emission: Color, color: Color) {
+    init (emission: Color, color: Color) throws {
         self.emission = emission
         self.diffuseColor = color
     }
 
-    func isLight() -> Bool { return emission != Vec.Zero }
+    var isLight: Bool { get { return emission != Vec.Zero } }
 
     func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) { return (0.0, Vec.Zero) }
     
@@ -70,12 +100,10 @@ class Refractive: Material {
 class Textured: Lambertian {
     var texture: Texture? = nil
 
-    override init(emission: Color, color: Color) {
-        super.init(emission: emission, color: color)
+    init(name: String) throws {
+        try super.init(emission: Vec.Zero, color: Color.White)
         
-        let bundle = NSBundle.mainBundle()
-        let fileName = bundle.pathForResource("earth", ofType: "jpg")!
-        texture = Texture(fileName: fileName)
+        texture = try Texture(name: name)
     }
 
     override func colorAtTextCoord(uv: Vec) -> Color {
@@ -88,11 +116,11 @@ class Chessboard: Specular {
     let white: Color
     let black: Color
 
-    init(squares: Scalar = 20, white: Color = Color.White, black: Color = Color.Black) {
+    init(squares: Scalar = 20, white: Color = Color.White, black: Color = Color.Black) throws {
         self.squares = squares
         self.white = white
         self.black = black
-        super.init(emission: Vec.Zero, color: white)
+        try super.init(emission: Vec.Zero, color: white)
     }
 
     override func colorAtTextCoord(uv: Vec) -> Color {

@@ -35,41 +35,30 @@ struct AABB: IntersectWithRayBoolean, Surface, Equatable, Comparable {
     func intersectWithRay(r: Ray) -> Bool {
 
         // This works (tested!)
-        var tmin = -Scalar.infinity
-        var tmax = Scalar.infinity
- 
-        for i in 0...2 {
-            if r.d[i] != 0.0 {
-                let t1 = (bmin[i] - r.o[i])/r.d[i];
-                let t2 = (bmax[i] - r.o[i])/r.d[i];
-                
-                tmin = max(tmin, min(t1, t2));
-                tmax = min(tmax, max(t1, t2));
-            } else if (r.o[i] <= bmin[i] || r.o[i] >= bmax[i]) {
-                return false
-            }
-        }
-//        return tmax > tmin && tmax > 0.0
-        return tmax >= tmin && tmax >= 0.0
-    
-        // FIXME: SIMD version
-        // http://www.flipcode.com/archives/SSE_RayBox_Intersection_Test.shtml
-//        let flt_plus_inf = -logf(0)
-//        let plus_inf = float4(flt_plus_inf, flt_plus_inf, flt_plus_inf, flt_plus_inf)
-//        let minus_inf = float4(-flt_plus_inf, -flt_plus_inf, -flt_plus_inf, -flt_plus_inf)
-//        let box_min = float4(Float(min.x), Float(min.y), Float(min.z), 1)
-//        let box_max = float4(Float(max.x), Float(max.y), Float(max.z), 1)
-//        let pos = float4(Float(r.o.x), Float(r.o.y), Float(r.o.z), 1)
-//        let inv_dir = simd.recip(float4(Float(r.d.x), Float(r.d.y), Float(r.d.z), 1))
-//        let l1 = (box_min - pos) * inv_dir
-//        let l2 = (box_max - pos) * inv_dir
-//        let filtered_l1a = simd.min(l1, plus_inf)
-//        let filtered_l2a = simd.min(l2, plus_inf)
-//        let filtered_l1b = simd.max(l1, minus_inf)
-//        let filtered_l2b = simd.max(l2, minus_inf)
-//        let lmax = simd.max(filtered_l1a, filtered_l2a)
-//        let lmin = simd.min(filtered_l1b, filtered_l2b)
+//        var tmin = -Scalar.infinity
+//        var tmax = Scalar.infinity
+// 
+//        for i in 0...2 {
+//            if r.d[i] != 0.0 {
+//                let t1 = (bmin[i] - r.o[i])/r.d[i];
+//                let t2 = (bmax[i] - r.o[i])/r.d[i];
+//                
+//                tmin = max(tmin, min(t1, t2));
+//                tmax = min(tmax, max(t1, t2));
+//            } else if (r.o[i] <= bmin[i] || r.o[i] >= bmax[i]) {
+//                return false
+//            }
+//        }
+//        return tmax >= tmin && tmax >= 0.0
         
+        // This works faster (SIMD)
+        let t1 = (bmin - r.o) * r.inv
+        let t2 = (bmax - r.o) * r.inv
+        
+        let tmin = simd.reduce_max(simd.min(t1, t2))
+        let tmax = simd.reduce_min(simd.max(t1, t2))
+ 
+        return tmax >= tmin    
     }
 }
 

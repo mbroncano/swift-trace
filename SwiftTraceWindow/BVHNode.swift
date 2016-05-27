@@ -41,7 +41,6 @@ final class BVHNode: Primitive {
     override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
         hit.count += 1
         guard bbox.intersectWithRay(r) else { return false }
-//        return left.intersectWithRay(r, hit: &hit) || right.intersectWithRay(r, hit: &hit)
 
         let lbool = left.intersectWithRay(r, hit: &hit)
         let rbool = right.intersectWithRay(r, hit: &hit)

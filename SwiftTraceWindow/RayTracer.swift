@@ -95,14 +95,14 @@ class DistributedRayTracer: Renderer, RayTracer {
             guard
                 scene.root.intersectWithRay(r, hit: &hit),
                 let mid = hit.m,
-                let material = scene.materials[mid]
+                let material = scene.materialWithId(mid)
                 else {
                     color = color * scene.skyColor(r);
                     break
             }
                         
             // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
-            if material.isLight() {
+            if material.isLight {
                 color = color * material.emission
                 break
             }

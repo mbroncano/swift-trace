@@ -11,44 +11,6 @@ import simd
 
 
 
-struct Texture {
-    let pixels: UnsafeMutablePointer<PixelRGBA>
-    let width, height, bytesPerRow, bitsPerPixel: Int
-    
-    init?(fileName: String) {
-        guard
-            let url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault, fileName, CFURLPathStyle.CFURLPOSIXPathStyle, false),
-            let source = CGDataProviderCreateWithURL(url),
-            let image = CGImageCreateWithJPEGDataProvider(source, nil, false, CGColorRenderingIntent.RenderingIntentDefault)
-            else { return nil }
-        
-        width = CGImageGetWidth(image)
-        height = CGImageGetHeight(image)
-        bytesPerRow = CGImageGetBytesPerRow(image)
-        bitsPerPixel = CGImageGetBitsPerPixel(image)
-        pixels = UnsafeMutablePointer<PixelRGBA>.alloc(width*height)
-        
-        let space = CGImageGetColorSpace(image)
-        let bitmapInfo = CGImageGetBitmapInfo(image)
-        guard
-            let context = CGBitmapContextCreate(pixels, width, height, 8, bytesPerRow, space, bitmapInfo.rawValue)
-            else { return nil }
-        
-        CGContextDrawImage(context, CGRect(x: 0, y: 0, width: width, height: height), image)
-        CGContextFlush(context)
-    }
-
-    subscript(textCoord: Vec) -> Color {
-        get {
-            let x = Int(textCoord.x*Scalar(width)) % width
-            let y = Int(textCoord.y*Scalar(height)) % height
-            let ofs = (x + y * width)
-            let pixel = pixels[ofs] //PixelRGBA(a: pixels[ofs], r: pixels[ofs+1], g: pixels[ofs+2], b: pixels[ofs+3])
-
-            return pixel.color()
-        }
-    }
-}
 
 class Framebuffer {
     let width:Int, height: Int

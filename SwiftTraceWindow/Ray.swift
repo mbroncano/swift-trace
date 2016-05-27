@@ -19,9 +19,11 @@ public struct Ray: CustomStringConvertible {
     var tmin: Scalar = Scalar.epsilon
     /// The maximum distance this ray will travel
     var tmax: Scalar = Scalar.infinity
+    /// The reciprocate of the direction
+    var inv: Vec
     
-    init(o: Vec, d: Vec) { self.o = o; self.d = d }
-    init(o: Vec, d: Vec, tmin: Scalar, tmax: Scalar) { self.o = o; self.d = d; self.tmin = tmin; self.tmax = tmax }
+    init(o: Vec, d: Vec) { self.init(o: o, d: d, tmin: Scalar.epsilon, tmax: Scalar.infinity) }
+    init(o: Vec, d: Vec, tmin: Scalar, tmax: Scalar) { self.o = o; self.d = d; self.tmin = tmin; self.tmax = tmax; self.inv = recip(d) }
     init(from: Vec, to: Vec) { let d = to-from; self.init(o: from, d: d.norm(), tmin: Scalar.epsilon, tmax: d.len()) }
 
     public var description: String { return "<(\(o.x),\(o.y),\(o.z))->(\(d.x),\(d.y),\(d.z))" }

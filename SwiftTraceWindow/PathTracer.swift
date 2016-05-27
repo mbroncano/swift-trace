@@ -46,12 +46,10 @@ class PathTracer: DistributedRayTracer {
         
         while true {
             // intersection with world
-            guard scene.intersectWithRay(r, hit: &hit),
-                  let mid = hit.m,
-                  let material = scene.materialWithId(mid)
-            
-                else { return cl + cf * scene.skyColor(r) }
-            
+            guard scene.intersectWithRay(r, hit: &hit)
+            else { return cl + cf * scene.skyColor(r) }
+
+            let material = scene.materialWithId(hit.m!)!
             var f = material.colorAtTextCoord(hit.uv)
             cl = cl + cf * material.emission
 

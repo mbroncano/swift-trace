@@ -5,8 +5,9 @@
         "vec_up": [0, 1, 0],
         "fov": 60,
         "aspect": 1.33,
-        "aperture": 0.2
+        "aperture": 0.1
     },
+    "skydome": { "file": "skydome.jpg" },
     "primitives" : {
         "spheres": [
             { "r": 0.5, "p": [-3.0, 0.5, 2.0], "m": "Red" },
@@ -23,7 +24,8 @@
         ],
         "objects" : [
             { "file": "cube.obj", "m": "DarkGlass", "transform": { "scale": [10, 4, 0.5], "rotate": [], "translate": [0, 0, -2] } },
-            { "file": "bunny.obj", "m": "Mirror", "transform": { "scale": [5], "rotate": [0, 0.4, 0], "translate": [-1, 0, 3] } }
+            { "file": "bunny.obj", "m": "Mirror", "transform": { "scale": [7], "rotate": [0, 0.4, 0], "translate": [-1, 0, 4] } },
+            { "file": "teapot.obj", "m": "White", "transform": { "scale": [1], "rotate": [0, 0.0, 0], "translate": [1, 0, 4] } }
         ]
     }
 }

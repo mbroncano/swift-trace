@@ -25,7 +25,13 @@ public struct PixelRGBA: Equatable {
     /// Default initializer with Color type
     /// -Parameter color: Color type variable
     init(color: Color) {
-        let c = min(color, 1.0) * Scalar(byte.max)
+        var c = clamp(color, min:0, max: 1) * Scalar(byte.max)
+        for i in 0...2 {
+            if c[i].isNaN {
+                c[i] = 0
+            }
+        }
+        
         (r, g, b, a) = (byte(c.x), byte(c.y), byte(c.z), 0)
     }
     

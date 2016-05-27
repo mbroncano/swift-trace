@@ -19,7 +19,7 @@ class ViewController: NSViewController {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
 //            Random.seed(1234)
             
-            let width = 320, height = 240
+            let width = 640, height = 480
             var scene: Scene
 
             do {
@@ -27,6 +27,7 @@ class ViewController: NSViewController {
                 let data = NSData(contentsOfFile: file)!
                 let json = try NSJSONSerialization.JSONObjectWithData(data, options: [])
                 scene = try Scene.decode(json)
+                try scene.defaultMaterials()
             } catch {
                 print(error)
                 return
@@ -37,13 +38,13 @@ class ViewController: NSViewController {
 
             let render = PathTracer(scene: scene, w: width, h: height)
 //            let render = DistributedRayTracer(scene: Scene(), w: width, h: height)
-//            let render = WhittedTracer(scene: Scene(), w: width, h: height)
+//            let render = WhittedTracer(scene: scene, w: width, h: height)
             
             var avg:NSTimeInterval = 0
             while true {
                 // render another frame
                 let start = NSDate().timeIntervalSince1970
-                render.renderTile(size: 64)
+                render.render() //Tile(size: 64)
                 let duration = NSDate().timeIntervalSince1970 - start
                 avg = avg + duration
                 print("Profiler: frame in \(Int(duration * 1000))ms, avg. \(Int(avg * 1000 / Double(render.framebuffer.samples)))ms")
@@ -58,8 +59,6 @@ class ViewController: NSViewController {
                 }
             }
         }
-
-        
     }
     
     override var representedObject: AnyObject? {

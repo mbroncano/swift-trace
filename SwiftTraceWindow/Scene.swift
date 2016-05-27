@@ -9,11 +9,15 @@
 import Foundation
 import simd
 
+enum SceneError: ErrorType {
+    case InvalidMaterial(String)
+}
+
 public struct Scene: IntersectWithRayIntersection {
-    var camera: GenerateRay
-    var root: Primitive
+    let camera: GenerateRay
+    let root: Primitive
     var objects: [Primitive] = []
-    var lights: [Primitive] = []
+    let lights: [Primitive] = []
     
     let ambientLight: Color = Color(0.1, 0.1, 0.1)
     let backgroundColor: Color = Color.Black
@@ -36,12 +40,15 @@ public struct Scene: IntersectWithRayIntersection {
     }
 
     func materialWithId(mid: MaterialId) -> Material? {
-        guard let material = materials[mid] else { return nil }
+        guard let material = materials[mid]
+        else { return nil }
         return material
     }
-  
-    mutating func defaultMaterials() {
-        materials = [
+    
+    mutating func defaultMaterials() throws  {
+        let mats = try
+    
+        [
             "Red"   : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25)), // Red diffuse
             "Blue"  : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.25,z:0.75)), // Blue diffuse
             "Green" : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.75,z:0.25)), // Green diffuse
@@ -55,72 +62,23 @@ public struct Scene: IntersectWithRayIntersection {
             "Lite3" : Lambertian(emission: Vec(x:4,y:4,z:8), color:Vec()),          // Lite
             "Chess" : Chessboard(squares: 10, white: Color.White, black:Vec(0.05, 0.05, 0.05)),          // Lite
             "Chess20" : Chessboard(squares: 20, white: Color.White, black:Vec(0.05, 0.05, 0.05)),          // Lite
-            "Earth" : Textured(emission: Vec(), color:Vec())          // Lite
+            "Earth" : Textured(name: "earth.jpg")          // Lite
         ]
+        
+        mats.forEach({ self.materials[$0] = $1 })
     }
 
-   init(camera: ComplexCamera, objects: [Primitive]) throws {
+   init(camera: ComplexCamera, objects: [Primitive], skydome: Texture?, materials: [MaterialId: Material]) throws {
         self.camera = camera //Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
         self.objects = objects
         
-        // HACK! We need to load them from the json
-        defer { defaultMaterials() }
-
-        var id = 0; root = BVHNode(nodes: self.objects, id: &id); print("bvh contains \(id) nodes")
+        var id = 0; self.root = BVHNode(nodes: self.objects, id: &id); print("bvh contains \(id) nodes")
 //        root = PrimitiveList(nodes: self.objects)
         
 //        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
 //        self.camera = ComplexCamera(lookFrom: Vec(0, 2.8, 8), lookAt: Vec(0, 0.5, 2), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
    
-        let fileName = NSBundle.mainBundle().pathForResource("skydome", ofType: "jpg")!
-        skydome = Texture(fileName: fileName)
+        self.skydome = skydome
+        self.materials = materials
     }
 }
-/*
-struct CornellBox: Scene {
-//    let list: GeometryList
-    let camera: CameraProtocol
-//    let lights: [GeometryCollectionItemId]
-    var root: Primitive
-  
-    let ambientLight = Vec(0.1, 0.1, 0.1)
-    let backgroundColor = Color.Black
-
-    init() {
-        let materials: [String: Material] = [
-            "Red"   : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25)), // Red diffuse
-            "Blue"  : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.25,z:0.75)), // Blue diffuse
-            "Green" : Lambertian(emission: Vec(), color:Vec(x:0.25,y:0.75,z:0.25)), // Green diffuse
-            "White" : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.75,z:0.75)), // White diffuse
-            "Black" : Lambertian(emission: Vec(), color:Vec()),                     // Black
-            "Mirror": Specular(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999),      // Mirror
-            "Glass" : Refractive(emission: Vec(), color:Vec(x:1,y:1,z:1)*0.999),    // Glass
-            "Lite"  : Lambertian(emission: Vec(x:12,y:12,z:12), color:Vec()),        // Lite
-            "Lite2" : Lambertian(emission: Vec(x:12,y:8,z:8), color:Vec())        // Lite
-        ]
-    
-        let objects: [Primitive] = [
-            Sphere(rad:1e5, p:Vec(x: 1e5+1,y:40.8,z:81.6),  material: materials["Red"]!),       // Left
-            Sphere(rad:1e5, p:Vec(x:-1e5+99,y:40.8,z:81.6), material: materials["Blue"]!),      // Right
-            Sphere(rad:1e5, p:Vec(x:50,y:40.8,z: 1e5),      material: materials["White"]!),     // Back
-            Sphere(rad:1e5, p:Vec(x:50,y:40.8,z:-1e5+170),  material: materials["Black"]!),     // Front
-            Sphere(rad:1e5, p:Vec(x:50,y: 1e5,z: 81.6),     material: materials["White"]!),     // Botom
-            Sphere(rad:1e5, p:Vec(x:50,y:-1e5+81.6,z:81.6), material: materials["White"]!),     // Top
-            Sphere(rad:16.5,p:Vec(x:27,y:16.5,z:47),        material: materials["Mirror"]!),    // Mirror
-            Sphere(rad:16.5,p:Vec(x:73,y:16.5,z:78),        material: materials["Glass"]!),     // Glass
-//            Triangle(p1: Vec(x:27,y:16.5,z:47), p2: Vec(x:73,y:16.5,z:78), p3: Vec(x:30,y:11.6,z:111.6), material: materials["Green"]!),
-//            Triangle(p1: Vec(30,10,120), p2: Vec(30,10,120), p3: Vec(60,10,120), material: materials["Green"]!),
-            Sphere(rad:600, p:Vec(x:50,y:681.6-0.27,z:81.6),material: materials["Lite"]!),       // Lite
-//            Sphere(rad:3, p:Vec(x:50,y:8,z:81.6),material: materials["Lite2"]!)       // Lite
-        ]
-//        list = GeometryList(items:objects)
-        root = BVHNode(nodes: objects)
-//        lights = [GeometryCollectionItemId](0..<objects.count).filter({ (id) -> Bool in objects[id].material.isLight() })
-        
-        camera = Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
-    }
-    
-    func skyColor(r: Ray) -> Color { return self.backgroundColor }
-
-}
-*/

@@ -78,7 +78,7 @@ final public class ComplexCamera: GenerateRay {
         self.init(lookFrom: pos,
                   lookAt: pos+dir*(1/focalLenght),
                    vecUp: up,
-                    fov: 180*asin(width * focalLenght) / M_PI,
+                    fov: 180*asin(width * focalLenght) / Scalar(M_PI),
                     aspect: 0)
         
     }

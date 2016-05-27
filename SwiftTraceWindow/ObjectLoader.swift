@@ -36,16 +36,16 @@ extension FaceVertexIndex {
     }
 }
 
-typealias VertexCoordinate = Double
+typealias VertexCoordinate = Scalar
 extension VertexCoordinate {
     init(str: String) throws {
         guard str.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0
         else { throw ObjectLoaderError.InvalidVertex("vertex coordinate must not be empty") } // empty string is a *not* valid case
         
-        guard let dbl = Double(str) where (dbl.isFinite)
+        guard let s = Scalar(str) where (s.isFinite)
         else { throw ObjectLoaderError.InvalidVertex("invalid vertex coordinate <\(str)>") }
         
-        self = dbl
+        self = s
     }
 }
 
@@ -131,8 +131,9 @@ struct FaceElement: CustomStringConvertible {
 
 struct Face {
     let elements: [FaceElement]
+    let material: String?
 
-    init(_ array: [String]) throws {
+    init(_ array: [String], material: String? = nil) throws {
         guard array.count >= 3 else { throw ObjectLoaderError.InvalidFace("A face need at least three elements") }
     
         var temp = [FaceElement]()
@@ -149,6 +150,7 @@ struct Face {
          }
         
          self.elements = temp // we want for it to be a constant member
+         self.material = material
     }
 }
 
@@ -167,6 +169,7 @@ struct ObjectLibrary {
     var textvert = [TextureVertex]()
     var normals = [VertexNormal]()
     var faces = [Face]()
+    var mtllib = [String: MaterialTemplate]()
 
     func mesh(mid: MaterialId) throws -> [Primitive] {
         var ret = [Primitive]()
@@ -192,14 +195,16 @@ struct ObjectLibrary {
                     if let ni = normals[index: element.ni] { n.append(Vec(ni)) }
                 }
                 
+                let material = mid // face.material != nil ? face.material! : mid
+                
                 // FIXME: add normals for triangle primitive
                 switch type {
                 case .VertexAndNormal: fallthrough
                 case .VertexOnly:
-                    ret.append(Triangle(p1: p[0], p2: p[1], p3: p[2], material: mid))
+                    ret.append(Triangle(p1: p[0], p2: p[1], p3: p[2], material: material))
                 case .VertexAndTextureAndNormal: fallthrough
                 case .VertexAndTexture:
-                    ret.append(Triangle(p[0], p[1], p[2], mid, t[0], t[1], t[2]))
+                    ret.append(Triangle(p[0], p[1], p[2], material, t[0], t[1], t[2]))
                 }
             }
         }
@@ -216,7 +221,7 @@ struct ObjectLibrary {
         
         var start = NSDate().timeIntervalSince1970
 
-        // iterate over text file lines
+        var currentMaterial: String? = nil
         var line: NSString?
         while scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet(), intoString: &line) {
             
@@ -234,7 +239,7 @@ struct ObjectLibrary {
 
             switch token {
             case "f":
-                faces.append(try Face(tokenArray))
+                faces.append(try Face(tokenArray, material: currentMaterial))
 //                print("[\(name):face]\t\(face)")
 
             case "v":
@@ -253,20 +258,19 @@ struct ObjectLibrary {
                 print("[\(name):comment]\t\(line)")
 
             case "mtllib":
-                let lib = tokenArray[0]
-                print("[\(name):mtllib]\t\(lib)")
+                try tokenArray.forEach({ lib in
+                    try MaterialLoader(name: lib).mtldict.forEach({ mtllib[$0] = $1 })
+                    print("[\(name):mtllib]\t\(lib)")
+                })
             
             case "usemtl":
-                let lib = tokenArray[0]
-                print("[\(name):usemtl]\t\(lib)")
+                currentMaterial = tokenArray[0]
+                print("[\(name):usemtl]\t\(currentMaterial)")
             
-            case "g":
-                let gname = tokenArray[0]
-                print("[\(name):grname]\t\(gname)")
-
             default:
                 print("[\(name):????]\t\(line)")
             }
         }
     }
 }
+

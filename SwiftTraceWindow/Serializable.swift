@@ -16,9 +16,10 @@ enum SceneLoaderError: ErrorType {
     case InvalidFile(String)
 }
 
+extension Float: Castable {}
 
 extension Vec: Decodable {
-    init(v: [Double]) throws {
+    init(v: [Scalar]) throws {
         if v.count == 0 {
             self.init(0, 0, 0)
         } else if v.count == 1 {
@@ -31,7 +32,7 @@ extension Vec: Decodable {
     }
     
     public static func decode(json: AnyObject) throws -> Vec {
-        return try Vec(v: json as! [Double])
+        return try Vec(v: json as! [Scalar])
     }
 }
 
@@ -99,10 +100,13 @@ struct ObjectAndTransform: Decodable {
 extension Scene: Decodable {
     public static func decode(json: AnyObject) throws -> Scene {
     
-        // WTF!!
+        // WTF!! H@XX0R!!
         let spheres: [Sphere] = try json => "primitives" => "spheres"
         let triangles: [Triangle] = try json => "primitives" => "triangles"
         let object_transform: [ObjectAndTransform] = try json => "primitives" => "objects"
+        let skydome = try Texture(name: try json => "skydome" => "file")
+        var materials = [MaterialId: MaterialProtocol]()
+        object_transform.forEach({ $0.object.mtllib.forEach({ materials[$0] = $1 }) })
     
         var objects = [Primitive]()
         triangles.forEach { (t) in objects.append(t) }
@@ -111,6 +115,8 @@ extension Scene: Decodable {
     
         return try Scene(
             camera: json => "camera",
-            objects: objects
+            objects: objects,
+            skydome: skydome,
+            materials: [MaterialId:Material]()
         )}
 }
