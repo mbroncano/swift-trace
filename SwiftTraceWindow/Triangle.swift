@@ -57,7 +57,9 @@ final class Triangle: Primitive {
     }
     
     /// https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
-    override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
+    override func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
+        let r = ray.memory
+    
         // begin calculating determinant - also used to calculate u parameter
         let p = cross(r.d, edge2)
         
@@ -88,14 +90,13 @@ final class Triangle: Primitive {
         let d = dot(edge2, q) * inv_det;
 
         if (d > Scalar.epsilon) { //ray intersection
-            if (d < hit.d) {
-                hit.p = self
-                hit.d = d
-                hit.x = r.o + r.d * d
-                hit.m = material
-                hit.n = normal
-                hit.uv = tu * u + tv * v
-                
+            if (d < hit.memory.d) {
+                hit.memory.p = self
+                hit.memory.d = d
+                hit.memory.x = r.o + r.d * d
+                hit.memory.m = material
+                hit.memory.n = normal
+                hit.memory.uv = tu * u + tv * v
             }
             return true
         }

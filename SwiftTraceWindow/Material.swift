@@ -22,12 +22,13 @@ protocol MaterialProtocol {
 extension MaterialTemplate: MaterialProtocol {
     var emission: Color { get { return Ke } }
     var isLight: Bool { get { return emission != Vec.Zero } }
+    
+    // FIXME: implement texture support
     func colorAtTextCoord(uv: Vec) -> Color {
-        // FIXME: implement texture support
         return Kd
     }
+    
     func sample(wi: Vec, normal: Vec) -> (Scalar, Vec) {
-        // FIXME: implement all models
         let r1 = 2 * Scalar(M_PI) * Scalar.Random()
         let r2 = Scalar.Random()
         let r2s = sqrt(r2)

@@ -33,7 +33,9 @@ final class Sphere: Primitive {
     override var area: Scalar { get { return preArea } }
     override func sample() -> Vec { return self.p + sampleSphere(self.rad) }
 
-    override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
+    override func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
+        let r = ray.memory
+    
         let po = r.o - p
         let b = dot(r.d, po)
         let c = dot(po, po) - (rad * rad)
@@ -50,19 +52,19 @@ final class Sphere: Primitive {
         
         // note this, it's not the usual behaviour
         // do we want to return true is it's not the case?
-        if (d < hit.d) {
-            hit.p = self
-            hit.d = d
+        if (d < hit.memory.d) {
+            hit.memory.p = self
+            hit.memory.d = d
 
             let x = r.o + r.d * d
             let n = normalize(x - p)
             let u = 0.5 + atan2(n.z, n.x) / (2.0 * Scalar(M_PI))
             let v = 0.5 - asin(n.y) / Scalar(M_PI)
             
-            hit.x = x
-            hit.m = material
-            hit.n = n
-            hit.uv = Vec(u, v, 0)
+            hit.memory.x = x
+            hit.memory.m = material
+            hit.memory.n = n
+            hit.memory.uv = Vec(u, v, 0)
         }
         
         return true

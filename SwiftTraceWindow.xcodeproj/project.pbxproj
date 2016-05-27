@@ -33,13 +33,12 @@
 		647BBDC11BFEDDB50017A888 /* Framebuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */; };
 		647BBDC31BFEDECD0017A888 /* Material.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDC21BFEDECD0017A888 /* Material.swift */; };
 		647BBDC41BFEDECD0017A888 /* Material.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDC21BFEDECD0017A888 /* Material.swift */; };
+		64BCBBF21CF8E6A500D24401 /* DistributedTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBBF11CF8E6A500D24401 /* DistributedTracer.swift */; };
 		64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C5FCB71BFBC60C004F783E /* PathTracer.swift */; };
-		64DBD36C1CEB661900727B71 /* EyeTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DBD36B1CEB661900727B71 /* EyeTracer.swift */; };
 		64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3751CEC24CD00727B71 /* earth.jpg */; };
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
 		64E910C51CF59E1C008D8BBC /* Triangle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910C41CF59E1C008D8BBC /* Triangle.swift */; };
 		64E910C71CF59E44008D8BBC /* Sphere.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910C61CF59E44008D8BBC /* Sphere.swift */; };
-		64E910CA1CF59E82008D8BBC /* PrimitiveList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910C91CF59E82008D8BBC /* PrimitiveList.swift */; };
 		64E910CC1CF59EA1008D8BBC /* Primitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910CB1CF59EA1008D8BBC /* Primitive.swift */; };
 		64E910CE1CF59EC3008D8BBC /* BVHNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910CD1CF59EC3008D8BBC /* BVHNode.swift */; };
 		64E910D01CF59EE5008D8BBC /* AABB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910CF1CF59EE5008D8BBC /* AABB.swift */; };
@@ -148,8 +147,9 @@
 		647BBDBC1BFEBB3B0017A888 /* Geometry.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Geometry.swift; sourceTree = "<group>"; };
 		647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Framebuffer.swift; sourceTree = "<group>"; };
 		647BBDC21BFEDECD0017A888 /* Material.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Material.swift; sourceTree = "<group>"; };
+		64BCBBF11CF8E6A500D24401 /* DistributedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DistributedTracer.swift; sourceTree = "<group>"; };
 		64C5FCB71BFBC60C004F783E /* PathTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathTracer.swift; sourceTree = "<group>"; };
-		64DBD36B1CEB661900727B71 /* EyeTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EyeTracer.swift; sourceTree = "<group>"; };
+		64DBD36B1CEB661900727B71 /* WhittedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhittedTracer.swift; sourceTree = "<group>"; };
 		64DBD3751CEC24CD00727B71 /* earth.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth.jpg; sourceTree = "<group>"; };
 		64DBD3771CEC35DF00727B71 /* skydome.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = skydome.jpg; sourceTree = "<group>"; };
 		64E910C41CF59E1C008D8BBC /* Triangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Triangle.swift; sourceTree = "<group>"; };
@@ -272,7 +272,8 @@
 			isa = PBXGroup;
 			children = (
 				646752A61C2B76490084CBE3 /* RayTracer.swift */,
-				64DBD36B1CEB661900727B71 /* EyeTracer.swift */,
+				64BCBBF11CF8E6A500D24401 /* DistributedTracer.swift */,
+				64DBD36B1CEB661900727B71 /* WhittedTracer.swift */,
 				64C5FCB71BFBC60C004F783E /* PathTracer.swift */,
 				646752A21C28BBDF0084CBE3 /* Scene.swift */,
 				647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */,
@@ -512,8 +513,8 @@
 				647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */,
 				647BBDBA1BFE761F0017A888 /* Vector.swift in Sources */,
 				64E910E01CF5F2C1008D8BBC /* Serializable.swift in Sources */,
+				64BCBBF21CF8E6A500D24401 /* DistributedTracer.swift in Sources */,
 				640777221CEE1E3B0022008A /* NSScanner+Swift.swift in Sources */,
-				64DBD36C1CEB661900727B71 /* EyeTracer.swift in Sources */,
 				646752A51C28BC980084CBE3 /* Camera.swift in Sources */,
 				646752A91C2B9B4A0084CBE3 /* Primitive_.swift in Sources */,
 				646752A71C2B76490084CBE3 /* RayTracer.swift in Sources */,
@@ -525,7 +526,6 @@
 				646752A31C28BBDF0084CBE3 /* Scene.swift in Sources */,
 				64E910C71CF59E44008D8BBC /* Sphere.swift in Sources */,
 				64E910C51CF59E1C008D8BBC /* Triangle.swift in Sources */,
-				64E910CA1CF59E82008D8BBC /* PrimitiveList.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

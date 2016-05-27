@@ -16,10 +16,17 @@ func hsvtorgb(h: Scalar, _ s: Scalar, _ v: Scalar) -> Color {
     return Color(r, g, b)
 }
 
-class PathTracer: DistributedRayTracer {
+class PathTracer: Renderer, RayTracer {
+    let scene: Scene
+    let framebuffer: Framebuffer
 
+    init(scene:Scene, w: Int, h: Int) {
+        self.scene = scene
+        framebuffer = Framebuffer(width: w, height: h)
+    }
+    
     // non-recursive path tracing
-    override func radiance(r: Ray) -> Color {
+    func radiance(ray ray: RayPointer, hit: IntersectionPointer) -> Color {
         // L0 = Le0 + f0*(L1)
         //    = Le0 + f0*(Le1 + f1*L2)
         //    = Le0 + f0*(Le1 + f1*(Le2 + f2*(L3))
@@ -33,11 +40,11 @@ class PathTracer: DistributedRayTracer {
         //   L += F*Lei
         //   F *= fi
         //
+        
         var cl: Vec = Vec.Zero
         var cf: Vec = Vec.Unit
-        var r = r
+//        var r = ray.memory
         var depth = 0
-        var hit = Intersection()
 
         // debug
 //        scene.intersectWithRay(r, hit: &hit)
@@ -45,15 +52,22 @@ class PathTracer: DistributedRayTracer {
 //        return hsvtorgb(Scalar(hit.count) / 9 * Scalar(M_PI), 0.5, 0.5)
         
         while true {
+            hit.memory.reset()
             // intersection with world
-            guard scene.intersectWithRay(r, hit: &hit)
-            else { return cl + cf * scene.skyColor(r) }
+            guard scene.intersectWithRay(ray: ray, hit: hit)
+            else { return cl + cf * scene.skyColor(ray.memory) }
 
-            let material = scene.materialWithId(hit.m!)!
-            var f = material.colorAtTextCoord(hit.uv)
-            cl = cl + cf * material.emission
+            // This shouln't happen
+//            guard hit.memory.m != nil
+//            else { return cl + Color.Black }
+            let material = scene.materialWithId(hit.memory.m!)!
+            var f = material.colorAtTextCoord(hit.memory.uv)
+            if material.isLight {
+                return cl + cf * material.emission
+            }
 
             // Russian roulette
+            
             if depth > 5 {
                 let p = simd.reduce_max(f);
                 if (depth < 80 && Scalar.Random() < p) {
@@ -68,10 +82,10 @@ class PathTracer: DistributedRayTracer {
             let direction: Vec
             var probability: Scalar
 
-            (probability, direction) = material.sample(r.d, normal: hit.n)
+            (probability, direction) = material.sample(ray.memory.d, normal: hit.memory.n)
             cf = cf * f * probability
-            r = Ray(o:hit.x, d: direction)
-            hit.reset()
+            cl = cl * cf
+            ray.memory = Ray(o:hit.memory.x, d: direction)
         }
     }
 }

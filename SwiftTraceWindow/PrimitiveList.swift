@@ -21,7 +21,7 @@ final class PrimitiveList: Primitive {
     }
 
     override func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
-        guard bbox.intersectWithRay(r) else { return false }
+        guard bbox.intersectWithRay(ray: r) else { return false }
 
         // only one positive intersect is needed to acknoledge the hit
         // but we need to traverse the list anyway to find the nearest primitive

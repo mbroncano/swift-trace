@@ -22,7 +22,9 @@ public struct Scene: IntersectWithRayIntersection {
     let ambientLight: Color = Color(0.1, 0.1, 0.1)
     let backgroundColor: Color = Color.Black
     
-    var materials: [MaterialId: Material] = [:]
+    var materials: MaterialPointer = nil
+    var materialDict: [MaterialId: Material] = [:]
+    
     var skydome: Texture? = nil
 
     func skyColor(r: Ray) -> Color {
@@ -35,12 +37,12 @@ public struct Scene: IntersectWithRayIntersection {
         return skydome![Vec(u, v * 2, 0)]
     }
     
-    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool {
-        return root.intersectWithRay(r, hit: &hit)
+    func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
+        return root.intersectWithRay(ray: ray, hit: hit)
     }
 
     func materialWithId(mid: MaterialId) -> Material? {
-        guard let material = materials[mid]
+        guard let material = materialDict[mid]
         else { return nil }
         return material
     }
@@ -65,7 +67,7 @@ public struct Scene: IntersectWithRayIntersection {
             "Earth" : Textured(name: "earth.jpg")          // Lite
         ]
         
-        mats.forEach({ self.materials[$0] = $1 })
+        mats.forEach({ self.materialDict[$0] = $1 })
     }
 
    init(camera: ComplexCamera, objects: [Primitive], skydome: Texture?, materials: [MaterialId: Material]) throws {
@@ -79,6 +81,6 @@ public struct Scene: IntersectWithRayIntersection {
 //        self.camera = ComplexCamera(lookFrom: Vec(0, 2.8, 8), lookAt: Vec(0, 0.5, 2), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
    
         self.skydome = skydome
-        self.materials = materials
+        self.materialDict = materials
     }
 }

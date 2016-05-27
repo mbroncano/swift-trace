@@ -32,7 +32,7 @@ struct AABB: IntersectWithRayBoolean, Surface, Equatable, Comparable {
     // TODO
     func sample() -> Vec { return self.center }
 
-    func intersectWithRay(r: Ray) -> Bool {
+    func intersectWithRay(ray ray: RayPointer) -> Bool {
 
         // This works (tested!)
 //        var tmin = -Scalar.infinity
@@ -52,6 +52,7 @@ struct AABB: IntersectWithRayBoolean, Surface, Equatable, Comparable {
 //        return tmax >= tmin && tmax >= 0.0
         
         // This works faster (SIMD)
+        let r = ray.memory
         let t1 = (bmin - r.o) * r.inv
         let t2 = (bmax - r.o) * r.inv
         

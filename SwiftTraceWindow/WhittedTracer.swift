@@ -10,7 +10,7 @@ import Foundation
 import simd
 
 
-class WhittedTracer: DistributedRayTracer {
+class WhittedTracer: DistributedTracer {
 
     // http://www.cse.chalmers.se/edu/year/2011/course/TDA361/2007/rend_eq.pdf
     // http://cs.brown.edu/courses/cs224/handouts/whitted.pdf

@@ -16,7 +16,7 @@ class Primitive: IntersectWithRayIntersection, BoundingBox, Surface, Equatable {
 
     init(bbox: AABB) { self.bbox = bbox }
     
-    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool { return bbox.intersectWithRay(r) }
+    func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool { return bbox.intersectWithRay(ray: ray) }
     var center: Vec { get { return bbox.center } }
     var area: Scalar { get { return bbox.area } }
     func sample() -> Vec { return bbox.sample() }

@@ -41,7 +41,7 @@ func sampleDisk() -> Vec {
 
 /// The object intersects with a ray, updating an intersection descriptor, and returns a boolean
 protocol IntersectWithRayIntersection {
-    func intersectWithRay(r: Ray, inout hit: Intersection) -> Bool
+    func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool
 }
 
 protocol IntersectWithRayDistance {
@@ -49,7 +49,7 @@ protocol IntersectWithRayDistance {
 }
 
 protocol IntersectWithRayBoolean {
-    func intersectWithRay(ray: Ray) -> Bool
+    func intersectWithRay(ray ray: RayPointer) -> Bool
 }
 
 /// The object provides a bounding box

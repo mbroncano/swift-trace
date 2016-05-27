@@ -9,9 +9,15 @@
 import Foundation
 import simd
 
+typealias ColorPointer = UnsafeMutablePointer<Color>
+typealias IntersectionPointer = UnsafeMutablePointer<Intersection>
+typealias RayPointer = UnsafeMutablePointer<Ray>
+typealias MaterialPointer = UnsafeMutablePointer<Material>
+
 /// Implements a ray tracer
 protocol RayTracer {
-    func radiance(r: Ray) -> Color
+    /// Computes the radiance (Li) for a given ray
+    func radiance(ray ray: RayPointer, hit: IntersectionPointer) -> Color
 }
 
 /// Implements a generic scene renderer
@@ -24,37 +30,42 @@ protocol Renderer {
 }
 
 extension Renderer where Self: RayTracer {
-    /// Renders a frame, dispatching pixels
+    /// Renders a frame in parallel, dispatching pixels
     func render() {
-        framebuffer.samples += 1
-
         let nx = framebuffer.width
         let ny = framebuffer.height
-        
-        // process each ray in parallel
-        dispatch_apply(nx*ny, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-            // generate new ray
+
+        framebuffer.samples += 1
+
+        dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let x = $0 % nx
             let y = ny - ($0 / nx) - 1
-            let ray = self.scene.camera.generateRay(x: x, y: y, nx: nx, ny: ny)
-            
-            // compute and accumulate radiance for the ray
-            let radiance = self.radiance(ray)
-            self.framebuffer.ptr[$0] += radiance
+            let r = self.scene.camera.generateRay(x: x, y: y, nx: nx, ny: ny)
+            self.framebuffer.ray[$0] = r
         }
+
+        dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+            let ray = self.framebuffer.ray.advancedBy($0)
+            let hit = self.framebuffer.hit.advancedBy($0)
+            let li = self.radiance(ray: ray, hit: hit)
+            self.framebuffer.ptr[$0] += li
+        }
+
     }
     
-    /// Renders a frame, dispatching tiles
+    /// Renders a frame in parallel, dispatching tiles
     func renderTile(size size: Int = 16) {
+    /*
         framebuffer.samples += 1
 
         let nx = framebuffer.width
         let ny = framebuffer.height
         
+        // number of tiles in each coordinate
         let tx = (nx + size - 1) / size // int div round up
         let ty = (ny + size - 1) / size
         
-        // process each ray in parallel, tiled
+        // process each ray in parallel, tiled, waits till it finishes
         dispatch_apply(tx*ty, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let x = ($0 % tx) * size
             let y = ($0 / tx) * size
@@ -63,63 +74,16 @@ extension Renderer where Self: RayTracer {
             let sizey = min((ny-y), size)
 
             for i in 0..<sizex*sizey {
+                // generate new ray
                 let xi = x + (i % sizex)
                 let yi = y + (i / sizex)
                 let ray = self.scene.camera.generateRay(x: xi, y: yi, nx: nx, ny: ny)
+                
+                // compute and accumulate radiance for the ray
                 let radiance = self.radiance(ray)
                 self.framebuffer.ptr[(ny-yi-1)*nx+xi] += radiance
             }
         }
+        */
     }
-}
-
-// http://artis.inrialpes.fr/Enseignement/TRSA/CookDistributed84.pdf
-class DistributedRayTracer: Renderer, RayTracer {
-    let scene: Scene
-    let framebuffer: Framebuffer
-
-    init(scene:Scene, w: Int, h: Int) {
-        self.scene = scene
-        framebuffer = Framebuffer(width: w, height: h)
-    }
-
-    /// Iterative brute force ray tracing
-    func radiance(ray: Ray) -> Color {
-        var depth = 8
-        var color = Color.White
-        var r = ray
-        var hit = Intersection()
-        
-        while depth > 0 {
-            /// Performs the intersection and checks both the object and the distance
-            guard
-                scene.root.intersectWithRay(r, hit: &hit),
-                let mid = hit.m,
-                let material = scene.materialWithId(mid)
-                else {
-                    color = color * scene.skyColor(r);
-                    break
-            }
-                        
-            // if the surface is emissive (i.e. does not have measurable albedo), just return the emission
-            if material.isLight {
-                color = color * material.emission
-                break
-            }
-            
-            // compute scatterred ray
-            let wo: Vec
-            let p: Scalar
-            (p, wo) = material.sample(r.d, normal: hit.n)
-            
-            r = Ray(o: hit.x, d: wo)
-            depth = depth - 1
-            color = color * material.colorAtTextCoord(hit.uv) * p
-            hit.reset()
-        }
-        
-        return color
-    }
-
-
 }
