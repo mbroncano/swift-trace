@@ -183,7 +183,26 @@ extension Shape: RayIntersectionWithHit {
         switch self {
 //        case let .Mesh(root):
 //            return root.intersect(ray, hit: &hit)
-        case .Sphere, .Triangle, .BoundingBox:
+        case let .Triangle(v1, v2, v3):
+            let d: Scalar
+            let t: Vec
+            (d, t) = triangleIntersect(v1: v1, v2: v2, v3: v3, ray: ray)
+            
+            if d < hit.d {
+                hit.d = d
+                hit.x = ray.o + ray.d * d
+                hit.n = normalAt(hit.x)
+                
+                // default texture coordinates
+                let t0 = Vec(0, 0, 0)
+                let t1 = Vec(0, 1, 0)
+                let t2 = Vec(1, 0, 0)
+                
+                hit.uv = t0 * t.z + t1 * t.x + t2 * t.y
+            }
+            return d
+            
+        case .Sphere, .BoundingBox:
             let d = intersect(ray)
             if d < hit.d {
                 hit.d = d
@@ -220,8 +239,8 @@ extension Shape: GeometricIntersection {
             case let .Triangle(v1, v2, v3):
                 // compute u,v over the edges
                 let v0 = (p-v1)
-                let e1 = (v3-v1).norm()
-                let e2 = (v2-v1).norm()
+                let e1 = (v2-v1)
+                let e2 = (v3-v1)
                 let u = dot(v0, e1)
                 let v = dot(v0, e2)
                 // default texture coordinates
@@ -276,7 +295,9 @@ extension Shape: RayIntersection {
         case let .Sphere(pos, rad):
             return sphereIntersect(pos: pos, rad: rad, ray: ray)
         case let .Triangle(v1, v2, v3):
-            return triangleIntersect(v1: v1, v2: v2, v3: v3, ray: ray)
+            let d: Scalar
+            (d, _) = triangleIntersect(v1: v1, v2: v2, v3: v3, ray: ray)
+            return d
 //        case let .Mesh(root):
 //            return root.intersect(ray)
         }
@@ -357,7 +378,10 @@ func sphereIntersect(pos pos: Vec, rad: Scalar, ray: Ray) -> Scalar {
     return d
 }
 
-func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> Scalar {
+func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> (Scalar, Vec) {
+    // default ret
+    let ret = (Scalar.infinity, Vec.Zero)
+
     // calculate edges
     let edge1 = v2-v1
     let edge2 = v3-v1
@@ -369,7 +393,7 @@ func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> Scalar {
     let det = dot(edge1, p)
     
     // the triangle is degenerate (i.e. lies on the plane of triangle)
-    if (det > -Scalar.epsilon && det < Scalar.epsilon) { return Scalar.infinity }
+    if (det > -Scalar.epsilon && det < Scalar.epsilon) { return ret }
     
     // we will use the inverse from now on
     let inv_det = 1.0 / det;
@@ -381,7 +405,7 @@ func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> Scalar {
     let u = dot(t, p) * inv_det
     
     //The intersection lies outside of the triangle
-    if (u < 0.0 || u > 1.0) { return Scalar.infinity }
+    if (u < 0.0 || u > 1.0) { return ret }
     
     // prepare to test v parameter
     let q = cross(t, edge1)
@@ -390,14 +414,14 @@ func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> Scalar {
     let v = dot(ray.d, q) * inv_det;
     
     // the intersection lies outside of the triangle
-    if v < 0.0 || (u+v) > 1.0 { return Scalar.infinity }
+    if v < 0.0 || (u+v) > 1.0 { return ret }
     
     // compute distance
     let d = dot(edge2, q) * inv_det;
     
     // check that the distance fits the ray boundaries
-    guard d > ray.tmin && d < ray.tmax else { return Scalar.infinity }
+    guard d > ray.tmin && d < ray.tmax else { return ret }
     
     // return the distance and
-    return d
+    return (d, Vec(u, v, 1-u-v))
 }
