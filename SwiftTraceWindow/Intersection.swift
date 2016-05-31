@@ -25,7 +25,7 @@ struct Intersection: Comparable {
     /// Parametric coordinates on the surface at the intersection point
     var uv: Vec = Vec.Zero
     // debug
-    var count: Int = 0
+    var count: Int = 1
     
     
     /// Resets the intersection to the default values

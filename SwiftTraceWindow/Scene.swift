@@ -13,11 +13,12 @@ enum SceneError: ErrorType {
     case InvalidMaterial(String)
 }
 
-public struct Scene: IntersectWithRayIntersection, IntersectWithRayBoolean {
+public struct Scene: IntersectWithRayIntersection {
     let camera: GenerateRay
-    let root: Primitive
+    let root: Primitive? = nil
     var objects: [Primitive] = []
     var lights: [Primitive] = []
+    let world: World
     
     let ambientLight: Color = Color(0.1, 0.1, 0.1)
     let backgroundColor: Color = Color.Black
@@ -37,12 +38,14 @@ public struct Scene: IntersectWithRayIntersection, IntersectWithRayBoolean {
         return skydome![Vec(u, v * 2, 0)]
     }
 
-    func intersectWithRay(ray ray: RayPointer) -> Bool {
-        return root.intersectWithRay(ray: ray)
-    }
+//    func intersectWithRay(ray ray: RayPointer) -> Bool {
+//        return root.intersectWithRay(ray: ray)
+//    }
     
     func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
-        return root.intersectWithRay(ray: ray, hit: hit)
+//        return root.intersectWithRay(ray: ray, hit: hit)
+        hit.memory.count += 1
+        return world.intersect(ray.memory, hit: &hit.memory) != Scalar.infinity
     }
 
     func materialWithId(mid: MaterialId) -> Material? {
@@ -52,7 +55,7 @@ public struct Scene: IntersectWithRayIntersection, IntersectWithRayBoolean {
     }
     
     func addDefaultMaterials(materials: [MaterialId: Material]) throws -> [MaterialId: Material] {
-        var mats = try
+        let mats = try
     
         [
             "Red"   : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25)), // Red diffuse
@@ -71,21 +74,23 @@ public struct Scene: IntersectWithRayIntersection, IntersectWithRayBoolean {
             "Earth" : Textured(name: "earth.jpg")          // Lite
         ]
         
-        materials.forEach({ mats[$0] = $1 })
+        var retMat = materials
+        mats.forEach({ retMat[$0.hashValue] = $1 })
         
-        return mats
+        return retMat
     }
 
-   init(camera: ComplexCamera, objects: [Primitive], skydome: Texture?, materials: [MaterialId: Material]) throws {
+   init(camera: ComplexCamera, objects: [Primitive], world: World, skydome: Texture?, materials: [MaterialId: Material]) throws {
         self.camera = camera //Camera(o: Vec(50, 52, 295.6), d: Vec(0, -0.042612, -1).norm())
         self.objects = objects
         
-        var id = 0; self.root = BVHNode(nodes: self.objects, id: &id); print("bvh contains \(id) nodes")
+//        var id = 0; self.root = BVHNode(nodes: self.objects, id: &id); print("bvh contains \(id) nodes")
 //        root = PrimitiveList(nodes: self.objects)
         
 //        camera = ComplexCamera(lookFrom: Vec(3, 2, 2), lookAt: Vec(0.5, 1, -4), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
 //        self.camera = ComplexCamera(lookFrom: Vec(0, 2.8, 8), lookAt: Vec(0, 0.5, 2), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
-   
+
+        self.world = world
         self.skydome = skydome
         self.materialDict = try addDefaultMaterials(materials)
     

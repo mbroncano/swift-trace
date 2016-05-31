@@ -14,6 +14,7 @@ enum SceneLoaderError: ErrorType {
     case InvalidVector(String)
     case InvalidFace(String)
     case InvalidFile(String)
+    case InvalidType(String)
 }
 
 extension Float: Castable {}
@@ -89,7 +90,7 @@ struct ObjectAndTransform: Decodable {
     internal static func decode(json: AnyObject) throws -> ObjectAndTransform {
         let transform = try Transform.decode(json => "transform")
         let object = try ObjectLibrary(name: json => "file")
-        let material = try MaterialId(json => "m")
+        let material = try MaterialId((json => "m" as String).hashValue)
         
         return ObjectAndTransform(object: object, transform: transform, material: material)
     }
@@ -99,25 +100,55 @@ struct ObjectAndTransform: Decodable {
     }
 }
 
+extension Shape: Decodable {
+    internal static func decode(json: AnyObject) throws -> Shape {
+        switch try json => "t" as String {
+            case "s":
+                return Shape.Sphere(
+                    pos: try json => "p",
+                    rad: try json => "r")
+            case "t":
+                return Shape.Triangle(
+                    v1: try json => "p1",
+                    v2: try json => "p2",
+                    v3: try json => "p3")
+            default:
+                throw SceneLoaderError.InvalidType("invalid shape type: \(json)")
+        }
+    }
+ }
+
+extension Primi: Decodable {
+    internal static func decode(json: AnyObject) throws -> Primi {
+        let m = try json => "m" as String
+    
+        return try Primi(Shape.decode(json), material: m.hashValue)
+    }
+}
+
 extension Scene: Decodable {
     public static func decode(json: AnyObject) throws -> Scene {
     
-        // WTF!! H@XX0R!!
-        let spheres: [Sphere] = try json => "primitives" => "spheres"
-        let triangles: [Triangle] = try json => "primitives" => "triangles"
-        let object_transform: [ObjectAndTransform] = try json => "primitives" => "objects"
-        let skydome = try Texture(name: try json => "skydome" => "file")
-        var materials = [MaterialId: MaterialProtocol]()
-        object_transform.forEach({ $0.object.mtllib.forEach({ materials[$0] = $1 }) })
+        let world: World = try World(try json => "primi" as [Primi])
+        
     
-        var objects = [Primitive]()
-        triangles.forEach { (t) in objects.append(t) }
-        spheres.forEach { (s) in objects.append(s) }
-        try object_transform.forEach { (o) in let mesh = try o.mesh(); mesh.forEach({ t in objects.append(t) }) }
+        // WTF!! H@XX0R!!
+//        let spheres: [Sphere] = try json => "primitives" => "spheres"
+//        let triangles: [Triangle] = try json => "primitives" => "triangles"
+//        let object_transform: [ObjectAndTransform] = try json => "primitives" => "objects"
+        let skydome = try Texture(name: try json => "skydome" => "file")
+//        var materials = [MaterialId: MaterialProtocol]()
+//        object_transform.forEach({ $0.object.mtllib.forEach({ materials[$0.hashValue] = $1 }) })
+    
+        let objects = [Primitive]()
+//        triangles.forEach { (t) in objects.append(t) }
+//        spheres.forEach { (s) in objects.append(s) }
+//        try object_transform.forEach { (o) in let mesh = try o.mesh(); mesh.forEach({ t in objects.append(t) }) }
     
         return try Scene(
             camera: json => "camera",
             objects: objects,
+            world: world,
             skydome: skydome,
             materials: [MaterialId:Material]()
         )}

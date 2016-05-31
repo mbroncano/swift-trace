@@ -38,6 +38,7 @@
 		64BCBBFA1CFA7F7C00D24401 /* Sampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBBF91CFA7F7C00D24401 /* Sampling.swift */; };
 		64BCBC011CFB73BE00D24401 /* appel_68.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC001CFB73BE00D24401 /* appel_68.pdf */; };
 		64BCBC031CFB740200D24401 /* veach_98.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC021CFB740200D24401 /* veach_98.pdf */; };
+		64BCBC051CFD3F3300D24401 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBC041CFD3F3300D24401 /* Shape.swift */; };
 		64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C5FCB71BFBC60C004F783E /* PathTracer.swift */; };
 		64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3751CEC24CD00727B71 /* earth.jpg */; };
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
@@ -158,6 +159,7 @@
 		64BCBBFF1CFB737C00D24401 /* whitted_79.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = whitted_79.pdf; sourceTree = "<group>"; };
 		64BCBC001CFB73BE00D24401 /* appel_68.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = appel_68.pdf; sourceTree = "<group>"; };
 		64BCBC021CFB740200D24401 /* veach_98.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = veach_98.pdf; sourceTree = "<group>"; };
+		64BCBC041CFD3F3300D24401 /* Shape.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
 		64C5FCB71BFBC60C004F783E /* PathTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathTracer.swift; sourceTree = "<group>"; };
 		64DBD36B1CEB661900727B71 /* WhittedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhittedTracer.swift; sourceTree = "<group>"; };
 		64DBD3751CEC24CD00727B71 /* earth.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth.jpg; sourceTree = "<group>"; };
@@ -278,6 +280,7 @@
 				64E910C91CF59E82008D8BBC /* PrimitiveList.swift */,
 				64E910CD1CF59EC3008D8BBC /* BVHNode.swift */,
 				646752A81C2B9B4A0084CBE3 /* Primitive_.swift */,
+				64BCBC041CFD3F3300D24401 /* Shape.swift */,
 			);
 			name = Geometry;
 			sourceTree = "<group>";
@@ -530,6 +533,7 @@
 				64E910D01CF59EE5008D8BBC /* AABB.swift in Sources */,
 				64BCBBF81CF9FBCE00D24401 /* WhittedTracer.swift in Sources */,
 				64E910D91CF5A04B008D8BBC /* Ray.swift in Sources */,
+				64BCBC051CFD3F3300D24401 /* Shape.swift in Sources */,
 				64E911201CF7C211008D8BBC /* Texture.swift in Sources */,
 				64E910D41CF59F59008D8BBC /* Intersection.swift in Sources */,
 				647BBDC31BFEDECD0017A888 /* Material.swift in Sources */,
