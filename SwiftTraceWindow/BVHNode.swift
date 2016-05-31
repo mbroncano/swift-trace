@@ -35,16 +35,24 @@ final class BVHNode: Primitive {
             right = sorted[sorted.count - 1]
         }
         
-        super.init(bbox: left.bbox + right.bbox)
+        super.init(bbox: left.bbox + right.bbox, material: nil)
     }
 
+    override func intersectWithRay(ray ray: RayPointer) -> Bool {
+//        hit.memory.count += 1
+        guard bbox.intersectWithRay(ray: ray) else { return false }
+
+        // short circuiting should be ok here
+        return left.intersectWithRay(ray: ray) || right.intersectWithRay(ray: ray)
+    }
+    
     override func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
         hit.memory.count += 1
         guard bbox.intersectWithRay(ray: ray) else { return false }
 
         let lbool = left.intersectWithRay(ray: ray, hit: hit)
         let rbool = right.intersectWithRay(ray: ray, hit: hit)
-        
+
         return lbool || rbool
     }
 }

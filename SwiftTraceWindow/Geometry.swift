@@ -8,46 +8,17 @@
 
 import simd
 
-/// Sample a point over the surface of a sphere, rejection method
-// FIXME: Is this correct?
-func sampleSphere(r: Scalar = 1.0) -> Vec {
-    var v: Vec
-    repeat {
-        v = 2.0 * Vec(Scalar.Random(), Scalar.Random(), Scalar.Random()) - Vec.Unit
-    } while (simd.length(v) >= 1.0)
-    
-    return v * r
-}
-
-/// Another sphere sample, trigonometry method
-func sampleSphere2() -> Vec {
-    let z = 2.0 * Scalar.Random() - 1.0
-    let t = 2.0 * Scalar.Random() * Scalar(M_PI)
-    let r = sqrt(1.0 - z * z)
-    let x = r * cos(t)
-    let y = r * sin(t)
-    
-    return Vec(x, y, z)
-}
-
-/// Sample point in unit disk
-func sampleDisk() -> Vec {
-    var v: Vec
-    repeat {
-        v = 2.0 * Vec(Scalar.Random(), Scalar.Random(), 0) - Vec.XY
-    } while (v.dot(v) >= 1.0)
-    return v
-}
-
 /// The object intersects with a ray, updating an intersection descriptor, and returns a boolean
 protocol IntersectWithRayIntersection {
     func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool
 }
 
+/// The object intersects with a ray, returning the distance or infinity
 protocol IntersectWithRayDistance {
-    func intersectWithRay(ray: Ray) -> Scalar
+    func intersectWithRay(ray ray: RayPointer) -> Scalar
 }
 
+/// The object intersects with a ray, returning a boolean
 protocol IntersectWithRayBoolean {
     func intersectWithRay(ray ray: RayPointer) -> Bool
 }

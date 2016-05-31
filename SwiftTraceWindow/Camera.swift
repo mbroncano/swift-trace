@@ -78,7 +78,7 @@ final public class ComplexCamera: GenerateRay {
         self.init(lookFrom: pos,
                   lookAt: pos+dir*(1/focalLenght),
                    vecUp: up,
-                    fov: 180*asin(width * focalLenght) / Scalar(M_PI),
+                    fov: 180*asin(width * focalLenght) / Scalar.pi,
                     aspect: 0)
         
     }
@@ -88,7 +88,7 @@ final public class ComplexCamera: GenerateRay {
         let focusDist = length(lookFrom - lookAt)
         lensRadius = aperture / 2.0
 
-        let theta = fov * Scalar(M_PI) / 180
+        let theta = fov * Scalar.pi / 180
         let halfHeight = tan(theta/2)
         let halfWidth = aspect * halfHeight
         w = (lookFrom - lookAt).norm()

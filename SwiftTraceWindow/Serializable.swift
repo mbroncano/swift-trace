@@ -74,7 +74,9 @@ extension Transform: Decodable {
         let translate: Vec = try json => "translate"
         
         return Transform(scale: scale) +
-               Transform(rotate: rotate) +
+               Transform(rotate_x: rotate.x) +
+               Transform(rotate_y: rotate.y) +
+               Transform(rotate_z: rotate.z) +
                Transform(translate: translate)
         }
 }

@@ -9,24 +9,10 @@
 import Foundation
 import simd
 
-func hsvtorgb(h: Scalar, _ s: Scalar, _ v: Scalar) -> Color {
-    let r=v*(1+s*(cos(h)-1))
-    let g=v*(1+s*(cos(h-2.09439)-1))
-    let b=v*(1+s*(cos(h+2.09439)-1))
-    return Color(r, g, b)
-}
+struct PathTracer: Integrator {
 
-class PathTracer: Renderer, RayTracer {
-    let scene: Scene
-    let framebuffer: Framebuffer
-
-    init(scene:Scene, w: Int, h: Int) {
-        self.scene = scene
-        framebuffer = Framebuffer(width: w, height: h)
-    }
-    
     // non-recursive path tracing
-    func radiance(ray ray: RayPointer, hit: IntersectionPointer) -> Color {
+    func radiance(scene: ScenePointer, ray: RayPointer, hit: IntersectionPointer) -> Color {
         // L0 = Le0 + f0*(L1)
         //    = Le0 + f0*(Le1 + f1*L2)
         //    = Le0 + f0*(Le1 + f1*(Le2 + f2*(L3))
@@ -43,25 +29,27 @@ class PathTracer: Renderer, RayTracer {
         
         var cl: Vec = Vec.Zero
         var cf: Vec = Vec.Unit
-//        var r = ray.memory
+        var direction: Vec
+        var probability: Scalar
         var depth = 0
 
-        // debug
-//        scene.intersectWithRay(r, hit: &hit)
-//        if Int(Scalar.Random() * 100000) == 1 { print("hit: \(hit.count)") }
-//        return hsvtorgb(Scalar(hit.count) / 9 * Scalar(M_PI), 0.5, 0.5)
-        
+//        hit.memory.count = 0
         while true {
             hit.memory.reset()
             // intersection with world
-            guard scene.intersectWithRay(ray: ray, hit: hit)
-            else { return cl + cf * scene.skyColor(ray.memory) }
+            guard scene.memory.intersectWithRay(ray: ray, hit: hit)
+            else { return cl + cf * scene.memory.skyColor(ray) }
 
             // This shouln't happen
 //            guard hit.memory.m != nil
 //            else { return cl + Color.Black }
-            let material = scene.materialWithId(hit.memory.m!)!
+            let material = scene.memory.materialWithId(hit.memory.m!)!
+
+            (probability, direction) = material.sample(wo: ray.memory.d, normal: hit.memory.n)
             var f = material.colorAtTextCoord(hit.memory.uv)
+//            (probability, direction) = material.importance_sample(hit: hit, wo: ray.memory.d)
+//            var f = material.brdf(hit: hit, wo: ray.memory.d, wi: direction)
+            
             if material.isLight {
                 return cl + cf * material.emission
             }
@@ -78,11 +66,6 @@ class PathTracer: Renderer, RayTracer {
             }
             depth = depth + 1
             
-            // Sample a new ray
-            let direction: Vec
-            var probability: Scalar
-
-            (probability, direction) = material.sample(ray.memory.d, normal: hit.memory.n)
             cf = cf * f * probability
             cl = cl * cf
             ray.memory = Ray(o:hit.memory.x, d: direction)

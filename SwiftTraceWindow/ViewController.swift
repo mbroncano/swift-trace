@@ -11,6 +11,9 @@ import Cocoa
 class ViewController: NSViewController {
 
     @IBOutlet weak var imageView: NSImageView!
+    @IBOutlet weak var hitImageView: NSImageView!
+    @IBOutlet weak var hitsPerSecond: NSTextField!
+    @IBOutlet weak var profilerTextField: NSTextField!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,47 +26,63 @@ class ViewController: NSViewController {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
             let width = 320, height = 240
             var scene: Scene
-            var render: Renderer
+            let render: Renderer
 
             do {
                 let file = NSBundle.mainBundle().pathForResource("scene", ofType: "json")!
                 let data = NSData(contentsOfFile: file)!
                 let json = try NSJSONSerialization.JSONObjectWithData(data, options: [])
                 scene = try Scene.decode(json)
-                
-                // FIXME: load materials from scene file
-                try scene.defaultMaterials()
             } catch {
                 print(error)
                 return
             }
             
-            // FIXME: choose the renderer from the scene file
-            render = PathTracer(scene: scene, w: width, h: height)
+            // FIXME: choose the integrator from the scene file
+            let integrator = PathTracer()
+            render = Renderer(scene: &scene, w: width, h: height, integrator: integrator)
 //            let render = DistributedRayTracer(scene: scene, w: width, h: height)
 //            let render = WhittedTracer(scene: scene, w: width, h: height)
             
-            var avg:NSTimeInterval = 0
+            var totalFrameTime:NSTimeInterval = 0
+            var lastFrameDisplayed: NSTimeInterval = NSDate().timeIntervalSince1970
+            var totalHits = 0
             while true {
-                let start = NSDate().timeIntervalSince1970
+                let lastFrameStart = NSDate().timeIntervalSince1970
                 
                 // render a frame
                 render.render() //Tile(size: 64)
                 
-                let duration = NSDate().timeIntervalSince1970 - start
-                avg = avg + duration
-                print("Profiler: frame in \(Int(duration * 1000))ms, avg. \(Int(avg * 1000 / Double(render.framebuffer.samples)))ms")
+                // compute stats
+                let lastFrameDuration = NSDate().timeIntervalSince1970 - lastFrameStart
+                totalFrameTime = totalFrameTime + lastFrameDuration
+                let lastFrameTime = Int(lastFrameDuration * 1000)
+                let avgFrameTime = Int(totalFrameTime * 1000 / Double(render.framebuffer.samples))
+                print("Profiler: frame in \(lastFrameTime)ms, avg. \(avgFrameTime)ms")
                 
-                // update the UI at least once a second or every ten samples
-                if duration < 1.0 && (render.framebuffer.samples % 10 != 1) { continue }
+                // compute more stats
+                let hits = UnsafeMutableBufferPointer<Intersection>(start: render.framebuffer.hit, count: render.framebuffer.length)
+                totalHits = hits.reduce(0) { $0 + $1.count }
+                let hps = Scalar(totalHits) / Scalar(render.framebuffer.samples) / Scalar(lastFrameDuration)
+
+                // update window on the main loop
+                dispatch_async(dispatch_get_main_queue()) {
+                    self.hitsPerSecond!.stringValue = "Avg. hits: \(Int(hps/1e6)) Mh/s"
+                    self.profilerTextField!.stringValue = "Frame in \(lastFrameTime)ms, Avg. \(avgFrameTime)ms"
+                    self.view.window!.title = "Samples \(render.framebuffer.samples)"
+                }
+                
+                // update the UI at least twice a second 
+                if NSDate().timeIntervalSince1970 - lastFrameDisplayed < 0.5 { continue }
+                lastFrameDisplayed = NSDate().timeIntervalSince1970
                 
                 // FIXME: warn the user if there is any problem
                 guard let image = render.framebuffer.cgImage() else { continue }
+                guard let hitImage = render.framebuffer.hitImage() else { continue }
                 
-                // update window on the main loop
                 dispatch_async(dispatch_get_main_queue()) {
                     self.imageView!.image = NSImage(CGImage: image, size: NSZeroSize)
-                    self.view.window!.title = "Samples \(render.framebuffer.samples)"
+                    self.hitImageView!.image = NSImage(CGImage: hitImage, size: NSZeroSize)
                 }
             }
         }

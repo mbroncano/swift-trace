@@ -9,7 +9,47 @@
 import Foundation
 import simd
 
+/*
+struct Whitted: Integrator {
+    func radiance(scene: ScenePointer, ray: RayPointer, hit: IntersectionPointer) -> Color {
+        
+        hit.memory.reset()
+        guard scene.memory.intersectWithRay(ray: ray, hit: hit)
+        else { return scene.memory.skyColor(ray) }
+        
+        // This shouldn't happen
+//        guard hit.memory.m != ""
+//        else { return Color.Black }
+        
+        let material = scene.memory.materialWithId(hit.memory.m!)!
+        var Lo = Color.Black
+        
+        // evaluate direct ligthing
+        let shadowRay = RayPointer.alloc(1)
+        for light in scene.memory.lights {
+            let lightMaterial = scene.memory.materialWithId(light.material!)!
 
+            let pdf: Scalar
+            let lightSample: Vec
+            
+            (pdf, lightSample) = lightMaterial.sampleLight()
+            
+            
+            shadowRay.initialize(Ray(o: hit.memory.x, d: lightSample))
+            
+            // check for visibility
+            guard !scene.memory.intersectWithRay(ray: shadowRay) else { continue }
+            
+            let geometricTerm = max(0, dot(shadowRay.memory.d, hit.memory.n))
+            
+            Lo += geometricTerm * lightMaterial.emission * material.brdf(hit: hit, wo: ray.memory.d, wi: shadowRay.memory.d)
+        }
+        
+        return Lo
+    }
+}
+*/
+/*
 class WhittedTracer: DistributedTracer {
 
     // http://www.cse.chalmers.se/edu/year/2011/course/TDA361/2007/rend_eq.pdf
@@ -58,3 +98,4 @@ class WhittedTracer: DistributedTracer {
         return Lo
     }
 }
+*/

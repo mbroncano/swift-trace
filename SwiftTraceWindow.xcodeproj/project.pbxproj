@@ -17,7 +17,7 @@
 		6422711D1C0E2CD4007AD481 /* Random.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6422711C1C0E2CD4007AD481 /* Random.swift */; };
 		646752A31C28BBDF0084CBE3 /* Scene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A21C28BBDF0084CBE3 /* Scene.swift */; };
 		646752A51C28BC980084CBE3 /* Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A41C28BC980084CBE3 /* Camera.swift */; };
-		646752A71C2B76490084CBE3 /* RayTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A61C2B76490084CBE3 /* RayTracer.swift */; };
+		646752A71C2B76490084CBE3 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A61C2B76490084CBE3 /* Renderer.swift */; };
 		646752A91C2B9B4A0084CBE3 /* Primitive_.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A81C2B9B4A0084CBE3 /* Primitive_.swift */; };
 		647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648D91BF9737A00C4EAC0 /* AppDelegate.swift */; };
 		647648DC1BF9737A00C4EAC0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647648DB1BF9737A00C4EAC0 /* ViewController.swift */; };
@@ -34,6 +34,10 @@
 		647BBDC31BFEDECD0017A888 /* Material.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDC21BFEDECD0017A888 /* Material.swift */; };
 		647BBDC41BFEDECD0017A888 /* Material.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDC21BFEDECD0017A888 /* Material.swift */; };
 		64BCBBF21CF8E6A500D24401 /* DistributedTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBBF11CF8E6A500D24401 /* DistributedTracer.swift */; };
+		64BCBBF81CF9FBCE00D24401 /* WhittedTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64DBD36B1CEB661900727B71 /* WhittedTracer.swift */; };
+		64BCBBFA1CFA7F7C00D24401 /* Sampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBBF91CFA7F7C00D24401 /* Sampling.swift */; };
+		64BCBC011CFB73BE00D24401 /* appel_68.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC001CFB73BE00D24401 /* appel_68.pdf */; };
+		64BCBC031CFB740200D24401 /* veach_98.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC021CFB740200D24401 /* veach_98.pdf */; };
 		64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C5FCB71BFBC60C004F783E /* PathTracer.swift */; };
 		64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3751CEC24CD00727B71 /* earth.jpg */; };
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
@@ -55,7 +59,6 @@
 		64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E9111D1CF75F69008D8BBC /* cornell_box.obj */; };
 		64E911201CF7C211008D8BBC /* Texture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E9111F1CF7C211008D8BBC /* Texture.swift */; };
 		64E911221CF7C3DD008D8BBC /* MaterialLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E911211CF7C3DD008D8BBC /* MaterialLoader.swift */; };
-		64E911241CF7CA96008D8BBC /* material.txt in Resources */ = {isa = PBXBuildFile; fileRef = 64E911231CF7CA96008D8BBC /* material.txt */; };
 		64E911281CF811FF008D8BBC /* teapot.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E911271CF811FF008D8BBC /* teapot.obj */; };
 		64E9112A1CF8153F008D8BBC /* default.png in Resources */ = {isa = PBXBuildFile; fileRef = 64E911291CF8153F008D8BBC /* default.png */; };
 /* End PBXBuildFile section */
@@ -132,7 +135,7 @@
 		6422711C1C0E2CD4007AD481 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
 		646752A21C28BBDF0084CBE3 /* Scene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene.swift; sourceTree = "<group>"; };
 		646752A41C28BC980084CBE3 /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
-		646752A61C2B76490084CBE3 /* RayTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RayTracer.swift; sourceTree = "<group>"; };
+		646752A61C2B76490084CBE3 /* Renderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		646752A81C2B9B4A0084CBE3 /* Primitive_.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Primitive_.swift; sourceTree = "<group>"; };
 		647648D61BF9737A00C4EAC0 /* SwiftTraceWindow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftTraceWindow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		647648D91BF9737A00C4EAC0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -148,6 +151,13 @@
 		647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Framebuffer.swift; sourceTree = "<group>"; };
 		647BBDC21BFEDECD0017A888 /* Material.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Material.swift; sourceTree = "<group>"; };
 		64BCBBF11CF8E6A500D24401 /* DistributedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DistributedTracer.swift; sourceTree = "<group>"; };
+		64BCBBF91CFA7F7C00D24401 /* Sampling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sampling.swift; sourceTree = "<group>"; };
+		64BCBBFB1CFB72C500D24401 /* kajiya_84.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = kajiya_84.pdf; sourceTree = "<group>"; };
+		64BCBBFD1CFB730E00D24401 /* cook_86.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = cook_86.pdf; sourceTree = "<group>"; };
+		64BCBBFE1CFB733000D24401 /* cook_84.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = cook_84.pdf; sourceTree = "<group>"; };
+		64BCBBFF1CFB737C00D24401 /* whitted_79.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = whitted_79.pdf; sourceTree = "<group>"; };
+		64BCBC001CFB73BE00D24401 /* appel_68.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = appel_68.pdf; sourceTree = "<group>"; };
+		64BCBC021CFB740200D24401 /* veach_98.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = veach_98.pdf; sourceTree = "<group>"; };
 		64C5FCB71BFBC60C004F783E /* PathTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathTracer.swift; sourceTree = "<group>"; };
 		64DBD36B1CEB661900727B71 /* WhittedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhittedTracer.swift; sourceTree = "<group>"; };
 		64DBD3751CEC24CD00727B71 /* earth.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth.jpg; sourceTree = "<group>"; };
@@ -222,6 +232,7 @@
 				64E910D71CF5A01E008D8BBC /* Math */,
 				64E910C81CF59E5C008D8BBC /* Geometry */,
 				64E910DD1CF5A16A008D8BBC /* Loader */,
+				64BCBBFC1CFB72D300D24401 /* Docs */,
 				64E910DE1CF5A18D008D8BBC /* Models */,
 				647648DD1BF9737A00C4EAC0 /* Assets.xcassets */,
 				647648DF1BF9737A00C4EAC0 /* Main.storyboard */,
@@ -239,18 +250,33 @@
 			path = SwiftTraceWindowTests;
 			sourceTree = "<group>";
 		};
+		64BCBBFC1CFB72D300D24401 /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				64BCBC001CFB73BE00D24401 /* appel_68.pdf */,
+				64BCBBFF1CFB737C00D24401 /* whitted_79.pdf */,
+				64BCBBFE1CFB733000D24401 /* cook_84.pdf */,
+				64BCBBFB1CFB72C500D24401 /* kajiya_84.pdf */,
+				64BCBBFD1CFB730E00D24401 /* cook_86.pdf */,
+				64BCBC021CFB740200D24401 /* veach_98.pdf */,
+				6407771D1CEE148D0022008A /* wavefront.txt */,
+				64E911231CF7CA96008D8BBC /* material.txt */,
+			);
+			name = Docs;
+			sourceTree = "<group>";
+		};
 		64E910C81CF59E5C008D8BBC /* Geometry */ = {
 			isa = PBXGroup;
 			children = (
 				647BBDBC1BFEBB3B0017A888 /* Geometry.swift */,
 				64E910CB1CF59EA1008D8BBC /* Primitive.swift */,
+				64E910CF1CF59EE5008D8BBC /* AABB.swift */,
+				64E910D11CF59F2E008D8BBC /* Transform.swift */,
+				64E910D31CF59F59008D8BBC /* Intersection.swift */,
 				64E910C61CF59E44008D8BBC /* Sphere.swift */,
 				64E910C41CF59E1C008D8BBC /* Triangle.swift */,
 				64E910C91CF59E82008D8BBC /* PrimitiveList.swift */,
 				64E910CD1CF59EC3008D8BBC /* BVHNode.swift */,
-				64E910CF1CF59EE5008D8BBC /* AABB.swift */,
-				64E910D11CF59F2E008D8BBC /* Transform.swift */,
-				64E910D31CF59F59008D8BBC /* Intersection.swift */,
 				646752A81C2B9B4A0084CBE3 /* Primitive_.swift */,
 			);
 			name = Geometry;
@@ -260,10 +286,11 @@
 			isa = PBXGroup;
 			children = (
 				647BBDA81BFE57A10017A888 /* Vector.swift */,
-				64E910D51CF5A003008D8BBC /* PixelRGBA.swift */,
 				64E910D81CF5A04B008D8BBC /* Ray.swift */,
+				64E910D51CF5A003008D8BBC /* PixelRGBA.swift */,
 				64E910DA1CF5A06C008D8BBC /* Color.swift */,
 				6422711C1C0E2CD4007AD481 /* Random.swift */,
+				64BCBBF91CFA7F7C00D24401 /* Sampling.swift */,
 			);
 			name = Math;
 			sourceTree = "<group>";
@@ -271,7 +298,7 @@
 		64E910DC1CF5A155008D8BBC /* Render */ = {
 			isa = PBXGroup;
 			children = (
-				646752A61C2B76490084CBE3 /* RayTracer.swift */,
+				646752A61C2B76490084CBE3 /* Renderer.swift */,
 				64BCBBF11CF8E6A500D24401 /* DistributedTracer.swift */,
 				64DBD36B1CEB661900727B71 /* WhittedTracer.swift */,
 				64C5FCB71BFBC60C004F783E /* PathTracer.swift */,
@@ -307,12 +334,10 @@
 				64DBD3751CEC24CD00727B71 /* earth.jpg */,
 				640777191CECEB390022008A /* scene.json */,
 				64E911151CF67464008D8BBC /* cornell.json */,
-				6407771D1CEE148D0022008A /* wavefront.txt */,
 				642247A51CF5769200A35907 /* bunny.obj */,
 				64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */,
 				64E9111B1CF75E39008D8BBC /* cornell_box.mtl */,
 				64E9111D1CF75F69008D8BBC /* cornell_box.obj */,
-				64E911231CF7CA96008D8BBC /* material.txt */,
 				64E911271CF811FF008D8BBC /* teapot.obj */,
 			);
 			name = Models;
@@ -467,14 +492,15 @@
 				64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */,
 				64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */,
 				64E911141CF66517008D8BBC /* scene.json in Resources */,
+				64BCBC011CFB73BE00D24401 /* appel_68.pdf in Resources */,
 				640777341CEF5E3D0022008A /* dragon.mtl in Resources */,
 				64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */,
 				64E911161CF67464008D8BBC /* cornell.json in Resources */,
 				6407772B1CEE4EEB0022008A /* cube.obj in Resources */,
 				647648DE1BF9737A00C4EAC0 /* Assets.xcassets in Resources */,
-				64E911241CF7CA96008D8BBC /* material.txt in Resources */,
 				647648E11BF9737A00C4EAC0 /* Main.storyboard in Resources */,
 				642247A61CF5769200A35907 /* bunny.obj in Resources */,
+				64BCBC031CFB740200D24401 /* veach_98.pdf in Resources */,
 				64E911281CF811FF008D8BBC /* teapot.obj in Resources */,
 				640777351CEF5E3D0022008A /* dragon.obj in Resources */,
 				64E9111C1CF75E39008D8BBC /* cornell_box.mtl in Resources */,
@@ -502,6 +528,7 @@
 				64E910D21CF59F2E008D8BBC /* Transform.swift in Sources */,
 				6422711D1C0E2CD4007AD481 /* Random.swift in Sources */,
 				64E910D01CF59EE5008D8BBC /* AABB.swift in Sources */,
+				64BCBBF81CF9FBCE00D24401 /* WhittedTracer.swift in Sources */,
 				64E910D91CF5A04B008D8BBC /* Ray.swift in Sources */,
 				64E911201CF7C211008D8BBC /* Texture.swift in Sources */,
 				64E910D41CF59F59008D8BBC /* Intersection.swift in Sources */,
@@ -517,7 +544,8 @@
 				640777221CEE1E3B0022008A /* NSScanner+Swift.swift in Sources */,
 				646752A51C28BC980084CBE3 /* Camera.swift in Sources */,
 				646752A91C2B9B4A0084CBE3 /* Primitive_.swift in Sources */,
-				646752A71C2B76490084CBE3 /* RayTracer.swift in Sources */,
+				64BCBBFA1CFA7F7C00D24401 /* Sampling.swift in Sources */,
+				646752A71C2B76490084CBE3 /* Renderer.swift in Sources */,
 				64E910DB1CF5A06C008D8BBC /* Color.swift in Sources */,
 				64E910CC1CF59EA1008D8BBC /* Primitive.swift in Sources */,
 				64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */,

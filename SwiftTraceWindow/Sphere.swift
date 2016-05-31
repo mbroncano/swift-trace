@@ -16,50 +16,49 @@ final class Sphere: Primitive {
     let rad: Scalar
     /// The center of the sphere
     let p: Vec
-    /// Material identifier
-    let material: MaterialId
     
     private let preArea: Scalar
 
     init(rad: Scalar, p: Vec, material: MaterialId) {
         self.rad = rad
         self.p = p
-        self.material = material
-        self.preArea = 4 * Scalar(M_PI) * (rad * rad)
-        super.init(bbox: AABB(a: p - Vec(rad), b: p + Vec(rad)))
+        self.preArea = Scalar.pi4 * (rad * rad)
+        super.init(bbox: AABB(a: p - Vec(rad), b: p + Vec(rad)), material: material)
     }
 
     override var center: Vec { get { return p } }
     override var area: Scalar { get { return preArea } }
     override func sample() -> Vec { return self.p + sampleSphere(self.rad) }
 
-    override func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
-        let r = ray.memory
-    
-        let po = r.o - p
-        let b = dot(r.d, po)
+    override func intersectWithRay(ray ray: RayPointer) -> Scalar {
+        let po = ray.memory.o - p
+        let b = dot(ray.memory.d, po)
         let c = dot(po, po) - (rad * rad)
         let t = b*b - c
 
         // if the determinant is negative, there are not solutions
-        guard (t > 0) else { return false }
+        guard (t > 0) else { return Scalar.infinity }
         
         let s = sqrt(t)
         let d = (b < 0) ? (-b-s) : (-b+s)
 
         // check that the distance fits the ray boundaries
-        guard d > r.tmin && d < r.tmax else { return false }
-        
-        // note this, it's not the usual behaviour
-        // do we want to return true is it's not the case?
+        guard d > ray.memory.tmin && d < ray.memory.tmax else { return Scalar.infinity }
+    
+        return d
+    }
+    
+    override func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
+        let d: Scalar = intersectWithRay(ray: ray)
+    
         if (d < hit.memory.d) {
             hit.memory.p = self
             hit.memory.d = d
 
-            let x = r.o + r.d * d
+            let x = ray.memory.o + ray.memory.d * d
             let n = normalize(x - p)
-            let u = 0.5 + atan2(n.z, n.x) / (2.0 * Scalar(M_PI))
-            let v = 0.5 - asin(n.y) / Scalar(M_PI)
+            let u = 0.5 + atan2(n.z, n.x) / Scalar.pi2
+            let v = 0.5 - asin(n.y) / Scalar.pi
             
             hit.memory.x = x
             hit.memory.m = material
@@ -67,8 +66,8 @@ final class Sphere: Primitive {
             hit.memory.uv = Vec(u, v, 0)
         }
         
-        return true
+        return d != Scalar.infinity
     }
 }
 
-func == (lhs: Sphere, rhs: Sphere) -> Bool { return lhs.p == rhs.p && lhs.rad == rhs.rad && lhs.material == rhs.material }
+//func == (lhs: Sphere, rhs: Sphere) -> Bool { return lhs.p == rhs.p && lhs.rad == rhs.rad && lhs.material == rhs.material }

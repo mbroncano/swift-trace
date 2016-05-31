@@ -10,16 +10,25 @@ import Foundation
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// The result of an intersection with a ray
+
 struct Intersection: Comparable {
+    /// Weak reference to the primitive
     weak var p: Primitive? = nil
+    /// Pointer to the material of the surface
     var m: MaterialId? = nil
+    /// Distance
     var d: Scalar = Scalar.infinity
+    /// Intersection point
     var x: Vec = Vec.Zero
+    /// Normal at the intersection point
     var n: Vec = Vec.Zero
+    /// Parametric coordinates on the surface at the intersection point
     var uv: Vec = Vec.Zero
     // debug
     var count: Int = 0
     
+    
+    /// Resets the intersection to the default values
     mutating func reset() { m = nil; d = Scalar.infinity; x = Vec.Zero; n = Vec.Zero; uv = Vec.Zero }
 }
 

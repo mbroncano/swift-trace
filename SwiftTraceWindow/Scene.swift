@@ -13,11 +13,11 @@ enum SceneError: ErrorType {
     case InvalidMaterial(String)
 }
 
-public struct Scene: IntersectWithRayIntersection {
+public struct Scene: IntersectWithRayIntersection, IntersectWithRayBoolean {
     let camera: GenerateRay
     let root: Primitive
     var objects: [Primitive] = []
-    let lights: [Primitive] = []
+    var lights: [Primitive] = []
     
     let ambientLight: Color = Color(0.1, 0.1, 0.1)
     let backgroundColor: Color = Color.Black
@@ -27,14 +27,18 @@ public struct Scene: IntersectWithRayIntersection {
     
     var skydome: Texture? = nil
 
-    func skyColor(r: Ray) -> Color {
+    func skyColor(r: RayPointer) -> Color {
         guard skydome != nil else { return backgroundColor }
     
-        var n = r.d.norm()
-        let u = 0.5 + atan2(n.z, n.x) / (2.0 * Scalar(M_PI))
-        let v = 0.5 - asin(n.y) / Scalar(M_PI)
+        var n = r.memory.d.norm()
+        let u = 0.5 + atan2(n.z, n.x) / Scalar.pi2
+        let v = 0.5 - asin(n.y) / Scalar.pi
         
         return skydome![Vec(u, v * 2, 0)]
+    }
+
+    func intersectWithRay(ray ray: RayPointer) -> Bool {
+        return root.intersectWithRay(ray: ray)
     }
     
     func intersectWithRay(ray ray: RayPointer, hit: IntersectionPointer) -> Bool {
@@ -47,8 +51,8 @@ public struct Scene: IntersectWithRayIntersection {
         return material
     }
     
-    mutating func defaultMaterials() throws  {
-        let mats = try
+    func addDefaultMaterials(materials: [MaterialId: Material]) throws -> [MaterialId: Material] {
+        var mats = try
     
         [
             "Red"   : Lambertian(emission: Vec(), color:Vec(x:0.75,y:0.25,z:0.25)), // Red diffuse
@@ -67,7 +71,9 @@ public struct Scene: IntersectWithRayIntersection {
             "Earth" : Textured(name: "earth.jpg")          // Lite
         ]
         
-        mats.forEach({ self.materialDict[$0] = $1 })
+        materials.forEach({ mats[$0] = $1 })
+        
+        return mats
     }
 
    init(camera: ComplexCamera, objects: [Primitive], skydome: Texture?, materials: [MaterialId: Material]) throws {
@@ -81,6 +87,8 @@ public struct Scene: IntersectWithRayIntersection {
 //        self.camera = ComplexCamera(lookFrom: Vec(0, 2.8, 8), lookAt: Vec(0, 0.5, 2), vecUp: Vec(0, 1, 0), fov: 60, aspect: 1.25, aperture: 0.1)
    
         self.skydome = skydome
-        self.materialDict = materials
+        self.materialDict = try addDefaultMaterials(materials)
+    
+        self.lights = objects.filter({ materialDict[$0.material!]!.isLight })
     }
 }

@@ -13,23 +13,26 @@ typealias ColorPointer = UnsafeMutablePointer<Color>
 typealias IntersectionPointer = UnsafeMutablePointer<Intersection>
 typealias RayPointer = UnsafeMutablePointer<Ray>
 typealias MaterialPointer = UnsafeMutablePointer<Material>
+typealias ScenePointer = UnsafeMutablePointer<Scene>
 
-/// Implements a ray tracer
-protocol RayTracer {
+/// Implements an integrator
+protocol Integrator {
     /// Computes the radiance (Li) for a given ray
-    func radiance(ray ray: RayPointer, hit: IntersectionPointer) -> Color
+    func radiance(scene: ScenePointer, ray: RayPointer, hit: IntersectionPointer) -> Color
 }
 
 /// Implements a generic scene renderer
-protocol Renderer {
-    var scene: Scene { get }
-    var framebuffer: Framebuffer { get }
-    
-    func render()
-    func renderTile(size size: Int)
-}
+struct Renderer {
+    let scene: ScenePointer
+    let framebuffer: Framebuffer
+    let integrator: Integrator
 
-extension Renderer where Self: RayTracer {
+    init(scene: ScenePointer, w: Int, h: Int, integrator: Integrator) {
+        self.scene = scene
+        framebuffer = Framebuffer(width: w, height: h)
+        self.integrator = integrator
+    }
+
     /// Renders a frame in parallel, dispatching pixels
     func render() {
         let nx = framebuffer.width
@@ -40,14 +43,15 @@ extension Renderer where Self: RayTracer {
         dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let x = $0 % nx
             let y = ny - ($0 / nx) - 1
-            let r = self.scene.camera.generateRay(x: x, y: y, nx: nx, ny: ny)
+            let c = self.scene.memory.camera
+            let r = c.generateRay(x: x, y: y, nx: nx, ny: ny)
             self.framebuffer.ray[$0] = r
         }
 
         dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let ray = self.framebuffer.ray.advancedBy($0)
             let hit = self.framebuffer.hit.advancedBy($0)
-            let li = self.radiance(ray: ray, hit: hit)
+            let li = self.integrator.radiance(self.scene, ray: ray, hit: hit)
             self.framebuffer.ptr[$0] += li
         }
 
