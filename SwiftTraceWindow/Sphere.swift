@@ -61,7 +61,7 @@ final class Sphere: Primitive {
             let v = 0.5 - asin(n.y) / Scalar.pi
             
             hit.memory.x = x
-            hit.memory.m = material
+            hit.memory.m = material!
             hit.memory.n = n
             hit.memory.uv = Vec(u, v, 0)
         }

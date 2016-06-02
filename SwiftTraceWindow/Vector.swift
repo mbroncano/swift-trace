@@ -86,5 +86,3 @@ extension Matrix {
         return double3x3([v1, v2, v3])
         }}
 }
-
-

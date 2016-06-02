@@ -41,9 +41,9 @@ struct PathTracer: Integrator {
             else { return cl + cf * scene.memory.skyColor(ray) }
 
             // This shouln't happen
-//            guard hit.memory.m != nil
-//            else { return cl + Color.Black }
-            let material = scene.memory.materialWithId(hit.memory.m!)!
+            guard hit.memory.m != MaterialId.None
+            else { return cl + Color.Black }
+            let material = scene.memory.materialWithId(hit.memory.m)!
 
             (probability, direction) = material.sample(wo: ray.memory.d, normal: hit.memory.n)
             var f = material.colorAtTextCoord(hit.memory.uv)

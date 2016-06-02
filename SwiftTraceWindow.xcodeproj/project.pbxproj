@@ -39,6 +39,8 @@
 		64BCBC011CFB73BE00D24401 /* appel_68.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC001CFB73BE00D24401 /* appel_68.pdf */; };
 		64BCBC031CFB740200D24401 /* veach_98.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC021CFB740200D24401 /* veach_98.pdf */; };
 		64BCBC051CFD3F3300D24401 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBC041CFD3F3300D24401 /* Shape.swift */; };
+		64BCBC071CFFBE7200D24401 /* goldsmith_salmon_87.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */; };
+		64BCBC091CFFBFE800D24401 /* mcdonalds_booth_89.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */; };
 		64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C5FCB71BFBC60C004F783E /* PathTracer.swift */; };
 		64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3751CEC24CD00727B71 /* earth.jpg */; };
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
@@ -160,6 +162,8 @@
 		64BCBC001CFB73BE00D24401 /* appel_68.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = appel_68.pdf; sourceTree = "<group>"; };
 		64BCBC021CFB740200D24401 /* veach_98.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = veach_98.pdf; sourceTree = "<group>"; };
 		64BCBC041CFD3F3300D24401 /* Shape.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
+		64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = goldsmith_salmon_87.pdf; sourceTree = "<group>"; };
+		64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = mcdonalds_booth_89.pdf; sourceTree = "<group>"; };
 		64C5FCB71BFBC60C004F783E /* PathTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathTracer.swift; sourceTree = "<group>"; };
 		64DBD36B1CEB661900727B71 /* WhittedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhittedTracer.swift; sourceTree = "<group>"; };
 		64DBD3751CEC24CD00727B71 /* earth.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth.jpg; sourceTree = "<group>"; };
@@ -255,16 +259,42 @@
 		64BCBBFC1CFB72D300D24401 /* Docs */ = {
 			isa = PBXGroup;
 			children = (
+				64BCBC0A1CFFBFF900D24401 /* BVH */,
+				64BCBC0B1CFFC00A00D24401 /* Render */,
+				64BCBC0C1CFFC01600D24401 /* Format */,
+			);
+			name = Docs;
+			sourceTree = "<group>";
+		};
+		64BCBC0A1CFFBFF900D24401 /* BVH */ = {
+			isa = PBXGroup;
+			children = (
+				64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */,
+				64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */,
+			);
+			name = BVH;
+			sourceTree = "<group>";
+		};
+		64BCBC0B1CFFC00A00D24401 /* Render */ = {
+			isa = PBXGroup;
+			children = (
 				64BCBC001CFB73BE00D24401 /* appel_68.pdf */,
 				64BCBBFF1CFB737C00D24401 /* whitted_79.pdf */,
 				64BCBBFE1CFB733000D24401 /* cook_84.pdf */,
 				64BCBBFB1CFB72C500D24401 /* kajiya_84.pdf */,
 				64BCBBFD1CFB730E00D24401 /* cook_86.pdf */,
 				64BCBC021CFB740200D24401 /* veach_98.pdf */,
+			);
+			name = Render;
+			sourceTree = "<group>";
+		};
+		64BCBC0C1CFFC01600D24401 /* Format */ = {
+			isa = PBXGroup;
+			children = (
 				6407771D1CEE148D0022008A /* wavefront.txt */,
 				64E911231CF7CA96008D8BBC /* material.txt */,
 			);
-			name = Docs;
+			name = Format;
 			sourceTree = "<group>";
 		};
 		64E910C81CF59E5C008D8BBC /* Geometry */ = {
@@ -494,6 +524,7 @@
 			files = (
 				64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */,
 				64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */,
+				64BCBC091CFFBFE800D24401 /* mcdonalds_booth_89.pdf in Resources */,
 				64E911141CF66517008D8BBC /* scene.json in Resources */,
 				64BCBC011CFB73BE00D24401 /* appel_68.pdf in Resources */,
 				640777341CEF5E3D0022008A /* dragon.mtl in Resources */,
@@ -509,6 +540,7 @@
 				64E9111C1CF75E39008D8BBC /* cornell_box.mtl in Resources */,
 				64E9112A1CF8153F008D8BBC /* default.png in Resources */,
 				64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */,
+				64BCBC071CFFBE7200D24401 /* goldsmith_salmon_87.pdf in Resources */,
 				6407772D1CEE4EF00022008A /* default.mtl in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

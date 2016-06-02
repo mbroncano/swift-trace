@@ -70,6 +70,7 @@ extension Triangle: Decodable {
 
 extension Transform: Decodable {
     internal static func decode(json: AnyObject) throws -> Transform {
+    
         let scale: Vec = try json => "scale"
         let rotate: Vec = try json => "rotate"
         let translate: Vec = try json => "translate"
@@ -102,16 +103,22 @@ struct ObjectAndTransform: Decodable {
 
 extension Shape: Decodable {
     internal static func decode(json: AnyObject) throws -> Shape {
-        switch try json => "t" as String {
+        switch try json => "type" as String {
             case "s":
                 return Shape.Sphere(
                     pos: try json => "p",
                     rad: try json => "r")
             case "t":
-                return Shape.Triangle(
+                return Shape(
                     v1: try json => "p1",
                     v2: try json => "p2",
                     v3: try json => "p3")
+            case "m":
+                return Shape.List(shapes: try json => "l")
+            case "o":
+                // FIXME: please note this ignores the material in the file
+                let obj = try ObjectAndTransform.decode(json)
+                return Shape.List(shapes: try obj.object.mesh() as [Shape])
             default:
                 throw SceneLoaderError.InvalidType("invalid shape type: \(json)")
         }
@@ -122,7 +129,17 @@ extension Primi: Decodable {
     internal static func decode(json: AnyObject) throws -> Primi {
         let m = try json => "m" as String
     
-        return try Primi(Shape.decode(json), material: m.hashValue)
+        let t: Transform? = try json =>? "transform"
+        if t != nil {
+            return try Primi(
+                shape: Shape.decode(json),
+                material: m.hashValue,
+                transform: t!)
+        } else {
+            return try Primi(
+                shape: Shape.decode(json),
+                material: m.hashValue)
+        }
     }
 }
 

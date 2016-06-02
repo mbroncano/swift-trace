@@ -9,13 +9,16 @@
 import Foundation
 import simd
 
+enum ShapeError: ErrorType {
+    case InvalidSet(String)
+}
+
 protocol RayIntersection {
     func intersect(ray: Ray) -> Scalar
 }
 
-protocol GeometricIntersection {
-    func normalAt(p: Vec) -> Vec
-    func textureAt(p: Vec) -> Vec
+protocol Transformable {
+    func apply(t: Transform) throws -> Self
 }
 
 protocol BBox {
@@ -24,49 +27,151 @@ protocol BBox {
     var center: Vec { get }
 }
 
-protocol BBoxAndIntersection: BBox, RayIntersection { }
-
-protocol RayIntersectionWithHit {
-    func intersect(ray: Ray, inout hit: Intersection) -> Scalar
-}
-
 protocol BBoxOps: BBox {
     func union(s: Shape) -> Shape
     func overlap(s: Shape) -> Bool
 }
 
-enum ShapeError: ErrorType {
-    case InvalidSet(String)
+protocol RayIntersectionWithHit {
+    func intersect(ray: Ray, inout hit: Intersection) -> Scalar
+}
+
+protocol BBoxAndIntersection: BBox, RayIntersection, RayIntersectionWithHit { }
+
+typealias ShapeBVH = BVH<Shape>
+typealias PrimiBVH = BVH<Primi>
+
+final class BVHEnumNode<ItemType: BBoxAndIntersection>: BBoxAndIntersection {
+    let node: BVH<ItemType>
+    
+    let area: Scalar
+    let center: Vec
+    let boundingBox: Shape
+    
+    init(node: BVH<ItemType>) {
+        self.node = node
+        self.area = node.area
+        self.center = node.center
+        self.boundingBox = node.boundingBox
+    }
+    
+    func intersect(ray: Ray) -> Scalar {
+        return node.intersect(ray)
+    }
+
+    func intersect(ray: Ray, inout hit: Intersection) -> Scalar {
+        return node.intersect(ray, hit: &hit)
+    }
+}
+
+func sum<T: SequenceType where T.Generator.Element == Int>(list: T) -> Int {
+    return list.reduce(0, combine: { (acc, e) in
+        return acc + e
+    })
+}
+
+    
+struct SAHNode<ItemType: BBox> {
+    let item: ItemType
+    
+    let area: Scalar
+    let center: Vec
+    let boundingBox: Shape
+    
+    init(item: ItemType) {
+        self.item = item
+        area = item.area
+        center = item.center
+        boundingBox = item.boundingBox
+    }
+}
+
+struct box {
+    let a, b: Vec
+    let area: Scalar
+    let center: Vec
+    
+    static let empty = box(a: Vec(Scalar.infinity), b: Vec(-Scalar.infinity))
+    
+    init(_ bbox: Shape) {
+        if case Shape.BoundingBox(let a, let b) = bbox {
+            self.init(a: a, b: b)
+        } else {
+            self.init(a: Vec(Scalar.infinity), b: Vec(-Scalar.infinity))
+        }
+    }
+    
+    init(a: Vec, b: Vec) {
+        self.a = a
+        self.b = b
+        let c = b-a
+        self.area = 2 * (c.x*c.y + c.x*c.z + c.y*c.z)
+        self.center = a + c * 0.5
+    }
+}
+
+func + (lhs: box, rhs: box) -> box { return box(a: min(lhs.a, rhs.a), b: max(lhs.b, rhs.b)) }
+
+func sah(list: [box]) -> (Int, Scalar) {
+    var min = Scalar.infinity
+    var index = -1
+    let Ct = 1.0
+    let Ci = 4.0
+    
+    print("sah: num \(list.count)")
+    for i in list.indices {
+        let left = list[0..<i].reduce(box.empty, combine: +)
+        let right = list[i..<list.count].reduce(box.empty, combine: +)
+        let rootArea = (left + right).area
+        let leftArea = left.area * Scalar(i)
+        let rightArea = right.area * Scalar(list.count - i)
+        let ret = Ct + Ci * (leftArea + rightArea) / rootArea
+        if ret < min {
+            min = ret
+            index = i
+        }
+    }
+    print("sah: result \(index),\(min)")
+    return (index, min)
 }
 
 
-//typealias ShapeBVH = BVH<Shape>
-typealias PrimiBVH = BVH
-
-enum BVH: BBoxAndIntersection {
-
-    typealias ItemType = Primi
-
+enum BVH<ItemType: BBoxAndIntersection>: BBoxAndIntersection {
     indirect case Leaf(ItemType)
     indirect case Node(left: BVH, right: BVH, bbox: Shape)
 
     init(_ list: [ItemType]) throws {
         guard list.count > 0 else { throw ShapeError.InvalidSet("The provide shape set is invalid") }
+        guard list.count > 1 else { self = .Leaf(list[0]); return }
 
-        let axis = Int(Scalar.Random() * 3.0)
+//        let axis = Int(Scalar.Random() * 3.0)
         
-        let sorted = list.sort({ (a, b) -> Bool in return a.center[axis] > b.center[axis] })
+        let sorted = (0...2).map({ axis in list.sort({ $0.center[axis] > $1.center[axis] }) })
+        let boxes = sorted.map({ $0.map({ box($0.boundingBox) }) })
         
-        if sorted.count >= 2 {
-            let mid = sorted.count / 2
-            let left = try BVH([] + sorted[0..<mid])
-            let right = try BVH([] + sorted[mid..<sorted.count])
-            let bbox = left.boundingBox.union(right.boundingBox)
-            self = .Node(left: left, right: right, bbox: bbox)
-        } else /*if sorted.count == 1*/ {
-            self = .Leaf(sorted[0])
-        }
+//        print("sah: \(boxes.count)")
+        let sahAxis = boxes.map({ sah($0) })
+        let (_, cx) = sahAxis[0]
+        let (_, cy) = sahAxis[1]
+        let (_, cz) = sahAxis[2]
+        var a: Int
+        if cx < cy { if cx < cz { a = 0 } else { a = 2 } } else { if cy < cz { a = 1 } else { a = 2 } }
+        let (mid, _) = sahAxis[a]
+
+        let left = try BVH([] + sorted[a][0..<mid])
+        let right = try BVH([] + sorted[a][mid..<sorted.count])
+        let bbox = left.boundingBox.union(right.boundingBox)
+        self = .Node(left: left, right: right, bbox: bbox)
     }
+
+    var leaves: Array<ItemType> { get {
+        switch self {
+        case let .Leaf(leaf):
+            return [leaf]
+        case let .Node(left, right, _):
+            return left.leaves + right.leaves
+        }
+        }}
 
     var area: Scalar { get {
         return boundingBox.area
@@ -94,11 +199,8 @@ enum BVH: BBoxAndIntersection {
                    min(left.intersect(ray), right.intersect(ray)) : Scalar.infinity
         }
     }
-//}
 
-//extension BVH { where T: RayIntersectionWithHit {
     func intersect(ray: Ray, inout hit: Intersection) -> Scalar {
-    
         switch self {
         case let .Leaf(p):
             return p.intersect(ray, hit: &hit)
@@ -113,6 +215,7 @@ enum BVH: BBoxAndIntersection {
     }
 }
 
+/// Contains a set of primitives
 struct World: RayIntersectionWithHit {
     let root: PrimiBVH
 
@@ -121,13 +224,17 @@ struct World: RayIntersectionWithHit {
     }
     
     func intersect(ray: Ray, inout hit: Intersection) -> Scalar {
-        return root.intersect(ray, hit: &hit)
+        let d = root.intersect(ray, hit: &hit)
+//        if hit.count > 30 {
+//            print("x")
+//        }
+        return d
     }
-    
 }
 
+/// Contains a set of shapes that share a material
 struct Primi: BBoxAndIntersection, RayIntersectionWithHit {
-    let shape: Shape
+    let bvh: ShapeBVH
     
     let material: MaterialId
     let transform: Transform
@@ -136,36 +243,25 @@ struct Primi: BBoxAndIntersection, RayIntersectionWithHit {
     let center: Vec
     let area: Scalar
     
-/*
-    init(_ s: [Shape], material m: MaterialId? = nil, transform t: Transform? = nil) throws {
-        shape = Shape.Mesh(root: try ShapeBVH(s))
-        boundingBox = shape.boundingBox
-        center = shape.center
-        area = shape.area
-        material = m
+    init(shape: Shape, material m: MaterialId, transform t: Transform = Transform.Identity) throws {
+        let tshape = try shape.apply(t)
+        
+        bvh = try ShapeBVH(tshape.all)
+    
+        boundingBox = bvh.boundingBox
+        center = bvh.center
+        area = bvh.area
+        
         transform = t
-    }
-*/
-    init(_ s: Shape, material m: MaterialId) {
-        shape = s
-        boundingBox = shape.boundingBox
-        center = shape.center
-        area = shape.area
         material = m
-        transform = Transform()
     }
     
-    func intersect(ray: Ray) -> Scalar {
-        return shape.intersect(ray)
-    }
+    func intersect(ray: Ray) -> Scalar { return bvh.intersect(ray) }
     
     func intersect(ray: Ray, inout hit: Intersection) -> Scalar {
-        let d = shape.intersect(ray, hit: &hit)
-        
-        if d == hit.d {
-            hit.m = material
-        }
-        
+//        let ray = transform.isIdentity ? ray : transform.reverse().apply(ray: ray)
+        let d = bvh.intersect(ray, hit: &hit)
+        if d == hit.d { hit.m = material }
         return d
     }
 }
@@ -173,87 +269,96 @@ struct Primi: BBoxAndIntersection, RayIntersectionWithHit {
 enum Shape: BBoxAndIntersection {
     case BoundingBox(a: Vec, b: Vec)
     case Sphere(pos: Vec, rad: Scalar)
-    case Triangle(v1: Vec, v2: Vec, v3: Vec)
-//    case Mesh(root: ShapeBVH)
+    case Triangle(v1: Vec, v2: Vec, v3: Vec, t1: Vec, t2: Vec, t3: Vec)
+    case BVH(root: ShapeBVH)
+    case List(shapes: [Shape])
+    
+    /// Convenience for triangles w/out texture vertices
+    init(v1: Vec, v2: Vec, v3: Vec) {
+        self = .Triangle(v1: v1, v2: v2, v3: v3, t1: Vec(0, 1, 0), t2: Vec(1, 0, 0), t3: Vec(0, 0, 0))
+    }
+}
+
+extension Shape {
+    var all: [Shape] { get {
+        switch self {
+        case .BoundingBox: fallthrough
+        case .Sphere: fallthrough
+        case .Triangle:
+            return [self]
+        case let .BVH(root):
+            return root.leaves
+        case let .List(shapes):
+            return shapes.reduce([], combine: { $0 + $1.all })
+        }
+    }}
+}
+
+extension Shape: Transformable {
+    func apply(t: Transform) throws -> Shape {
+        switch self {
+        case let .BoundingBox(a, b):
+            return Shape.BoundingBox(
+                a: t.apply(vector: a),
+                b: t.apply(vector: b))
+        case let .Sphere(pos, rad):
+            return Shape.Sphere(
+                pos: t.apply(point: pos),
+                rad: rad)
+        case let .Triangle(v1, v2, v3, t1, t2, t3):
+            return Shape.Triangle(
+                v1: t.apply(point: v1),
+                v2: t.apply(point: v2),
+                v3: t.apply(point: v3),
+                t1: t1, t2: t2, t3: t3)
+        case let .BVH(root):
+            return Shape.BVH(root: try ShapeBVH(root.leaves.map({ try $0.apply(t) })))
+        case let .List(shapes):
+            return Shape.List(shapes: try shapes.map({ try $0.apply(t) }))
+        }
+    }
 }
 
 extension Shape: RayIntersectionWithHit {
     /// Returns the intersection with a ray or infinity
     func intersect(ray: Ray, inout hit: Intersection) -> Scalar {
+        hit.count += 1
         switch self {
-//        case let .Mesh(root):
-//            return root.intersect(ray, hit: &hit)
-        case let .Triangle(v1, v2, v3):
-            let d: Scalar
-            let t: Vec
-            (d, t) = triangleIntersect(v1: v1, v2: v2, v3: v3, ray: ray)
+        case let .Triangle(v1, v2, v3, t1, t2, t3):
+            let ret = triangleIntersect(v1: v1, v2: v2, v3: v3, ray: ray)
+            let d: Scalar = ret.x
+            let t: Vec = Vec(ret.y, ret.z, 1-ret.y-ret.z)
             
             if d < hit.d {
                 hit.d = d
                 hit.x = ray.o + ray.d * d
-                hit.n = normalAt(hit.x)
+                hit.n = ((v3-v1) % (v2-v1)).norm()
                 
                 // default texture coordinates
-                let t0 = Vec(0, 0, 0)
-                let t1 = Vec(0, 1, 0)
-                let t2 = Vec(1, 0, 0)
+//                let t0 = Vec(0, 0, 0)
+//                let t1 = Vec(0, 1, 0)
+//                let t2 = Vec(1, 0, 0)
                 
-                hit.uv = t0 * t.z + t1 * t.x + t2 * t.y
+                hit.uv = t3 * t.z + t1 * t.x + t2 * t.y
             }
             return d
-            
-        case .Sphere, .BoundingBox:
+        case let .Sphere(pos, _):
             let d = intersect(ray)
             if d < hit.d {
                 hit.d = d
                 hit.x = ray.o + ray.d * d
-                hit.n = normalAt(hit.x)
-                hit.uv = textureAt(hit.x)
+                hit.n = (hit.x-pos).norm()
+                let u = 0.5 + atan2(hit.n.z, hit.n.x) / Scalar.pi2
+                let v = 0.5 - asin(hit.n.y) / Scalar.pi
+                hit.uv = Vec(u, v, 0)
             }
             return d
-        }
-    }
-}
-
-extension Shape: GeometricIntersection {
-    /// Returns the geometric (vs shading) normal at a point
-    func normalAt(p: Vec) -> Vec {
-        switch self {
-            case let .Sphere(pos, _):
-                return (p-pos).norm()
-            case let .Triangle(v1, v2, v3):
-                return ((v3-v1) % (v2-v1)).norm()
-            default:
-                // FIXME: undefined for the rest of the shapes
-                return Vec.Zero
-        }
-    }
-    
-    func textureAt(p: Vec) -> Vec {
-        switch self {
-            case .Sphere:
-                let n = normalAt(p)
-                let u = 0.5 + atan2(n.z, n.x) / Scalar.pi2
-                let v = 0.5 - asin(n.y) / Scalar.pi
-                return Vec(u, v, 0)
-            case let .Triangle(v1, v2, v3):
-                // compute u,v over the edges
-                let v0 = (p-v1)
-                let e1 = (v2-v1)
-                let e2 = (v3-v1)
-                let u = dot(v0, e1)
-                let v = dot(v0, e2)
-                // default texture coordinates
-                let t1 = Vec(0, 0, 0)
-                let t2 = Vec(0, 1, 0)
-                let t3 = Vec(1, 0, 0)
-                let tu = abs(t2 - t1)
-                let tv = abs(t3 - t1)
-                
-                return tu * u + tv * v
-            default:
-                // FIXME: undefined for the rest of the shapes
-                return Vec.Zero
+        case let .BVH(root):
+            return root.intersect(ray, hit: &hit)
+        case .BoundingBox:
+            return intersect(ray)
+        case let .List(shapes):
+            return shapes.reduce(Scalar.infinity, combine: { min($0, $1.intersect(ray, hit: &hit))})
         }
     }
 }
@@ -294,28 +399,32 @@ extension Shape: RayIntersection {
             return boundingBoxIntersect(a: a, b: b, ray: ray)
         case let .Sphere(pos, rad):
             return sphereIntersect(pos: pos, rad: rad, ray: ray)
-        case let .Triangle(v1, v2, v3):
-            let d: Scalar
-            (d, _) = triangleIntersect(v1: v1, v2: v2, v3: v3, ray: ray)
-            return d
-//        case let .Mesh(root):
-//            return root.intersect(ray)
+        case let .Triangle(v1, v2, v3, _, _, _):
+            let d = triangleIntersect(v1: v1, v2: v2, v3: v3, ray: ray)
+            return d.x
+        case let .BVH(root):
+            return root.intersect(ray)
+        case let .List(shapes):
+            return shapes.reduce(Scalar.infinity, combine: { min($0, $1.intersect(ray))})
         }
     }
 }
 
 extension Shape: BBox {
-    /// Returns the are for the shape
+    /// Returns the area for the shape
     var area: Scalar { get {
         switch self {
         case let .BoundingBox(a, b):
-            return (b - a).len2() * 2
+            let ba = b - a
+            return 2*(ba.x*ba.y + ba.x*ba.z + ba.y*ba.z)
         case let .Sphere(_, rad):
             return Scalar.pi4 * (rad * rad)
-        case let .Triangle(v1, v2, v3):
+        case let .Triangle(v1, v2, v3, _, _, _):
             return (v3-v1).len() * (v2-v1).len() * 0.5
-//        case let .Mesh(root):
-//            return root.area
+        case let .BVH(root):
+            return root.area
+        case let .List(shapes):
+            return shapes.reduce(0, combine: { $0 + $1.area })
         }
     }}
     
@@ -326,10 +435,13 @@ extension Shape: BBox {
             return (b - a) * 0.5
         case let .Sphere(pos, _):
             return pos
-        case let .Triangle(v1, v2, v3):
+        case let .Triangle(v1, v2, v3,  _, _, _):
             return ((v3-v1) + (v2-v1)) * 0.5 // (v3+v2) * 0.5 - v1
-//        case let .Mesh(root):
-//            return root.center
+        case let .BVH(root):
+            return root.center
+        case .List:
+            // FIXME: do we need anything better?
+            return boundingBox.center
         }
     }}
     
@@ -340,15 +452,19 @@ extension Shape: BBox {
             return self
         case let .Sphere(pos, rad):
             return Shape.BoundingBox(a: pos - Vec(rad), b: pos + Vec(rad))
-        case let .Triangle(v1, v2, v3):
+        case let .Triangle(v1, v2, v3, _, _, _):
             return Shape.BoundingBox(a: min(min(v1, v2), min(v2, v3)), b: max(max(v1, v2), max(v2, v3)))
-//        case let .Mesh(root):
-//            return root.boundingBox
+        case let .BVH(root):
+            return root.boundingBox
+        case let .List(shapes):
+            return shapes.reduce(Shape.BoundingBox(a: Vec(Scalar.infinity), b: Vec(-Scalar.infinity)), combine: { $0.union($1)})
         }
     }}
 }
 
 func boundingBoxIntersect(a a: Vec, b: Vec, ray: Ray) -> Scalar {
+    // SIMD version of the slabs method
+    // This is *not* numerically stable
     let t1: Vec = (a - ray.o) * ray.inv
     let t2: Vec = (b - ray.o) * ray.inv
     
@@ -378,9 +494,9 @@ func sphereIntersect(pos pos: Vec, rad: Scalar, ray: Ray) -> Scalar {
     return d
 }
 
-func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> (Scalar, Vec) {
+func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> Vec {
     // default ret
-    let ret = (Scalar.infinity, Vec.Zero)
+    let ret = Vec(Scalar.infinity, 0, 0)
 
     // calculate edges
     let edge1 = v2-v1
@@ -422,6 +538,6 @@ func triangleIntersect(v1 v1: Vec, v2: Vec, v3: Vec, ray: Ray) -> (Scalar, Vec) 
     // check that the distance fits the ray boundaries
     guard d > ray.tmin && d < ray.tmax else { return ret }
     
-    // return the distance and
-    return (d, Vec(u, v, 1-u-v))
+    // return the distance and texture coordinates
+    return Vec(d, u, v)
 }

@@ -171,6 +171,45 @@ struct ObjectLibrary {
     var faces = [Face]()
     var mtllib = [String: MaterialTemplate]()
 
+    /// FIXME: this ignores the material in the obj file
+    func mesh() throws -> [Shape] {
+        var ret = [Shape]()
+        
+        try faces.forEach { face in
+            guard let type = face.elements[0].type else { throw ObjectLoaderError.InvalidFace("Invalid type for face") }
+        
+            for index in 2..<face.elements.count {
+                let slice = face.elements[(index-2)...index]
+        
+                var p = [Vec]()
+                var t = [Vec]()
+                var n = [Vec]()
+                
+                for element in slice {
+                    guard let pi = vertices[index: element.vi]
+                    else { throw ObjectLoaderError.InvalidFace("invalid vertex index") }
+                    
+                    p.append(Vec(pi))
+                    
+                    // FIXME: this won't detect whether the index is out of bouds or zero
+                    if let ti = textvert[index: element.ti] { t.append(Vec(ti)) }
+                    if let ni = normals[index: element.ni] { n.append(Vec(ni)) }
+                }
+                
+                // FIXME: add normals for triangle primitive
+                switch type {
+                case .VertexAndNormal: fallthrough
+                case .VertexOnly:
+                    ret.append(Shape(v1: p[0], v2: p[1], v3: p[2]))
+                case .VertexAndTextureAndNormal: fallthrough
+                case .VertexAndTexture:
+                    ret.append(Shape.Triangle(v1: p[0], v2: p[1], v3: p[2], t1:t[0], t2:t[1], t3:t[2]))
+                }
+            }
+        }
+        return ret
+    }
+
     func mesh(mid: MaterialId) throws -> [Primitive] {
         var ret = [Primitive]()
         

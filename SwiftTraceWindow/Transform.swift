@@ -17,6 +17,9 @@ struct Transform {
     let transform: Matrix
     /// Matrix that contains the inverse of the transform
     let inverse: Matrix
+    
+    let isIdentity: Bool
+    static let Identity = Transform(transform: Matrix.Identity, inverse: Matrix.Identity, isIdentity: true)
 
     /// Whether the transformation will change handeness
     var swapsHandeness: Bool { get {
@@ -24,79 +27,88 @@ struct Transform {
         return simd.matrix_determinant(transform.submatrix.cmatrix) < 0
     }}
     
-    /// Initializes the transform to the identity transform
-    init() { self.transform = Matrix.Identity; self.inverse = Matrix.Identity }
+    /// Returns the reverse transform
+    func reverse() -> Transform {
+        return Transform(transform: self.inverse, inverse: self.transform)
+    }
     
-    init(transform: Matrix) { self.transform = transform; self.inverse = transform.inverse }
-    init(transform: Matrix, inverse: Matrix) { self.transform = transform; self.inverse = inverse }
+    init(transform: Matrix, inverse: Matrix, isIdentity: Bool = false) {
+        self.transform = transform
+        self.inverse = inverse
+        // FIXME: check this is the case
+        self.isIdentity = isIdentity
+    }
     
     /// Translation transform
     init(translate t: Vec) {
-        transform = Matrix([
-            Row(1, 0, 0, t.x),
-            Row(0, 1, 0, t.y),
-            Row(0, 0, 1, t.z),
-            Row(0, 0, 0, 1),
-            ])
-        inverse = Matrix([
-            Row(1, 0, 0, -t.x),
-            Row(0, 1, 0, -t.y),
-            Row(0, 0, 1, -t.z),
-            Row(0, 0, 0, 1),
-            ])
+        self.init(
+            transform: Matrix([
+                Row(1, 0, 0, t.x),
+                Row(0, 1, 0, t.y),
+                Row(0, 0, 1, t.z),
+                Row(0, 0, 0, 1),
+                ]),
+            inverse: Matrix([
+                Row(1, 0, 0, -t.x),
+                Row(0, 1, 0, -t.y),
+                Row(0, 0, 1, -t.z),
+                Row(0, 0, 0, 1),
+                ]))
     }
 
     /// Scaling transform
     init(scale s: Vec) {
-        transform = Matrix([
-            Row(s.x, 0, 0, 0),
-            Row(0, s.y, 0, 0),
-            Row(0, 0, s.z, 0),
-            Row(0, 0, 0, 1)])
-        inverse = Matrix([
-            Row(1.0/s.x, 0, 0, 0),
-            Row(0, 1.0/s.y, 0, 0),
-            Row(0, 0, 1.0/s.z, 0),
-            Row(0, 0, 0, 1)])
+        let t = Matrix([
+                Row(s.x, 0, 0, 0),
+                Row(0, s.y, 0, 0),
+                Row(0, 0, s.z, 0),
+                Row(0, 0, 0, 1)])
+        let i = Matrix([
+                Row(1.0/s.x, 0, 0, 0),
+                Row(0, 1.0/s.y, 0, 0),
+                Row(0, 0, 1.0/s.z, 0),
+                Row(0, 0, 0, 1)])
+    
+        self.init(transform: t, inverse: i)
     }
     
     /// Rotation around X axis transform
     init(rotate_x a: Scalar) {
         let c: Scalar = cos(a)
         let s: Scalar = sin(a)
-
-        transform = Matrix([
+        let m = Matrix([
             Row(1, 0, 0, 0),
             Row(0, c,-s, 0),
             Row(0, s, c, 0),
             Row(0, 0, 0, 1)])
-        inverse = transform.transpose
+        
+        self.init(transform: m, inverse: m.transpose)
     }
 
     /// Rotation around Y axis transform
     init(rotate_y a: Scalar) {
         let c: Scalar = cos(a)
         let s: Scalar = sin(a)
-        
-        transform = Matrix([
+        let m = Matrix([
             Row(c, 0, s, 0),
             Row(0, 1, 0, 0),
             Row(-s,0, c, 0),
             Row(0, 0, 0, 1)])
-        inverse = transform.transpose
+
+        self.init(transform: m, inverse: m.transpose)
     }
 
     /// Rotation around Z axis transform
     init(rotate_z a: Scalar) {
         let c: Scalar = cos(a)
         let s: Scalar = sin(a)
-        
-        transform = Matrix([
+        let m = Matrix([
             Row(c,-s, 0, 0),
             Row(s, c, 0, 0),
             Row(0, 0, 1, 0),
             Row(0, 0, 0, 1)])
-        inverse = transform.transpose
+        
+        self.init(transform: m, inverse: m.transpose)
     }
 
     /// Rotation around a general axis transform
@@ -104,13 +116,13 @@ struct Transform {
         let r = r.norm()
         let s = sin(a)
         let c = cos(a)
-    
-        transform = Matrix([
-        Row(r.x*r.x+(1-r.x*r.x)*c, r.x*r.y*(1-c)-r.z*s,   r.x*r.z*(1-c)*r.y*s,   0),
-        Row(r.x*r.y*(1-c)-r.z*s,   r.y*r.y*(1-r.y*r.y)*c, r.y*r.z*(1-c)-r.x*s,   0),
-        Row(r.x*r.z*(1-c)-r.y*s,   r.y*r.z*(1-c)+r.x*s,   r.z*r.z*(1-r.z*r.z)*c, 0),
-        Row(0, 0, 0, 1)])
-        inverse = transform.transpose
+        let m = Matrix([
+            Row(r.x*r.x+(1-r.x*r.x)*c, r.x*r.y*(1-c)-r.z*s,   r.x*r.z*(1-c)*r.y*s,   0),
+            Row(r.x*r.y*(1-c)-r.z*s,   r.y*r.y*(1-r.y*r.y)*c, r.y*r.z*(1-c)-r.x*s,   0),
+            Row(r.x*r.z*(1-c)-r.y*s,   r.y*r.z*(1-c)+r.x*s,   r.z*r.z*(1-r.z*r.z)*c, 0),
+            Row(0, 0, 0, 1)])
+        
+        self.init(transform: m, inverse: m.transpose)
     }
 
     /// Camera transform
@@ -118,13 +130,13 @@ struct Transform {
         let dir = (to - from).norm()
         let left = (dir % up.norm()).norm() // do we have to normalize again?
         let up = dir % left
-    
-        transform = Matrix([
-        Row(left.x, up.x, dir.x, from.x),
-        Row(left.y, up.y, dir.y, from.y),
-        Row(left.z, up.z, dir.z, from.z),
-        Row(0, 0, 0, 1)])
-        inverse = transform.transpose
+        let m = Matrix([
+            Row(left.x, up.x, dir.x, from.x),
+            Row(left.y, up.y, dir.y, from.y),
+            Row(left.z, up.z, dir.z, from.z),
+            Row(0, 0, 0, 1)])
+            
+        self.init(transform: m, inverse: m.transpose)
     }
 
     /// Apply the transform to a normal vector
@@ -149,6 +161,7 @@ struct Transform {
     }
 
     /// Apply the transform to a ray
+    /// By default this is the *inverse* transform
     func apply(ray r: Ray) -> Ray {
         return Ray(o: apply(point: r.o), d: apply(vector: r.d), tmin: r.tmin, tmax: r.tmax)
     }
@@ -177,6 +190,6 @@ struct Transform {
 /// Please note inv(A*B) = inv(B) * inv(A)
 func + (lhs:Transform, rhs: Transform) -> Transform {
     let mat = lhs.transform * rhs.transform
-    let inv = rhs.transform * lhs.transform
+    let inv = rhs.inverse * lhs.inverse
     return Transform(transform: mat, inverse: inv)
 }

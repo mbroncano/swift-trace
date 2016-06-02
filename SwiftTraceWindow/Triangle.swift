@@ -110,7 +110,7 @@ final class Triangle: Primitive {
             hit.memory.p = self
             hit.memory.d = d
             hit.memory.x = ray.memory.o + ray.memory.d * d
-            hit.memory.m = material
+            hit.memory.m = material!
             hit.memory.n = normal
             hit.memory.uv = tu * u + tv * v
         }

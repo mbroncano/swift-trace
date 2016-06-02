@@ -62,7 +62,7 @@ class ViewController: NSViewController {
                 
                 // compute more stats
                 let hits = UnsafeMutableBufferPointer<Intersection>(start: render.framebuffer.hit, count: render.framebuffer.length)
-                totalHits += 320 * 240 //hits.reduce(0) { $0 + $1.count }
+                totalHits += hits.reduce(0) { $0 + $1.count }
                 let hps = Scalar(totalHits) / Scalar(render.framebuffer.samples) / Scalar(lastFrameDuration)
 
                 // update window on the main loop
@@ -78,11 +78,11 @@ class ViewController: NSViewController {
                 
                 // FIXME: warn the user if there is any problem
                 guard let image = render.framebuffer.cgImage() else { continue }
-//                guard let hitImage = render.framebuffer.hitImage() else { continue }
+                guard let hitImage = render.framebuffer.hitImage() else { continue }
                 
                 dispatch_async(dispatch_get_main_queue()) {
                     self.imageView!.image = NSImage(CGImage: image, size: NSZeroSize)
-//                    self.hitImageView!.image = NSImage(CGImage: hitImage, size: NSZeroSize)
+                    self.hitImageView!.image = NSImage(CGImage: hitImage, size: NSZeroSize)
                 }
             }
         }
