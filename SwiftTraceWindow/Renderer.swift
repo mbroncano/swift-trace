@@ -9,50 +9,57 @@
 import Foundation
 import simd
 
-typealias ColorPointer = UnsafeMutablePointer<Color>
-typealias IntersectionPointer = UnsafeMutablePointer<Intersection>
-typealias RayPointer = UnsafeMutablePointer<Ray>
-typealias MaterialPointer = UnsafeMutablePointer<Material>
-typealias ScenePointer = UnsafeMutablePointer<Scene>
+enum RendererError: ErrorType {
+    case InvalidSample(String)
+}
 
 /// Implements an integrator
 protocol Integrator {
     /// Computes the radiance (Li) for a given ray
-    func radiance(scene: ScenePointer, ray: RayPointer, hit: IntersectionPointer) -> Color
+    static func radiance(scene: _Scene, inout ray: _Ray) throws -> Vector
 }
 
 /// Implements a generic scene renderer
 struct Renderer {
-    let scene: ScenePointer
-    let framebuffer: Framebuffer
+    let scene: _Scene
     let integrator: Integrator
 
-    init(scene: ScenePointer, w: Int, h: Int, integrator: Integrator) {
+    init(scene: _Scene, w: Int, h: Int, integrator: Integrator) {
         self.scene = scene
-        framebuffer = Framebuffer(width: w, height: h)
         self.integrator = integrator
     }
 
     /// Renders a frame in parallel, dispatching pixels
-    func render() {
+    func render(inout framebuffer: Framebuffer) {
         let nx = framebuffer.width
         let ny = framebuffer.height
-
+        
         framebuffer.samples += 1
 
+        // first compute the ray
         dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
             let x = $0 % nx
             let y = ny - ($0 / nx) - 1
-            let c = self.scene.memory.camera
+            let c = self.scene.camera
             let r = c.generateRay(x: x, y: y, nx: nx, ny: ny)
-            self.framebuffer.ray[$0] = r
+            framebuffer.ray[$0] = r
         }
 
+        // now compute the samples
         dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-            let ray = self.framebuffer.ray.advancedBy($0)
-            let hit = self.framebuffer.hit.advancedBy($0)
-            let li = self.integrator.radiance(self.scene, ray: ray, hit: hit)
-            self.framebuffer.ptr[$0] += li
+            do {
+                let ray = framebuffer.ray.advancedBy($0)
+                let li = try PathTracer.radiance(self.scene, ray: &ray.memory)
+                
+                // check that the sample is correct
+                guard !(li.x.isNaN || li.y.isNaN || li.z.isNaN) else {
+                    throw RendererError.InvalidSample("an invalid sample was generated")
+                }
+        
+                framebuffer.ptr[$0] += li
+            } catch {
+                print(error)
+            }
         }
 
     }

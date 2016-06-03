@@ -24,10 +24,6 @@ func cosineWeightedPdf(wo wo: Vec, normal: Vec) -> (Scalar, Vec) {
     return (1.0, d)
 }
 
-typealias MaterialId = Int
-extension MaterialId {
-    static let None = "__None".hashValue
-}
 
 protocol MaterialProtocol {
     var emission: Color { get }

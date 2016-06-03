@@ -25,14 +25,14 @@ class ViewController: NSViewController {
         // dispatch the main routine
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
             let width = 320, height = 240
-            var scene: Scene
+            let scene: _Scene
             let render: Renderer
 
             do {
                 let file = NSBundle.mainBundle().pathForResource("scene", ofType: "json")!
                 let data = NSData(contentsOfFile: file)!
                 let json = try NSJSONSerialization.JSONObjectWithData(data, options: [])
-                scene = try Scene.decode(json)
+                scene = try _Scene.decode(json)
             } catch {
                 print(error)
                 return
@@ -40,9 +40,12 @@ class ViewController: NSViewController {
             
             // FIXME: choose the integrator from the scene file
             let integrator = PathTracer()
-            render = Renderer(scene: &scene, w: width, h: height, integrator: integrator)
-//            let render = DistributedRayTracer(scene: scene, w: width, h: height)
-//            let render = WhittedTracer(scene: scene, w: width, h: height)
+            render = Renderer(scene: scene, w: width, h: height, integrator: integrator)
+            
+            // initialize framebuffer
+            var framebuffer = Framebuffer(width: width, height: height)
+            (0..<width*height).forEach({ framebuffer.ptr[$0] = Vector() })
+
             
             var totalFrameTime:NSTimeInterval = 0
             var lastFrameDisplayed: NSTimeInterval = NSDate().timeIntervalSince1970
@@ -51,25 +54,25 @@ class ViewController: NSViewController {
                 let lastFrameStart = NSDate().timeIntervalSince1970
                 
                 // render a frame
-                render.render() //Tile(size: 64)
+                render.render(&framebuffer) //Tile(size: 64)
                 
                 // compute stats
                 let lastFrameDuration = NSDate().timeIntervalSince1970 - lastFrameStart
                 totalFrameTime = totalFrameTime + lastFrameDuration
                 let lastFrameTime = Int(lastFrameDuration * 1000)
-                let avgFrameTime = Int(totalFrameTime * 1000 / Double(render.framebuffer.samples))
+                let avgFrameTime = Int(totalFrameTime * 1000 / Double(framebuffer.samples))
                 print("Profiler: frame in \(lastFrameTime)ms, avg. \(avgFrameTime)ms")
                 
                 // compute more stats
-                let hits = UnsafeMutableBufferPointer<Intersection>(start: render.framebuffer.hit, count: render.framebuffer.length)
+                let hits = UnsafeMutableBufferPointer<_Ray>(start: framebuffer.ray, count: framebuffer.length)
                 totalHits += hits.reduce(0) { $0 + $1.count }
-                let hps = Scalar(totalHits) / Scalar(render.framebuffer.samples) / Scalar(lastFrameDuration)
+                let hps = Real(totalHits) / Real(framebuffer.samples) / Real(lastFrameDuration)
 
                 // update window on the main loop
                 dispatch_async(dispatch_get_main_queue()) {
                     self.hitsPerSecond!.stringValue = "Avg. hits: \(Int(hps/1e6)) Mh/s"
                     self.profilerTextField!.stringValue = "Frame in \(lastFrameTime)ms, Avg. \(avgFrameTime)ms"
-                    self.view.window!.title = "Samples \(render.framebuffer.samples)"
+                    self.view.window!.title = "Samples \(framebuffer.samples)"
                 }
                 
                 // update the UI at least twice a second 
@@ -77,8 +80,8 @@ class ViewController: NSViewController {
                 lastFrameDisplayed = NSDate().timeIntervalSince1970
                 
                 // FIXME: warn the user if there is any problem
-                guard let image = render.framebuffer.cgImage() else { continue }
-                guard let hitImage = render.framebuffer.hitImage() else { continue }
+                guard let image = framebuffer.cgImage() else { continue }
+                guard let hitImage = framebuffer.hitImage() else { continue }
                 
                 dispatch_async(dispatch_get_main_queue()) {
                     self.imageView!.image = NSImage(CGImage: image, size: NSZeroSize)

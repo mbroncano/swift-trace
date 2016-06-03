@@ -10,7 +10,7 @@ import Foundation
 
 // http://www.martinreddy.net/gfx/3d/OBJ.spec
 
-extension Vec {
+extension Vector {
     init(_ v: Vertex)        { self.init(v.x, v.y, v.z) }
     init(_ v: TextureVertex) { self.init(v.u, v.v, v.w) }
     init(_ v: VertexNormal)  { self.init(v.i, v.j, v.k) }
@@ -29,20 +29,20 @@ extension FaceVertexIndex {
     init(str: String) throws {
         guard str != "" else { self = 0; return } // empty string is a valid case
         
-        guard let int = Int(str) where (int != 0)
-        else { throw ObjectLoaderError.InvalidVertex("vertex index must not be zero") }
+//        guard let int = Int(str) where (int != 0)
+//        else { throw ObjectLoaderError.InvalidVertex("vertex index must not be zero") }
         
-        self = int
+        self = Int(str)
     }
 }
 
-typealias VertexCoordinate = Scalar
+typealias VertexCoordinate = Real
 extension VertexCoordinate {
     init(str: String) throws {
         guard str.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0
         else { throw ObjectLoaderError.InvalidVertex("vertex coordinate must not be empty") } // empty string is a *not* valid case
         
-        guard let s = Scalar(str) where (s.isFinite)
+        guard let s = VertexCoordinate(str) where (s.isFinite)
         else { throw ObjectLoaderError.InvalidVertex("invalid vertex coordinate <\(str)>") }
         
         self = s
@@ -54,7 +54,7 @@ protocol FaceVertex {
 }
 
 struct Vertex: FaceVertex, CustomStringConvertible {
-    let x, y, z, w: Scalar
+    let x, y, z, w: VertexCoordinate
     var description: String { get { return "(\(x), \(y), \(z), \(w))" } }
     
     init(_ array: [String]) throws {
@@ -69,7 +69,7 @@ struct Vertex: FaceVertex, CustomStringConvertible {
 }
 
 struct TextureVertex: FaceVertex, CustomStringConvertible {
-    let u, v, w: Scalar
+    let u, v, w: VertexCoordinate
     var description: String { get { return "(\(u), \(v), \(w))" } }
 
     init(_ array: [String]) throws {
@@ -83,7 +83,7 @@ struct TextureVertex: FaceVertex, CustomStringConvertible {
 }
 
 struct VertexNormal: FaceVertex, CustomStringConvertible {
-    let i, j, k: Scalar
+    let i, j, k: VertexCoordinate
     var description: String { get { return "(\(i), \(j), \(k))" } }
 
     init(_ array: [String]) throws {
@@ -169,86 +169,7 @@ struct ObjectLibrary {
     var textvert = [TextureVertex]()
     var normals = [VertexNormal]()
     var faces = [Face]()
-    var mtllib = [String: MaterialTemplate]()
-
-    /// FIXME: this ignores the material in the obj file
-    func mesh() throws -> [Shape] {
-        var ret = [Shape]()
-        
-        try faces.forEach { face in
-            guard let type = face.elements[0].type else { throw ObjectLoaderError.InvalidFace("Invalid type for face") }
-        
-            for index in 2..<face.elements.count {
-                let slice = face.elements[(index-2)...index]
-        
-                var p = [Vec]()
-                var t = [Vec]()
-                var n = [Vec]()
-                
-                for element in slice {
-                    guard let pi = vertices[index: element.vi]
-                    else { throw ObjectLoaderError.InvalidFace("invalid vertex index") }
-                    
-                    p.append(Vec(pi))
-                    
-                    // FIXME: this won't detect whether the index is out of bouds or zero
-                    if let ti = textvert[index: element.ti] { t.append(Vec(ti)) }
-                    if let ni = normals[index: element.ni] { n.append(Vec(ni)) }
-                }
-                
-                // FIXME: add normals for triangle primitive
-                switch type {
-                case .VertexAndNormal: fallthrough
-                case .VertexOnly:
-                    ret.append(Shape(v1: p[0], v2: p[1], v3: p[2]))
-                case .VertexAndTextureAndNormal: fallthrough
-                case .VertexAndTexture:
-                    ret.append(Shape.Triangle(v1: p[0], v2: p[1], v3: p[2], t1:t[0], t2:t[1], t3:t[2]))
-                }
-            }
-        }
-        return ret
-    }
-
-    func mesh(mid: MaterialId) throws -> [Primitive] {
-        var ret = [Primitive]()
-        
-        try faces.forEach { face in
-            guard let type = face.elements[0].type else { throw ObjectLoaderError.InvalidFace("Invalid type for face") }
-        
-            for index in 2..<face.elements.count {
-                let slice = face.elements[(index-2)...index]
-        
-                var p = [Vec]()
-                var t = [Vec]()
-                var n = [Vec]()
-                
-                for element in slice {
-                    guard let pi = vertices[index: element.vi]
-                    else { throw ObjectLoaderError.InvalidFace("invalid vertex index") }
-                    
-                    p.append(Vec(pi))
-                    
-                    // FIXME: this won't detect whether the index is out of bouds or zero
-                    if let ti = textvert[index: element.ti] { t.append(Vec(ti)) }
-                    if let ni = normals[index: element.ni] { n.append(Vec(ni)) }
-                }
-                
-                let material = mid // face.material != nil ? face.material! : mid
-                
-                // FIXME: add normals for triangle primitive
-                switch type {
-                case .VertexAndNormal: fallthrough
-                case .VertexOnly:
-                    ret.append(Triangle(p1: p[0], p2: p[1], p3: p[2], material: material))
-                case .VertexAndTextureAndNormal: fallthrough
-                case .VertexAndTexture:
-                    ret.append(Triangle(p[0], p[1], p[2], material, t[0], t[1], t[2]))
-                }
-            }
-        }
-        return ret
-    }
+//    var mtllib = [String: MaterialTemplate]()
 
     init(name: String) throws {
         guard
@@ -295,17 +216,17 @@ struct ObjectLibrary {
 
             case "#":
                 print("[\(name):comment]\t\(line)")
-
+/*
             case "mtllib":
                 try tokenArray.forEach({ lib in
                     try MaterialLoader(name: lib).mtldict.forEach({ mtllib[$0] = $1 })
                     print("[\(name):mtllib]\t\(lib)")
                 })
-            
+*/
             case "usemtl":
                 currentMaterial = tokenArray[0]
                 print("[\(name):usemtl]\t\(currentMaterial)")
-            
+
             default:
                 print("[\(name):????]\t\(line)")
             }

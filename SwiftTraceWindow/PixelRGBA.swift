@@ -9,36 +9,55 @@
 import Foundation
 import simd
 
+typealias Byte = UInt8
+extension Byte {
+    static let Max = 255
+}
+
+enum PixelException: ErrorType {
+    case InvalidColor
+}
+
 /// Structure containing a RGBA pixel
-public struct PixelRGBA: Equatable {
+public struct Pixel {
     /// Alpha, Red, Green, Blue
-    private let a, r, g, b: byte
+    private let a, r, g, b: Byte
     
     /// Default initializer with all four members
-    init(a: byte, r: byte, g: byte, b: byte) {
+    init(a: Byte, r: Byte, g: Byte, b: Byte) {
         self.a = a
         self.r = r
         self.g = g
         self.b = b
     }
     
-    /// Default initializer with Color type
-    /// -Parameter color: Color type variable
-    init(color: Color) {
-        var c = clamp(color, min:0, max: 1) * Scalar(byte.max)
-        for i in 0...2 {
-            if c[i].isNaN {
-                c[i] = 0
-            }
+    subscript(i: Int) -> Byte {
+        switch i {
+        case 0: return r
+        case 1: return g
+        case 2: return b
+        case 3: return a
+        default:
+            // FIXME: throw error
+            return 0
         }
-        
-        (r, g, b, a) = (byte(c.x), byte(c.y), byte(c.z), 0)
     }
     
-    /// Return Color vector
-    func color() -> Color {
-        return Color(Scalar(self.r), Scalar(self.g), Scalar(self.b)) * (1.0 / Scalar(byte.max))
+    /// Default initializer with Color type
+    /// -Parameter color: Color type variable
+    init(color: Vector) {
+        let c = clamp(color, min: 0, max: 1) * Real(Byte.Max)
+        
+        (r, g, b, a) = (Byte(c[0]), Byte(c[1]), Byte(c[2]), 0)
+    }
+    
+    init(h: Real, s: Real, v: Real) {
+        let r=v*(1+s*(cos(h)-1))
+        let g=v*(1+s*(cos(h-2.09439)-1))
+        let b=v*(1+s*(cos(h+2.09439)-1))
+        
+        self.init(color: Vector(r, g, b))
     }
 }
 
-public func == (a:PixelRGBA, b:PixelRGBA) -> Bool { return a.a == b.a && a.r == b.r && a.g == b.g && a.b == b.b }
+public func == (a:Pixel, b:Pixel) -> Bool { return a.a == b.a && a.r == b.r && a.g == b.g && a.b == b.b }

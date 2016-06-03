@@ -12,7 +12,7 @@ import simd
 struct PathTracer: Integrator {
 
     // non-recursive path tracing
-    func radiance(scene: ScenePointer, ray: RayPointer, hit: IntersectionPointer) -> Color {
+    static func radiance(scene: _Scene, inout ray: _Ray) throws -> Vector {
         // L0 = Le0 + f0*(L1)
         //    = Le0 + f0*(Le1 + f1*L2)
         //    = Le0 + f0*(Le1 + f1*(Le2 + f2*(L3))
@@ -27,49 +27,47 @@ struct PathTracer: Integrator {
         //   F *= fi
         //
         
-        var cl: Vec = Vec.Zero
-        var cf: Vec = Vec.Unit
-        var direction: Vec
-        var probability: Scalar
+        var cl: Vector = Vector()
+        var cf: Vector = Vector(1)
         var depth = 0
 
-//        hit.memory.count = 0
         while true {
-            hit.memory.reset()
             // intersection with world
-            guard scene.memory.intersectWithRay(ray: ray, hit: hit)
-            else { return cl + cf * scene.memory.skyColor(ray) }
+            guard try scene.intersect(&ray) else { cl = cl + cf * scene.background(ray); break }
 
             // This shouln't happen
-            guard hit.memory.m != MaterialId.None
-            else { return cl + Color.Black }
-            let material = scene.memory.materialWithId(hit.memory.m)!
-
-            (probability, direction) = material.sample(wo: ray.memory.d, normal: hit.memory.n)
-            var f = material.colorAtTextCoord(hit.memory.uv)
-//            (probability, direction) = material.importance_sample(hit: hit, wo: ray.memory.d)
-//            var f = material.brdf(hit: hit, wo: ray.memory.d, wi: direction)
+            guard ray.gid != IndexType.Invalid  else { break }
             
-            if material.isLight {
-                return cl + cf * material.emission
+            let material = try scene.material(ray.gid)
+
+            let (probability, direction) = material.sample(ray)
+            var f = material.color(ray)
+
+            if reduce_max(material.Ke) > Real.Eps {
+                return cl + cf * material.Ke
+            }
+            
+            let p = simd.reduce_max(f)
+            if p < Real.Eps {
+                return cl
             }
 
             // Russian roulette
-            
             if depth > 5 {
-                let p = simd.reduce_max(f);
-                if (depth < 80 && Scalar.Random() < p) {
+                if (depth < 80 && Real(drand48()) < p) {
                     f = f * (1.0 / p)
                 } else {
-                    return cl
+                    break
                 }
             }
             depth = depth + 1
             
             cf = cf * f * probability
             cl = cl * cf
-            ray.memory = Ray(o:hit.memory.x, d: direction)
+            ray.reset(o:ray.x, d: direction)
         }
+
+        return cl
     }
 }
 

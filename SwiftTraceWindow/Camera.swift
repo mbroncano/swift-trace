@@ -10,7 +10,7 @@ import Foundation
 import simd
 
 protocol GenerateRay {
-    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> Ray
+    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> _Ray
 }
 
 /// Simple, axis aligned camera with antialias
@@ -22,7 +22,7 @@ public class Camera: GenerateRay {
         self.d = d
     }
     
-    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> Ray {
+    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> _Ray {
         let ar: Scalar = 0.5135
         let cx = Vec(Scalar(nx) * ar / Scalar(ny), 0, 0)
         let cy = cross(cx, d).norm() * ar
@@ -34,11 +34,12 @@ public class Camera: GenerateRay {
         let part2 = (Scalar(y) + r2) / Scalar(ny) - 0.5
         let dir = cx * part1 + cy * part2 + d
         
-        return Ray(o:o+dir*140, d:dir.norm())
+        return _Ray(o:o+dir*140, d:dir.norm())
     }
 }
 
 /// Simple axis aligned camera with antialias
+/*
 public class SimpleCamera: GenerateRay {
     let o, d: Vec
     
@@ -47,7 +48,7 @@ public class SimpleCamera: GenerateRay {
         self.d = d
     }
     
-    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> Ray {
+    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> _Ray {
         let ar = Scalar(ny) / Scalar(nx)
         let cx = Vec(1, 0, 0)
         let cy = cross(cx, d) * ar
@@ -59,10 +60,10 @@ public class SimpleCamera: GenerateRay {
         let v = (Scalar(y) /*+ r2*/) / Scalar(ny-1) - 0.5
         let dir = d + cx * u + cy * v
         
-        return Ray(o:o, d:dir.norm())
+        return _Ray(o:o, d:dir.norm())
     }
 }
-
+*/
 
 // Complex camera with arbitrary positioning, DOF/antialias
 final public class ComplexCamera: GenerateRay {
@@ -100,7 +101,7 @@ final public class ComplexCamera: GenerateRay {
         vertical = 2 * halfHeight * v * focusDist
     }
     
-    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> Ray {
+    func generateRay(x x: Int, y: Int, nx: Int, ny: Int) -> _Ray {
         let lens = sampleDisk() * lensRadius
         let ofs = u * lens.x + v * lens.y
     
@@ -111,6 +112,6 @@ final public class ComplexCamera: GenerateRay {
         let t = (Scalar(y) + r2) / Scalar(ny-1)
         let d = lowerLeftCorner +  s * horizontal + t * vertical - origin - ofs
         
-        return Ray(o: origin + ofs, d: d.norm())
+        return _Ray(o: origin + ofs, d: d.norm())
     }
 }
