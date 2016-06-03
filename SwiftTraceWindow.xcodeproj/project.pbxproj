@@ -41,6 +41,7 @@
 		64BCBC051CFD3F3300D24401 /* Shape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBC041CFD3F3300D24401 /* Shape.swift */; };
 		64BCBC071CFFBE7200D24401 /* goldsmith_salmon_87.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */; };
 		64BCBC091CFFBFE800D24401 /* mcdonalds_booth_89.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */; };
+		64BCBC0E1D009A8B00D24401 /* Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBC0D1D009A8B00D24401 /* Core.swift */; };
 		64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C5FCB71BFBC60C004F783E /* PathTracer.swift */; };
 		64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3751CEC24CD00727B71 /* earth.jpg */; };
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
@@ -164,6 +165,7 @@
 		64BCBC041CFD3F3300D24401 /* Shape.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
 		64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = goldsmith_salmon_87.pdf; sourceTree = "<group>"; };
 		64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = mcdonalds_booth_89.pdf; sourceTree = "<group>"; };
+		64BCBC0D1D009A8B00D24401 /* Core.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core.swift; sourceTree = "<group>"; };
 		64C5FCB71BFBC60C004F783E /* PathTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathTracer.swift; sourceTree = "<group>"; };
 		64DBD36B1CEB661900727B71 /* WhittedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhittedTracer.swift; sourceTree = "<group>"; };
 		64DBD3751CEC24CD00727B71 /* earth.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth.jpg; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 				64E910CD1CF59EC3008D8BBC /* BVHNode.swift */,
 				646752A81C2B9B4A0084CBE3 /* Primitive_.swift */,
 				64BCBC041CFD3F3300D24401 /* Shape.swift */,
+				64BCBC0D1D009A8B00D24401 /* Core.swift */,
 			);
 			name = Geometry;
 			sourceTree = "<group>";
@@ -573,6 +576,7 @@
 				647648DC1BF9737A00C4EAC0 /* ViewController.swift in Sources */,
 				647BBDC01BFEDDB50017A888 /* Framebuffer.swift in Sources */,
 				64E911221CF7C3DD008D8BBC /* MaterialLoader.swift in Sources */,
+				64BCBC0E1D009A8B00D24401 /* Core.swift in Sources */,
 				647648DA1BF9737A00C4EAC0 /* AppDelegate.swift in Sources */,
 				647BBDBA1BFE761F0017A888 /* Vector.swift in Sources */,
 				64E910E01CF5F2C1008D8BBC /* Serializable.swift in Sources */,

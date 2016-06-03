@@ -266,6 +266,9 @@ struct Primi: BBoxAndIntersection, RayIntersectionWithHit {
     }
 }
 
+
+
+
 enum Shape: BBoxAndIntersection {
     case BoundingBox(a: Vec, b: Vec)
     case Sphere(pos: Vec, rad: Scalar)
