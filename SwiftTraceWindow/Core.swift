@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Decodable
 import simd
 
 public typealias Real = Double
@@ -27,6 +26,9 @@ extension IndexType {
 
 typealias GeometryId = IndexType
 typealias PrimitiveId = IndexType
+typealias MaterialIndex = IndexType
+typealias BVHIndex = IndexType
+typealias VertexIndex = IndexType
 
 enum GeometryError: ErrorType {
     case InvalidShape(String)
@@ -54,9 +56,10 @@ struct _Ray {
     /// barycentric coordinates
     var u: Real = 0
     var v: Real = 0
-    /// geometry and primitive id
-    var gid: IndexType = IndexType.Invalid
-    var pid: IndexType = IndexType.Invalid
+    /// geometry, primitive id and material index
+    var gid: GeometryId = IndexType.Invalid
+    var pid: PrimitiveId = IndexType.Invalid
+    var mid: MaterialIndex = IndexType.Invalid
     
     /// intersection count
     var count: Int = 0
@@ -76,18 +79,12 @@ struct _Ray {
 }
 
 struct _Scene {
-    // FIXME: compare this to UnsafeMutablePointer
-    typealias VertexBuffer = ContiguousArray<Vector>
-    typealias PrimitiveBuffer = ContiguousArray<Primitive>
-    typealias GeometryBuffer = ContiguousArray<Geometry>
-    typealias BoxBuffer = ContiguousArray<Box>
-
     /// Primitives that are part of the scene
     enum PrimitiveType {
         /// A sphere
-        case Sphere(ic: IndexType, rad: Real)
+        case Sphere(ic: VertexIndex, rad: Real)
         /// A single triangle
-        case Triangle(i1: IndexType, i2: IndexType, i3: IndexType)
+        case Triangle(i1: VertexIndex, i2: VertexIndex, i3: VertexIndex)
     }
     
     /// Geometry shapes
@@ -101,7 +98,6 @@ struct _Scene {
 //        case Mesh(f: [[IndexType]], v: [Vector], vn: [Vector], vt: [Vector])
     }
     
-    
     /// A scene contains a set of primitives derives from the geometries
     struct Primitive {
         /// the particular primitive type
@@ -110,6 +106,8 @@ struct _Scene {
         let gid: GeometryId
         /// the particular primitive within the geometry
         let pid: PrimitiveId
+        /// the material index for the primitive
+        let mid: MaterialIndex
     }
     
     /// A geometry contains shape(s) with a particular material
@@ -118,6 +116,8 @@ struct _Scene {
         let shape: Shape
         /// the material identifier
         let material: MaterialId
+        /// the geometry transform
+        let transform: Transform?
     }
 
     /// AABB for a 3d primitve
@@ -142,111 +142,122 @@ struct _Scene {
         }
     }
 
-    /// contains the vertices for the scene primitives
-    let vertexBuffer: VertexBuffer
-    /// contains the scene primitives
-    let primitiveBuffer: PrimitiveBuffer
-    /// contains the geometries in the scene
-    let geometryBuffer: GeometryBuffer
-    /// contains the aabb for the scene primitives
-    let boxBuffer: BoxBuffer
     /// contains the camera
     let camera: _Camera
     
-    func background(ray: _Ray) -> Vector {
-        // FIXME: implement infinity sphere
-        return Vector(0.5, 0.5, 0.5) // some blueish color
-    }
-    
-    let materials: [MaterialId: _Material] = [
-        MaterialId("Red")       : _Material(Kd:Vector(0.75, 0.25, 0.25), Ke: Vector()),  // Red diffuse
-        MaterialId("Green")     : _Material(Kd:Vector(0.25, 0.75, 0.25), Ke: Vector()),  // Green diffuse
-        MaterialId("Blue")      : _Material(Kd:Vector(0.25, 0.25, 0.75), Ke: Vector()),  // Blue diffuse
-        MaterialId("White")     : _Material(Kd:Vector(0.75, 0.75, 0.75), Ke: Vector()),  // White diffuse
-        MaterialId("Black")     : _Material(Kd:Vector(0.05, 0.05, 0.05), Ke: Vector()),  // Black
-        MaterialId("Lite")      : _Material(Kd:Vector(0.05, 0.05, 0.05), Ke: Vector(8)), // Lite
-    ]
-    
-    func material(gid: GeometryId) throws -> _Material {
-        guard let material = materials[geometryBuffer[gid].material]
-        else { throw _SceneError.InvalidMaterial("material or geometry not found") }
-
-        return material
-    }
-    
     /// BVH root node
-    typealias BVHBuffer = ContiguousArray<BVH>
-    typealias BVHIndex = IndexType
-    let bvhBuffer: BVHBuffer
     let bvhRoot: BVHIndex
 
+    /// Convenience aliases for the different buffers
+    typealias VertexBuffer = ContiguousArray<Vector>
+    typealias PrimitiveBuffer = ContiguousArray<Primitive>
+    typealias GeometryBuffer = ContiguousArray<Geometry>
+    typealias BoxBuffer = ContiguousArray<Box>
+    typealias BVHBuffer = ContiguousArray<BVH>
+    typealias MaterialBuffer = ContiguousArray<_Material>
 
-    init(camera: _Camera, geometry: [Geometry]) throws {
-        self.camera = camera
-        // FIXME: create SOA for this
-        var vBuffer = VertexBuffer()
-        var pBuffer = PrimitiveBuffer()
-        var gBuffer = GeometryBuffer()
-        var bBuffer = BoxBuffer()
-        var tBuffer = BVHBuffer()
-        
+    /// The different buffers used in the scene
+    struct BufferSOA {
+        /// contains the vertices for the scene primitives
+        var vertex = VertexBuffer()
+        /// contains the scene primitives
+        var primitive = PrimitiveBuffer()
+        /// contains the geometries in the scene
+        var geometry = GeometryBuffer()
+        /// contains the aabb for the scene primitives
+        var box = BoxBuffer()
+        /// contains the nodes for the bvh
+        var bvh = BVHBuffer()
+        /// contains the materials
+        var material = MaterialBuffer()
+    }
+
+    /// Index for the root bvh node
+    let buffer: BufferSOA
+
+    /// Create the scene for a set of geometries and a camera
+    init(camera: _Camera, geometry: [Geometry], material: [_Material]) throws {
+        var buffer = BufferSOA()
+    
+        // add materials
+        for m in material { buffer.material.append(m) }
+    
         // add primitives
-        for g in geometry { try _Scene.addGeometry(g, gBuffer: &gBuffer, vBuffer: &vBuffer, pBuffer: &pBuffer, bBuffer: &bBuffer) }
+        for g in geometry { try _Scene.addGeometry(g, buffer: &buffer) }
+        
+        // precompute node boxes for primitives
+        let boxes = buffer.primitive.indices.map({ BVH.NodeBox(box: buffer.box[$0], global:$0) })
 
         // build bvh
-        // precompute boxes for primitives
-        let list = pBuffer.indices
-        let boxes = list.map({ BVH.NodeBox(box: bBuffer[$0], global:$0) })
-        let root = try BVH(boxes, nodes: &tBuffer)
-        tBuffer.append(root)
+        print("building the bvh tree ...")
+        let root = try BVH(boxes, nodes: &buffer.bvh)
+        buffer.bvh.append(root)
         
         // initialize members
-        self.vertexBuffer = vBuffer
-        self.primitiveBuffer = pBuffer
-        self.geometryBuffer = gBuffer
-        self.boxBuffer = bBuffer
-        self.bvhBuffer = tBuffer
-        self.bvhRoot = tBuffer.endIndex - 1
+        self.camera = camera
+        self.buffer = buffer
+        self.bvhRoot = buffer.bvh.endIndex - 1
     }
     
     /// Inserts a geometry into the scene
-    static func addGeometry(geometry: Geometry, inout gBuffer: GeometryBuffer, inout vBuffer: VertexBuffer, inout pBuffer: PrimitiveBuffer, inout bBuffer: BoxBuffer) throws {
-        let gid = gBuffer.endIndex
+    static func addGeometry(geometry: Geometry, inout buffer: BufferSOA) throws {
+        let gid = buffer.geometry.endIndex
+        let mid = buffer.material.enumerate().reduce(IndexType.Invalid, combine:
+            { return geometry.material == $1.1.name ? $1.0 : $0 })
 
-        try addShape(geometry.shape, gid: gid, pid: 0, vBuffer: &vBuffer, pBuffer: &pBuffer, bBuffer: &bBuffer)
-        gBuffer.append(geometry)
+        guard mid != IndexType.Invalid else { throw _SceneError.InvalidMaterial("material not found") }
+
+        try addShape(geometry.shape, gid: gid, pid: 0, mid: mid, buffer: &buffer, transform: geometry.transform)
+        buffer.geometry.append(geometry)
     }
 
     /// Inserts a shape into the scene
-    static func addShape(shape: Shape, gid: GeometryId, pid: PrimitiveId, inout vBuffer: VertexBuffer, inout pBuffer: PrimitiveBuffer, inout bBuffer: BoxBuffer) throws {
-        let vi = vBuffer.endIndex
+    static func addShape(shape: Shape, gid: GeometryId, pid: PrimitiveId, mid: MaterialIndex, inout buffer: BufferSOA, transform: Transform? = nil) throws {
+        let vi = buffer.vertex.endIndex
 
         switch shape {
         case let .Triangle(v, _, _):
             guard v.count == 3 else { throw GeometryError.InvalidShape("A triangle needs three vertices") }
 //            guard n.count == 0 || n.count == 3 else { throw GeometryError.InvalidShape("A triangle needs three normals or none") }
 //            guard t.count == 0 || t.count == 3 else { throw GeometryError.InvalidShape("A triangle needs three textcoords or none") }
-            vBuffer += v
+            buffer.vertex += v
         
             let ptype = PrimitiveType.Triangle(i1: vi, i2: vi+1, i3: vi+2)
-            pBuffer.append(Primitive(type: ptype, gid: gid, pid: pid))
+            buffer.primitive.append(Primitive(type: ptype, gid: gid, pid: pid, mid: mid))
             
-            bBuffer.append(Box(a: min(min(v[0], v[1]), v[2]), b: max(max(v[0], v[1]), v[2])))
+            buffer.box.append(Box(a: min(min(v[0], v[1]), v[2]), b: max(max(v[0], v[1]), v[2])))
         
         case let .Sphere(center, radius):
-            vBuffer += [center]
+            buffer.vertex += [center]
 
             let ptype = PrimitiveType.Sphere(ic: vi, rad: radius)
-            pBuffer.append(Primitive(type: ptype, gid: gid, pid: pid))
+            buffer.primitive.append(Primitive(type: ptype, gid: gid, pid: pid, mid: mid))
             
-            bBuffer.append(Box(a: center-Vector(radius), b: center+Vector(radius)))
+            buffer.box.append(Box(a: center-Vector(radius), b: center+Vector(radius)))
+            
+            // apply transform to bounding box
+            if transform != nil {
+                let box = buffer.box.removeLast()
+                let a = transform!.apply(point: box.a)
+                let b = transform!.apply(point: box.b)
+                buffer.box.append(Box(a: a, b: b))
+            }
         
         case let .Group(shapes):
             try shapes.enumerate().forEach({ (index, shape) in
                 if case .Group = shape { throw GeometryError.InvalidShape("Nesting shape groups not supported") }
-                try addShape(shape, gid: gid, pid: index, vBuffer: &vBuffer, pBuffer: &pBuffer, bBuffer: &bBuffer)
+                try addShape(shape, gid: gid, pid: index, mid: mid, buffer: &buffer, transform: transform)
             })
         }
+    }
+    
+    func background(ray: _Ray) -> Vector {
+        // FIXME: implement infinity sphere
+        return Vector(0.1, 0.1, 0.1) // some greish color
+    }
+    
+    func material(ray: _Ray) -> _Material {
+        return buffer.material[ray.mid]
     }
 
     /// AABB intersection
@@ -352,30 +363,47 @@ struct _Scene {
     /// BVH traversal
     private func intersect(ni: BVHIndex, inout ray: _Ray) -> Bool {
 //        ray.count += 1    
-        let node = bvhBuffer[ni]
+        let node = buffer.bvh[ni]
 
         switch node.type {
         case let .Leaf(i):
-            let p = primitiveBuffer[i]
+            let p = buffer.primitive[i]
             let result: Bool
+            
+            // check if the geometry contains a transform
+            let g = buffer.geometry[p.gid]
+            var tray = ray
+            if g.transform != nil {
+                let reverse = (g.transform?.reverse())! as Transform
+                tray.o = reverse.apply(point: ray.o)
+                tray.d = reverse.apply(vector: ray.d)
+            }
             
             // check the intersection with the primitive
             switch p.type {
             case let .Triangle(i1, i2, i3):
-                let v1 = vertexBuffer[i1]
-                let v2 = vertexBuffer[i2]
-                let v3 = vertexBuffer[i3]
-                result = _Scene.triangleIntersect(v1: v1, v2: v2, v3: v3, ray: &ray)
+                let v1 = buffer.vertex[i1]
+                let v2 = buffer.vertex[i2]
+                let v3 = buffer.vertex[i3]
+                result = _Scene.triangleIntersect(v1: v1, v2: v2, v3: v3, ray: &tray)
                 
             case let .Sphere(ic, r):
-                let center = vertexBuffer[ic]
-                result = _Scene.sphereIntersect(pos: center, rad: r, ray: &ray)
+                let center = buffer.vertex[ic]
+                result = _Scene.sphereIntersect(pos: center, rad: r, ray: &tray)
             }
+            
+            // reverse the transform and recover the original ray
+            if g.transform != nil {
+                tray.o = ray.o
+                tray.d = ray.d
+            }
+            ray = tray
             
             // update ray with the primitive information
             if result {
                 ray.gid = p.gid
                 ray.pid = p.pid
+                ray.mid = p.mid
             }
             
             return result
@@ -470,7 +498,6 @@ struct _Scene {
     
     // FIXME: this should incorporate the data and return the gid
     static func importObject(obj: ObjectLibrary) throws -> _Scene.Shape {
-        
         var ret = [Shape]()
         
         try obj.faces.forEach { face in
@@ -499,68 +526,6 @@ struct _Scene {
         }
         
         return _Scene.Shape.Group(shapes: ret)
-    }
-}
-
-extension Float: Castable {}
-
-extension Vector: Decodable {
-    init(v: [Real]) throws {
-        if v.count == 0 {
-            self.init(0, 0, 0)
-        } else if v.count == 1 {
-            self.init(Real(v[0]), Real(v[0]), Real(v[0]))
-        } else if v.count == 3 {
-            self.init(Real(v[0]), Real(v[1]), Real(v[2]))
-        } else {
-            throw GeometryError.InvalidShape("Vector can only have 0, 1 or 3 elements")
-        }
-    }
-    
-    public static func decode(json: AnyObject) throws -> Vector {
-        return try Vector(v: json as! [Real])
-    }
-}
-
-extension _Scene.Shape: Decodable {
-    internal static func decode(json: AnyObject) throws -> _Scene.Shape {
-        let type = try json => "type" as String
-        switch type {
-        /// sphere
-        case "s":
-            return _Scene.Shape.Sphere(center: try json => "p", radius: try json => "r")
-        /// triangle
-        case "t":
-            let p1 = try json => "p1" as Vector
-            let p2 = try json => "p2" as Vector
-            let p3 = try json => "p3" as Vector
-            return _Scene.Shape.Triangle(v: [p1, p2, p3], n: [], t: [])
-        /// group
-        case "m":
-            return _Scene.Shape.Group(shapes: try json => "l")
-        /// object
-        case "o":
-            // FIXME: please note this ignores the material in the file
-            let obj = try ObjectLibrary(name: try json => "file")
-            return try _Scene.importObject(obj)
-        default:
-            throw GeometryError.InvalidShape("The shape type is invalid: \(type)")
-        }
-    }
-}
-
-extension _Scene.Geometry: Decodable {
-    internal static func decode(json: AnyObject) throws -> _Scene.Geometry {
-        let material = try json => "m" as String
-        let shape = try _Scene.Shape.decode(json)
-        
-        return _Scene.Geometry(shape: shape, material: material.hashValue)
-    }
-}
-
-extension _Scene: Decodable {
-    internal static func decode(json: AnyObject) throws -> _Scene {
-        return try _Scene(camera: try json => "camera", geometry: try json => "primi")
     }
 }
 
@@ -628,26 +593,15 @@ struct _Camera {
     }
 }
 
-extension _Camera: Decodable {
-    static func decode(json: AnyObject) throws -> _Camera {
-        return try _Camera(
-            lookFrom: json => "look_from",
-            lookAt: json => "look_at",
-            vecUp: json => "vec_up",
-            fov: json => "fov",
-            aspect: json => "aspect",
-            aperture: json => "aperture"
-        )}
-}
-
-
 typealias MaterialId = Int
 extension MaterialId {
     static let None = MaterialId("__None")
-    init(_ s: String) { self.init(s.hashValue) }
+    init(material: String) { self.init(material.hashValue) }
 }
 
 struct _Material {
+    // id
+    let name: MaterialId
     // diffuse
     let Kd: Vector
     // emission

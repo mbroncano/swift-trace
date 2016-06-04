@@ -29,10 +29,9 @@ extension FaceVertexIndex {
     init(str: String) throws {
         guard str != "" else { self = 0; return } // empty string is a valid case
         
-//        guard let int = Int(str) where (int != 0)
-//        else { throw ObjectLoaderError.InvalidVertex("vertex index must not be zero") }
+        guard let number = Int(str) where number != 0 else { throw ObjectLoaderError.InvalidVertex("vertex index must not be zero") }
         
-        self = Int(str)
+        self = number
     }
 }
 

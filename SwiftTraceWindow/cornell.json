@@ -9,5 +9,8 @@
     },
     "primitives" : {
         "objs": [ { "file": "cornell_box.obj", "m": "White" } ]
+
+                    { "type": "o", "file": "bunny.obj", "m": "blue", "transform": { "scale": [5], "translate": [], "rotate": [] } },
+
     }
 }

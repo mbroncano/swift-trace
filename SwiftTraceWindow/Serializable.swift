@@ -16,7 +16,7 @@ enum SceneLoaderError: ErrorType {
     case InvalidFile(String)
     case InvalidType(String)
 }
-
+/*
 extension Float: Castable {}
 
 extension Vec: Decodable {
@@ -67,7 +67,7 @@ extension Triangle: Decodable {
             material: json => "m"
         )}
 }
-
+*/
 extension Transform: Decodable {
     internal static func decode(json: AnyObject) throws -> Transform {
     
@@ -82,7 +82,7 @@ extension Transform: Decodable {
                Transform(translate: translate)
         }
 }
-
+/*
 struct ObjectAndTransform: Decodable {
     let object: ObjectLibrary
     let transform: Transform
@@ -100,7 +100,7 @@ struct ObjectAndTransform: Decodable {
         return transform.apply(try object.mesh(material) as! [Triangle])
     }
 }
-
+*/
 extension Shape: Decodable {
     internal static func decode(json: AnyObject) throws -> Shape {
         switch try json => "type" as String {
@@ -113,7 +113,7 @@ extension Shape: Decodable {
                     v1: try json => "p1",
                     v2: try json => "p2",
                     v3: try json => "p3")
-            case "m":
+            case "g":
                 return Shape.List(shapes: try json => "l")
             case "o":
                 // FIXME: please note this ignores the material in the file
@@ -124,7 +124,7 @@ extension Shape: Decodable {
         }
     }
  }
-
+/*
 extension Primi: Decodable {
     internal static func decode(json: AnyObject) throws -> Primi {
         let m = try json => "m" as String
@@ -142,7 +142,7 @@ extension Primi: Decodable {
         }
     }
 }
-
+*/
 extension Scene: Decodable {
     public static func decode(json: AnyObject) throws -> Scene {
     

@@ -33,37 +33,41 @@ struct PathTracer: Integrator {
 
         while true {
             // intersection with world
-            guard try scene.intersect(&ray) else { cl = cl + cf * scene.background(ray); break }
+            guard try scene.intersect(&ray) else { cl += cf * scene.background(ray); break }
 
-            // This shouln't happen
-            guard ray.gid != IndexType.Invalid  else { break }
+            // this shouldn't happen
+            guard ray.gid != IndexType.Invalid  else { throw RendererError.InvalidGeometry("geometry not found") }
             
-            let material = try scene.material(ray.gid)
+            // retrieve the material
+            let material = scene.material(ray)
+            
+            // FIXME: compute the differential geometry for the hit point
 
+            // compute the BRDF
             let (probability, direction) = material.sample(ray)
             var f = material.color(ray)
 
-            if reduce_max(material.Ke) > Real.Eps {
-                return cl + cf * material.Ke
-            }
+            // if we hit a light, just return
+            guard reduce_max(material.Ke) == 0 else { cl = cl + cf * material.Ke; break }
             
-            let p = simd.reduce_max(f)
-            if p < Real.Eps {
-                return cl
-            }
-
             // Russian roulette
             if depth > 5 {
+                let p = simd.reduce_max(f)
                 if (depth < 80 && Real(drand48()) < p) {
                     f = f * (1.0 / p)
                 } else {
                     break
                 }
             }
-            depth = depth + 1
-            
+
+            // update the accumulated irradiance and weight
             cf = cf * f * probability
             cl = cl * cf
+            
+            // check the weight is still meaningful
+            guard reduce_max(cf) > Real.Eps else { break }
+
+            depth = depth + 1
             ray.reset(o:ray.x, d: direction)
         }
 

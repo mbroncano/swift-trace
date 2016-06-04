@@ -11,6 +11,7 @@ import simd
 
 enum RendererError: ErrorType {
     case InvalidSample(String)
+    case InvalidGeometry(String)
 }
 
 /// Implements an integrator

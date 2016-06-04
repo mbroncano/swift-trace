@@ -8,14 +8,17 @@
 
 import Foundation
 
-typealias TextureId = String
+typealias TextureId = Int
+extension TextureId {
+    init(texture: String) { self = texture.hashValue }
+}
 
 enum TextureError: ErrorType {
     case InvalidFile(String)
 }
 
 struct Texture {
-    let pixels: UnsafeMutablePointer<PixelRGBA>
+    let pixels: UnsafeMutablePointer<Pixel>
     let width, height, bytesPerRow, bitsPerPixel: Int
     
     init(name: String) throws {
@@ -40,7 +43,7 @@ struct Texture {
         height = CGImageGetHeight(image)
         bytesPerRow = CGImageGetBytesPerRow(image)
         bitsPerPixel = CGImageGetBitsPerPixel(image)
-        pixels = UnsafeMutablePointer<PixelRGBA>.alloc(width*height)
+        pixels = UnsafeMutablePointer<Pixel>.alloc(width*height)
         
         let space = CGImageGetColorSpace(image)
         let bitmapInfo = CGImageGetBitmapInfo(image)
@@ -52,14 +55,11 @@ struct Texture {
         CGContextFlush(context)
     }
 
-    subscript(textCoord: Vec) -> Color {
-        get {
-            let x = Int(textCoord.x*Scalar(width)) % width
-            let y = Int(textCoord.y*Scalar(height)) % height
+    subscript(textCoord: Vector) -> Pixel { get {
+            let x = Int(textCoord.x*Real(width)) % width
+            let y = Int(textCoord.y*Real(height)) % height
             let ofs = (x + y * width)
-            let pixel = pixels[ofs] //PixelRGBA(a: pixels[ofs], r: pixels[ofs+1], g: pixels[ofs+2], b: pixels[ofs+3])
-
-            return pixel.color()
+            return pixels[ofs]
         }
     }
 }
