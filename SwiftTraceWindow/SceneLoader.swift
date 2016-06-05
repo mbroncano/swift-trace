@@ -45,8 +45,7 @@ extension _Scene.Geometry: Decodable {
     internal static func decode(json: AnyObject) throws -> _Scene.Geometry {
         return _Scene.Geometry(
             shape: try _Scene.Shape.decode(json),
-            material: MaterialId(material: try json => "m") ,
-            mid: IndexType.Invalid, // HACK
+            material: MaterialId(material: try json => "m"),
             transform: try json =>? "transform")
     }
 }

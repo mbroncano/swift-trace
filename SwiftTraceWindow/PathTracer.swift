@@ -42,18 +42,18 @@ struct PathTracer: Integrator {
 //            guard ray.gid != IndexType.Invalid  else { throw RendererError.InvalidGeometry("geometry not found") }
             
             // retrieve the material
-            let material = scene.material(ray)
+            let material = scene.material(ray.mid)
             
             // if we hit a light, just return
-            guard reduce_max(material.Ke) == 0 else { cl = cl + cf * material.Ke; break }
+            guard !material.isLight else { cl = cl + cf * material.Ke; break }
 
             // compute direct lighting from area lights
             // FIXME: refactor this, create a proper light class
+            
             for lid in scene.buffer.light {
             
                 // retrieve the geometry and choose a random point over the surface
-                let light = scene.buffer.geometry[lid]
-                let (lpdf, lsample) = try light.lightSample(ray)
+                let (lpdf, lsample, lmid) = try scene.sampleLight(lid, ray: ray)
                 
                 // check the sample is pointing to us
                 guard lpdf > 0 else { continue }
@@ -67,7 +67,7 @@ struct PathTracer: Integrator {
                 if try scene.intersect(&sray) { continue }
                 
                 // compute the emitter radiance with attenuation (1/d^2)
-                let lmaterial = scene.material(light)
+                let lmaterial = scene.material(lmid)
                 let radiance = lmaterial.Ke * (1 / (ldist*ldist))
                 
                 // compute the resulting radiance

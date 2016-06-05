@@ -19,13 +19,13 @@
     ],
     
     "primi": [
-              { "type": "s", "r": 0.5, "p": [-3.0, 0.5, 2.0], "m": "red", "transform": { "scale": [1], "translate": [0, 1, 0], "rotate": [] } },
+              { "type": "s", "r": 0.5, "p": [-3.0, 0.5, 2.0], "m": "lite", "transform": { "scale": [1], "translate": [], "rotate": [] } },
               { "type": "s", "r": 0.5, "p": [-1.5, 0.5, 2.0], "m": "blue" },
               { "type": "s", "r": 0.5, "p": [0, 0.5, 2], "m": "green" },
               { "type": "s", "r": 0.5, "p": [1.5, 0.5, 2], "m": "red" },
               { "type": "s", "r": 0.5, "p": [3, 0.5, 2], "m": "blue" },
-              { "type": "s", "r": 2, "p": [0, 5, 10], "m": "lite" },
-              { "type": "g", "m": "white", "transform": { "scale": [1], "translate": [0, -0.5, 0], "rotate": [] }, "l":
+              { "type": "s", "r": 0.5, "p": [0, 5, 10], "m": "black" },
+              { "type": "g", "m": "white", "transform": { "scale": [1], "translate": [0, -2, 0], "rotate": [0, 0, 0] }, "l":
                 [{ "type": "t", "v": [[-10, 0, -10], [-10, 0, 10], [10, 0, -10]] },
                  { "type": "t", "v": [[10, 0, 10], [10, 0, -10], [-10, 0, 10]] }
                 ]}

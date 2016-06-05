@@ -42,6 +42,7 @@ typealias PrimitiveId = IndexType
 typealias MaterialIndex = IndexType
 typealias BVHIndex = IndexType
 typealias VertexIndex = IndexType
+typealias TransformId = IndexType
 
 enum GeometryError: ErrorType {
     case InvalidShape(String)
@@ -129,6 +130,8 @@ struct _Scene {
         let pid: PrimitiveId
         /// the material index for the primitive
         let mid: MaterialIndex
+        /// the transform index for the primitive
+        let tid: TransformId
     }
     
     /// A geometry contains shape(s) with a particular material
@@ -137,53 +140,8 @@ struct _Scene {
         let shape: Shape
         /// the material identifier
         let material: MaterialId
-        /// the material index HACK!
-        let mid: MaterialIndex
-        
         /// the geometry transform
         let transform: Transform?
-        
-        /*
-        static func uniformSampleHemiSphere(r1: Real, _ r2: Real) -> (Real, Vector) {
-            let z = r1
-            let r = sqrt(max(0, 1-z*z))
-            let phi = Real(2*M_PI) * r2
-            let x = r * cos(phi)
-            let y = r * sin(phi)
-            
-            return (1 / Real(2*M_PI), Vector(x, y, z))
-        }*/
-
-        static func cosineSampleHemisphere(u1: Real, _ u2: Real, _ n: Vector) -> (Real, Vector) {
-            let r = sqrt(u1)
-            let theta = 2 * M_PI * u2
-            
-            let x = r * cos(theta)
-            let y = r * sin(theta)
-            let z = sqrt(max(0.0, 1 - u1))
-            
-            let u = cross(n.x > 0 ? Vector(0, 1, 0) : Vector(1, 0, 0), n)
-            let v = cross(n, u)
-            
-            let d = u*x + v*y + v*z
-            
-            return (M_2_PI, d)
-        }
-        
-        func lightSample(ray: _Ray) throws -> (Real, Vector) {
-            // FIXME: consider transform
-        
-            switch shape {
-            case let .Sphere(center, radius):
-                // generate the sample, rotated toward the hit point
-                let (pdf, sample) = Geometry.cosineSampleHemisphere(Real(drand48()), Real(drand48()), normalize(ray.x - center))
-
-                return (pdf, center + radius * sample)
-                
-            default:
-                throw _SceneError.NotImplemented("sampling not implemented for this shape")
-            }
-        }
     }
 
     /// AABB for a 3d primitve
@@ -222,6 +180,7 @@ struct _Scene {
     typealias BVHBuffer = ContiguousArray<BVH>
     typealias MaterialBuffer = ContiguousArray<_Material>
     typealias IndexBuffer = ContiguousArray<GeometryId>
+    typealias TransformBuffer = ContiguousArray<Transform>
 
     /// The different buffers used in the scene
     struct BufferSOA {
@@ -239,6 +198,8 @@ struct _Scene {
         var bvh = BVHBuffer()
         /// contains the materials
         var material = MaterialBuffer()
+        /// contains the transforms
+        var transform = TransformBuffer()
     }
 
     /// Index for the root bvh node
@@ -276,13 +237,47 @@ struct _Scene {
 
         guard mid != IndexType.Invalid else { throw _SceneError.InvalidMaterial("material not found") }
         
-        // add it to the light array
-        if reduce_max(buffer.material[mid].Ke) > 0 { buffer.light.append(gid) }
-        
         try addShape(geometry.shape, gid: gid, pid: 0, mid: mid, buffer: &buffer, transform: geometry.transform)
 
-        // HACK
-        buffer.geometry.append(Geometry(shape: geometry.shape, material: geometry.material, mid: mid, transform: geometry.transform))
+        buffer.geometry.append(Geometry(shape: geometry.shape, material: geometry.material, transform: geometry.transform))
+    }
+    
+    /// Inserts a new bounding box for a primitive
+    static func addBox(box: Box, inout buffer: BufferSOA, transform: Transform? = nil) {
+        var box = box
+
+        // apply transform to bounding box
+        if transform != nil {
+            let a = transform!.apply(point: box.a)
+            let b = transform!.apply(point: box.b)
+            box = Box(a: a, b: b)
+        }
+        
+        buffer.box.append(box)
+    }
+    
+    static func addPrimitive(ptype: _Scene.PrimitiveType, gid: GeometryId, pid: PrimitiveId, mid: MaterialIndex, box: Box, inout buffer: BufferSOA, transform: Transform? = nil) {
+        // if the primitive belongs to a light, add it to the light array
+        if buffer.material[mid].isLight {
+            buffer.light.append(buffer.primitive.endIndex)
+        }
+
+        // if there's a transform, add it and apply transform to bounding box
+        var box = box
+        var tid = TransformId.Invalid
+        if transform != nil {
+            tid = buffer.transform.endIndex
+            buffer.transform.append(transform!)
+        
+            let a = transform!.apply(point: box.a)
+            let b = transform!.apply(point: box.b)
+            box = Box(a: a, b: b)
+        }
+        
+        buffer.box.append(box)
+
+        let primitive = Primitive(type: ptype, gid: gid, pid: pid, mid: mid, tid:tid)
+        buffer.primitive.append(primitive)
     }
 
     /// Inserts a shape into the scene
@@ -294,28 +289,22 @@ struct _Scene {
             guard v.count == 3 else { throw GeometryError.InvalidShape("A triangle needs three vertices") }
 //            guard n.count == 0 || n.count == 3 else { throw GeometryError.InvalidShape("A triangle needs three normals or none") }
 //            guard t.count == 0 || t.count == 3 else { throw GeometryError.InvalidShape("A triangle needs three textcoords or none") }
+
+            // add vertices and create primitive
             buffer.vertex += v
-        
             let ptype = PrimitiveType.Triangle(i1: vi, i2: vi+1, i3: vi+2)
-            buffer.primitive.append(Primitive(type: ptype, gid: gid, pid: pid, mid: mid))
-            
-            buffer.box.append(Box(a: min(min(v[0], v[1]), v[2]), b: max(max(v[0], v[1]), v[2])))
+            let box = Box(a: min(min(v[0], v[1]), v[2]), b: max(max(v[0], v[1]), v[2]))
+     
+            addPrimitive(ptype, gid: gid, pid: pid, mid: mid, box: box, buffer: &buffer, transform: transform)
         
         case let .Sphere(center, radius):
-            buffer.vertex += [center]
 
+            // add vertices and create primitive
+            buffer.vertex += [center]
             let ptype = PrimitiveType.Sphere(ic: vi, rad: radius)
-            buffer.primitive.append(Primitive(type: ptype, gid: gid, pid: pid, mid: mid))
+            let box = Box(a: center-Vector(radius), b: center+Vector(radius))
             
-            buffer.box.append(Box(a: center-Vector(radius), b: center+Vector(radius)))
-            
-            // apply transform to bounding box
-            if transform != nil {
-                let box = buffer.box.removeLast()
-                let a = transform!.apply(point: box.a)
-                let b = transform!.apply(point: box.b)
-                buffer.box.append(Box(a: a, b: b))
-            }
+            addPrimitive(ptype, gid: gid, pid: pid, mid: mid, box: box, buffer: &buffer, transform: transform)
         
         case let .Group(shapes):
             try shapes.enumerate().forEach({ (index, shape) in
@@ -330,14 +319,63 @@ struct _Scene {
         return Vector(0.1, 0.1, 0.1) // some greish color
     }
     
-    func material(ray: _Ray) -> _Material {
-        return buffer.material[ray.mid]
+    func material(mid: MaterialIndex) -> _Material {
+        return buffer.material[mid]
     }
+    
+            
+    static func cosineSampleHemisphere(u1: Real, _ u2: Real, _ n: Vector) -> (Real, Vector) {
+        let r = sqrt(u1)
+        let theta = 2 * M_PI * u2
+        
+        let x = r * cos(theta)
+        let y = r * sin(theta)
+        let z = sqrt(max(0.0, 1 - u1))
+        
+        let u = cross(n.x > 0 ? Vector(0, 1, 0) : Vector(1, 0, 0), n)
+        let v = cross(n, u)
+        
+        let d = u*x + v*y + v*z
+        
+        return (M_2_PI, d)
+    }
+    
+    func sampleLight(pid: PrimitiveId, ray: _Ray) throws -> (Real, Vector, MaterialId) {
+        let p = buffer.primitive[pid]
+        
+        // transform hit point from world to object
+        var hit = ray.x
+        if p.tid != TransformId.Invalid {
+            let t = buffer.transform[p.tid].reverse()
+            hit = t.apply(point: ray.x)
+        }
+        
+        // check the intersection with the primitive
+        switch p.type {
+        case let .Sphere(ic, r):
+            let center = buffer.vertex[ic]
+            // generate the sample, rotated toward the hit point
+            let (pdf, sample) = _Scene.cosineSampleHemisphere(Real(drand48()), Real(drand48()), normalize(hit - center))
 
-    // HACK
-    func material(geometry: Geometry) -> _Material {
-        return buffer.material[geometry.mid]
+            // compute the point on the sphere
+            var tsample = center + r * sample
+            
+            // transform from local back to world
+            if p.tid != TransformId.Invalid {
+                let t = buffer.transform[p.tid]
+                tsample = t.apply(point: tsample)
+            }
+            
+            return (pdf, tsample, p.mid)
+        default:
+//        case let .Triangle(i1, i2, i3):
+//            let v1 = buffer.vertex[i1]
+//            let v2 = buffer.vertex[i2]
+//            let v3 = buffer.vertex[i3]
+            throw _SceneError.NotImplemented("sampling not implemented for this shape")
+        }
     }
+    
 
     /// AABB intersection
     static func boxIntersect(a a: Vector, b: Vector, inout ray: _Ray) -> Bool {
@@ -441,7 +479,7 @@ struct _Scene {
 
     /// BVH traversal
     private func intersect(ni: BVHIndex, inout ray: _Ray) -> Bool {
-//        ray.count += 1    
+        ray.count += 1    
         let node = buffer.bvh[ni]
 
         switch node.type {
@@ -452,7 +490,8 @@ struct _Scene {
             
             // check if the geometry contains a transform
             var tray = ray
-            if let t = g.transform?.reverse() {
+            if p.tid != TransformId.Invalid {
+                let t = buffer.transform[p.tid].reverse()
                 tray.o = t.apply(point: ray.o)
                 tray.d = t.apply(vector: ray.d)
             }
@@ -685,6 +724,8 @@ struct _Material {
     let Kd: Vector
     // emission
     let Ke: Vector
+    
+    var isLight: Bool { get { return reduce_max(Ke) > 0 } }
     
     func color(ray: _Ray) -> Vector {
         return Kd
