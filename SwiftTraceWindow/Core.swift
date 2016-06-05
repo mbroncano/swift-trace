@@ -14,9 +14,22 @@ extension Real {
     static let Eps = Real(FLT_EPSILON)
 }
 
+func clamp(n: Real) -> Real {
+    return max(1, min(0, n))
+}
+
+public typealias Matrix3x3 = simd.double3x3
+
 public typealias Vector = simd.double3
 extension Vector {
     static let Inf = Vector(Real.infinity)
+    
+    var localFrame: simd.double3x3 { get {
+        let v1 = normalize(self)
+        let v2 = v1.x > v1.y ? Vector(-v1.z, 0.0, v1.x) : Vector(0.0, v1.z, -v1.y)
+        let v3 = cross(normalize(v2), v1)
+        return Matrix3x3([v1,v2,v3])
+        }}
 }
 
 typealias IndexType = Int
@@ -37,6 +50,7 @@ enum GeometryError: ErrorType {
 enum _SceneError: ErrorType {
     case BuildingTree(String)
     case InvalidMaterial(String)
+    case NotImplemented(String)
 }
 
 struct _Ray {
@@ -45,7 +59,7 @@ struct _Ray {
     /// direction of the ray
     var d: Vector
     /// near segment
-    let tmin: Real = 0
+    var tmin: Real = 0
     /// far segment
     var tmax: Real = Real.infinity
     
@@ -67,6 +81,13 @@ struct _Ray {
     init(o: Vector, d: Vector) {
         self.o = o
         self.d = d
+    }
+
+    init(o: Vector, d: Vector, tmin: Real, tmax: Real) {
+        self.o = o
+        self.d = d
+        self.tmin = tmin
+        self.tmax = tmax
     }
     
     // resets direction and some hit information for the ray
@@ -116,8 +137,53 @@ struct _Scene {
         let shape: Shape
         /// the material identifier
         let material: MaterialId
+        /// the material index HACK!
+        let mid: MaterialIndex
+        
         /// the geometry transform
         let transform: Transform?
+        
+        /*
+        static func uniformSampleHemiSphere(r1: Real, _ r2: Real) -> (Real, Vector) {
+            let z = r1
+            let r = sqrt(max(0, 1-z*z))
+            let phi = Real(2*M_PI) * r2
+            let x = r * cos(phi)
+            let y = r * sin(phi)
+            
+            return (1 / Real(2*M_PI), Vector(x, y, z))
+        }*/
+
+        static func cosineSampleHemisphere(u1: Real, _ u2: Real, _ n: Vector) -> (Real, Vector) {
+            let r = sqrt(u1)
+            let theta = 2 * M_PI * u2
+            
+            let x = r * cos(theta)
+            let y = r * sin(theta)
+            let z = sqrt(max(0.0, 1 - u1))
+            
+            let u = cross(n.x > 0 ? Vector(0, 1, 0) : Vector(1, 0, 0), n)
+            let v = cross(n, u)
+            
+            let d = u*x + v*y + v*z
+            
+            return (M_2_PI, d)
+        }
+        
+        func lightSample(ray: _Ray) throws -> (Real, Vector) {
+            // FIXME: consider transform
+        
+            switch shape {
+            case let .Sphere(center, radius):
+                // generate the sample, rotated toward the hit point
+                let (pdf, sample) = Geometry.cosineSampleHemisphere(Real(drand48()), Real(drand48()), normalize(ray.x - center))
+
+                return (pdf, center + radius * sample)
+                
+            default:
+                throw _SceneError.NotImplemented("sampling not implemented for this shape")
+            }
+        }
     }
 
     /// AABB for a 3d primitve
@@ -155,6 +221,7 @@ struct _Scene {
     typealias BoxBuffer = ContiguousArray<Box>
     typealias BVHBuffer = ContiguousArray<BVH>
     typealias MaterialBuffer = ContiguousArray<_Material>
+    typealias IndexBuffer = ContiguousArray<GeometryId>
 
     /// The different buffers used in the scene
     struct BufferSOA {
@@ -164,6 +231,8 @@ struct _Scene {
         var primitive = PrimitiveBuffer()
         /// contains the geometries in the scene
         var geometry = GeometryBuffer()
+        /// contains the subset of the geometries that emit light
+        var light = IndexBuffer()
         /// contains the aabb for the scene primitives
         var box = BoxBuffer()
         /// contains the nodes for the bvh
@@ -206,9 +275,14 @@ struct _Scene {
             { return geometry.material == $1.1.name ? $1.0 : $0 })
 
         guard mid != IndexType.Invalid else { throw _SceneError.InvalidMaterial("material not found") }
-
+        
+        // add it to the light array
+        if reduce_max(buffer.material[mid].Ke) > 0 { buffer.light.append(gid) }
+        
         try addShape(geometry.shape, gid: gid, pid: 0, mid: mid, buffer: &buffer, transform: geometry.transform)
-        buffer.geometry.append(geometry)
+
+        // HACK
+        buffer.geometry.append(Geometry(shape: geometry.shape, material: geometry.material, mid: mid, transform: geometry.transform))
     }
 
     /// Inserts a shape into the scene
@@ -258,6 +332,11 @@ struct _Scene {
     
     func material(ray: _Ray) -> _Material {
         return buffer.material[ray.mid]
+    }
+
+    // HACK
+    func material(geometry: Geometry) -> _Material {
+        return buffer.material[geometry.mid]
     }
 
     /// AABB intersection
@@ -368,15 +447,14 @@ struct _Scene {
         switch node.type {
         case let .Leaf(i):
             let p = buffer.primitive[i]
+            let g = buffer.geometry[p.gid]
             let result: Bool
             
             // check if the geometry contains a transform
-            let g = buffer.geometry[p.gid]
             var tray = ray
-            if g.transform != nil {
-                let reverse = (g.transform?.reverse())! as Transform
-                tray.o = reverse.apply(point: ray.o)
-                tray.d = reverse.apply(vector: ray.d)
+            if let t = g.transform?.reverse() {
+                tray.o = t.apply(point: ray.o)
+                tray.d = t.apply(vector: ray.d)
             }
             
             // check the intersection with the primitive
@@ -599,6 +677,7 @@ extension MaterialId {
     init(material: String) { self.init(material.hashValue) }
 }
 
+/// Lambertian material
 struct _Material {
     // id
     let name: MaterialId
@@ -611,20 +690,30 @@ struct _Material {
         return Kd
     }
     
+    func eval(ray: _Ray, n: Vector, wi: Vector) -> Vector {
+        return color(ray) * (M_1_PI) * clamp(dot(wi, n))
+    }
+    
     func sample(ray: _Ray) -> (Real, Vector) {
         // cosine weighted sampling
-        // see: http://mathworld.wolfram.com/SpherePointPicking.html
-        
         let r1 = Real(2*M_PI) * Real(drand48())
         let r2 = Real(drand48())
         let r2s = sqrt(r2)
-        let w = dot(ray.n, ray.d) < 0 ? ray.n: ray.n * -1 // corrected normal (always exterior)
-        let u = normalize(cross((fabs(w.x)>Real.Eps ? Vector(0, 1, 0) : Vector(1, 0, 0)), w))
+
+        // corrected normal (always exterior)
+        let w = dot(ray.n, ray.d) < 0 ? ray.n: ray.n * -1
+        
+        // normal frame
+        let u = normalize(cross((fabs(w.x) > 0 ? Vector(0, 1, 0) : Vector(1, 0, 0)), w))
         let v = cross(w, u)
         
-        let d1 = u * cos(r1) * r2s
-        let d = normalize((d1 + v * sin(r1) * r2s + w * sqrt(1 - r2)))
+        // compute the coordinates
+        let x = u * cos(r1) * r2s
+        let y = v * sin(r1) * r2s
+        let z = w * sqrt(1 - r2)
+        
+        let d = normalize(x + y + z)
 
-        return (1.0, d)
+        return (M_2_PI, d)
     }
 }

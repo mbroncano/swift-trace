@@ -46,6 +46,7 @@ extension _Scene.Geometry: Decodable {
         return _Scene.Geometry(
             shape: try _Scene.Shape.decode(json),
             material: MaterialId(material: try json => "m") ,
+            mid: IndexType.Invalid, // HACK
             transform: try json =>? "transform")
     }
 }

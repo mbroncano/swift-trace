@@ -27,48 +27,70 @@ struct PathTracer: Integrator {
         //   F *= fi
         //
         
+        // radiance accumulator
         var cl: Vector = Vector()
+        
+        // radiance weight
         var cf: Vector = Vector(1)
         var depth = 0
 
         while true {
-            // intersection with world
+            // intersection with the world
             guard try scene.intersect(&ray) else { cl += cf * scene.background(ray); break }
 
             // this shouldn't happen
-            guard ray.gid != IndexType.Invalid  else { throw RendererError.InvalidGeometry("geometry not found") }
+//            guard ray.gid != IndexType.Invalid  else { throw RendererError.InvalidGeometry("geometry not found") }
             
             // retrieve the material
             let material = scene.material(ray)
             
-            // FIXME: compute the differential geometry for the hit point
-
-            // compute the BRDF
-            let (probability, direction) = material.sample(ray)
-            var f = material.color(ray)
-
             // if we hit a light, just return
             guard reduce_max(material.Ke) == 0 else { cl = cl + cf * material.Ke; break }
+
+            // compute direct lighting from area lights
+            // FIXME: refactor this, create a proper light class
+            for lid in scene.buffer.light {
             
-            // Russian roulette
-            if depth > 5 {
-                let p = simd.reduce_max(f)
-                if (depth < 80 && Real(drand48()) < p) {
-                    f = f * (1.0 / p)
-                } else {
-                    break
-                }
+                // retrieve the geometry and choose a random point over the surface
+                let light = scene.buffer.geometry[lid]
+                let (lpdf, lsample) = try light.lightSample(ray)
+                
+                // check the sample is pointing to us
+                guard lpdf > 0 else { continue }
+                
+                // create the shadow ray
+                let ldir = normalize(lsample - ray.x)
+                let ldist = length(lsample - ray.x)
+                var sray = _Ray(o: ray.x, d: ldir, tmin: Real.Eps, tmax: ldist)
+
+                // check the occlusion of the shadow ray
+                if try scene.intersect(&sray) { continue }
+                
+                // compute the emitter radiance with attenuation (1/d^2)
+                let lmaterial = scene.material(light)
+                let radiance = lmaterial.Ke * (1 / (ldist*ldist))
+                
+                // compute the resulting radiance
+                let color = radiance * material.eval(sray, n: ray.n, wi: sray.d)
+                cl += cf * color
             }
 
-            // update the accumulated irradiance and weight
-            cf = cf * f * probability
-            cl = cl * cf
+            // compute the BRDF
+            let (pdf, wi) = material.sample(ray)
+            let c = material.eval(ray, n: ray.n, wi: wi) * (1/pdf)
             
-            // check the weight is still meaningful
-            guard reduce_max(cf) > Real.Eps else { break }
+            // update the accumulated weight
+            cf = cf * c
+            
+            // check if the contribution is too low
+            guard reduce_max(cf) > 0.01 else { break }
 
+            // setup the new ray
+            let d = wi
+            let o = ray.x + d * Real.Eps
+            ray.reset(o:o, d: d)
+            
             depth = depth + 1
-            ray.reset(o:ray.x, d: direction)
         }
 
         return cl
