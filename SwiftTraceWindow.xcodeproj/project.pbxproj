@@ -346,8 +346,8 @@
 		64E910DD1CF5A16A008D8BBC /* Loader */ = {
 			isa = PBXGroup;
 			children = (
-				640777211CEE1E3B0022008A /* NSScanner+Swift.swift */,
 				64E911211CF7C3DD008D8BBC /* MaterialLoader.swift */,
+				640777211CEE1E3B0022008A /* NSScanner+Swift.swift */,
 			);
 			name = Loader;
 			sourceTree = "<group>";

@@ -49,9 +49,8 @@ struct PathTracer: Integrator {
 
             // compute direct lighting from area lights
             // FIXME: refactor this, create a proper light class
-            
+            /*
             for lid in scene.buffer.light {
-            
                 // retrieve the geometry and choose a random point over the surface
                 let (lpdf, lsample, lmid) = try scene.sampleLight(lid, ray: ray)
                 
@@ -73,7 +72,7 @@ struct PathTracer: Integrator {
                 // compute the resulting radiance
                 let color = radiance * material.eval(sray, n: ray.n, wi: sray.d)
                 cl += cf * color
-            }
+            }*/
 
             // compute the BRDF
             let (pdf, wi) = material.sample(ray)
@@ -91,6 +90,7 @@ struct PathTracer: Integrator {
             ray.reset(o:o, d: d)
             
             depth = depth + 1
+            guard depth < 10 else { break }
         }
 
         return cl

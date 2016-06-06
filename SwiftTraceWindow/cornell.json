@@ -1,16 +1,13 @@
 {
     "camera": {
-        "look_from": [50, 52, 295.6],
-        "look_at": [73, 16.5, 78],
+        "look_from": [278, 273, -800],
+        "look_at": [278, 273, 0],
         "vec_up": [0, 1, 0],
-        "fov": 60,
+        "fov": 40,
         "aspect": 1.33,
         "aperture": 0.2
     },
-    "primitives" : {
-        "objs": [ { "file": "cornell_box.obj", "m": "White" } ]
 
-                    { "type": "o", "file": "bunny.obj", "m": "blue", "transform": { "scale": [5], "translate": [], "rotate": [] } },
-
-    }
+    "object" :
+        [ { "file": "cornell_box.obj"} ]
 }

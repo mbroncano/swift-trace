@@ -29,7 +29,7 @@ class ViewController: NSViewController {
             let render: Renderer
 
             do {
-                let file = NSBundle.mainBundle().pathForResource("scene", ofType: "json")!
+                let file = NSBundle.mainBundle().pathForResource("cornell", ofType: "json")!
                 let data = NSData(contentsOfFile: file)!
                 let json = try NSJSONSerialization.JSONObjectWithData(data, options: [])
                 scene = try _Scene.decode(json)
