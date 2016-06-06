@@ -73,9 +73,11 @@ struct _Ray {
     var x: Vector = Vector()
     /// geometric normal
     var n: Vector = Vector()
+    
     /// barycentric coordinates
     var u: Real = 0
     var v: Real = 0
+    
     /// geometry, primitive id and material index
     var gid: GeometryId = IndexType.Invalid
     var pid: PrimitiveId = IndexType.Invalid
@@ -384,9 +386,9 @@ struct _Scene {
         try addGeometry(group, buffer: &buffer, addShapes: false)
     }
     
-    func background(ray: _Ray) -> Vector {
+    func background(ray: _Ray) -> Spectrum {
         // FIXME: implement infinity sphere
-        return Vector(0.1, 0.1, 0.1) // some greish color
+        return Spectrum(0.1, 0.1, 0.1) // some greish color
     }
     
     func material(mid: MaterialIndex) -> _Material {
@@ -424,10 +426,10 @@ struct _Scene {
         let p = buffer.primitive[pid]
         
         // transform hit point from world to object
-        var hit = ray.x
-        if p.tid != TransformId.Invalid {
-            hit = buffer.transform[p.tid].reverse().apply(point: ray.x)
-        }
+//        let hit = ray.x
+//        if p.tid != TransformId.Invalid {
+//            hit = buffer.transform[p.tid].reverse().apply(point: ray.x)
+//        }
         
         let pdf: Real
         var sample: Vector
@@ -435,9 +437,10 @@ struct _Scene {
         // check the intersection with the primitive
         switch p.type {
         case let .Sphere(ic, r):
+            // FIXME: this is wrong, use the cone sampling
             let center = buffer.vertex[ic]
             // generate the sample, rotated toward the hit point
-            (pdf, sample) = _Scene.cosineSampleHemisphere(Real(drand48()), Real(drand48()), normalize(hit - center))
+            (pdf, sample) = _Scene.cosineSampleHemisphere(Real(drand48()), Real(drand48()), normalize(ray.x - center))
 
             // compute the point on the (local coordinates) sphere surface
             sample = center + r * sample
@@ -449,18 +452,19 @@ struct _Scene {
             let e1 = v2 - v1
             let e2 = v3 - v1
             let (u, v) = _Scene.uniformSampleTriangle(Real(drand48()), Real(drand48()))
-            sample = e1*u + e2*v
+            sample = v1 + e1*u + e2*v
             
-            let area = length(cross(e1, e2)) * 0.5
-            pdf = length_squared(ray.x-sample) / (area * abs(dot(normalize(cross(e1, e2)), ray.d)))
-            
-//            throw _SceneError.NotImplemented("sampling not implemented for this shape")
+            let area = length(cross(e2, e1)) * 0.5
+            let normal_l = normalize(cross(e2, e1))
+            let sample_hit = normalize(ray.x-sample)
+            let cos_l = abs(dot(normal_l, sample_hit))
+            pdf = length_squared(ray.x-sample) / (area * cos_l)
         }
         
         // transform from local back to world
-        if p.tid != TransformId.Invalid {
-            sample = buffer.transform[p.tid].apply(point: sample)
-        }
+//        if p.tid != TransformId.Invalid {
+//            sample = buffer.transform[p.tid].apply(point: sample)
+//        }
         
         return (pdf, sample, p.mid)
     }

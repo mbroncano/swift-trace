@@ -24,7 +24,7 @@ class ViewController: NSViewController {
     func loadScene() {
         // dispatch the main routine
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
-            let width = 320, height = 320
+            let width = 256, height = 256
             let scene: _Scene
             let render: Renderer
 

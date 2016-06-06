@@ -59,21 +59,21 @@ struct PathTracer: Integrator {
                 
                 // create the shadow ray
                 let ldir = normalize(lsample - ray.x)
-                let ldist = length(lsample - ray.x)
+                let ldist = length(lsample - ray.x) 
                 var sray = _Ray(o: ray.x, d: ldir, tmin: Real.Eps, tmax: ldist)
 
                 // check the occlusion of the shadow ray
                 if try scene.intersect(&sray) { continue }
                 
-                // compute the emitter radiance with attenuation (1/d^2)
+                // compute the emitter radiance arriving per solid angle
                 let lmaterial = scene.material(lmid)
-                let radiance = lmaterial.Ke * (1 / (ldist*ldist))
+                let radiance = lmaterial.Ke * (1 / lpdf)
                 
                 // compute the resulting radiance
                 let color = radiance * material.eval(sray, n: ray.n, wi: sray.d)
                 cl += cf * color
             }
-
+            
             // compute the BRDF
             let (pdf, wi) = material.sample(ray)
             let c = material.eval(ray, n: ray.n, wi: wi) * (1/pdf)
