@@ -437,7 +437,7 @@ struct _Scene {
         // check the intersection with the primitive
         switch p.type {
         case let .Sphere(ic, r):
-            // FIXME: this is wrong, use the cone sampling
+            // FIXME: this is wrong, use the cone/disk sampling
             let center = buffer.vertex[ic]
             // generate the sample, rotated toward the hit point
             (pdf, sample) = _Scene.cosineSampleHemisphere(Real(drand48()), Real(drand48()), normalize(ray.x - center))
@@ -449,11 +449,13 @@ struct _Scene {
             let v2 = buffer.vertex[i2]
             let v3 = buffer.vertex[i3]
             
+            // compute a random point on the triangle
             let e1 = v2 - v1
             let e2 = v3 - v1
             let (u, v) = _Scene.uniformSampleTriangle(Real(drand48()), Real(drand48()))
             sample = v1 + e1*u + e2*v
             
+            // compute the subtended triangle area for the sample to hit vector
             let area = length(cross(e2, e1)) * 0.5
             let normal_l = normalize(cross(e2, e1))
             let sample_hit = normalize(ray.x-sample)

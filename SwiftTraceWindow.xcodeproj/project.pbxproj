@@ -34,6 +34,8 @@
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
 		64E17F3E1D05C88700F46C7E /* CornellBox-Sphere.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F3D1D05C88700F46C7E /* CornellBox-Sphere.obj */; };
 		64E17F421D05C8C300F46C7E /* CornellBox-Sphere.mtl in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F411D05C8C300F46C7E /* CornellBox-Sphere.mtl */; };
+		64E17F441D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */; };
+		64E17F461D063AB500F46C7E /* c29.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F451D063AB500F46C7E /* c29.pdf */; };
 		64E911141CF66517008D8BBC /* scene.json in Resources */ = {isa = PBXBuildFile; fileRef = 640777191CECEB390022008A /* scene.json */; };
 		64E911161CF67464008D8BBC /* cornell.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E911151CF67464008D8BBC /* cornell.json */; };
 		64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */; };
@@ -150,6 +152,8 @@
 		64DBD3771CEC35DF00727B71 /* skydome.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = skydome.jpg; sourceTree = "<group>"; };
 		64E17F3D1D05C88700F46C7E /* CornellBox-Sphere.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "CornellBox-Sphere.obj"; sourceTree = "<group>"; };
 		64E17F411D05C8C300F46C7E /* CornellBox-Sphere.mtl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "CornellBox-Sphere.mtl"; sourceTree = "<group>"; };
+		64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf; sourceTree = "<group>"; };
+		64E17F451D063AB500F46C7E /* c29.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = c29.pdf; sourceTree = "<group>"; };
 		64E910C41CF59E1C008D8BBC /* Triangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Triangle.swift; sourceTree = "<group>"; };
 		64E910C61CF59E44008D8BBC /* Sphere.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sphere.swift; sourceTree = "<group>"; };
 		64E910C91CF59E82008D8BBC /* PrimitiveList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrimitiveList.swift; sourceTree = "<group>"; };
@@ -250,6 +254,7 @@
 		64BCBBFC1CFB72D300D24401 /* Docs */ = {
 			isa = PBXGroup;
 			children = (
+				64E17F471D063ABB00F46C7E /* Russian Roulette */,
 				64292E041D04623F00AEB722 /* GI */,
 				64BCBC0A1CFFBFF900D24401 /* BVH */,
 				64BCBC0B1CFFC00A00D24401 /* Render */,
@@ -302,6 +307,15 @@
 				64E9111F1CF7C211008D8BBC /* Texture.swift */,
 			);
 			name = Core;
+			sourceTree = "<group>";
+		};
+		64E17F471D063ABB00F46C7E /* Russian Roulette */ = {
+			isa = PBXGroup;
+			children = (
+				64E17F451D063AB500F46C7E /* c29.pdf */,
+				64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */,
+			);
+			name = "Russian Roulette";
 			sourceTree = "<group>";
 		};
 		64E910C81CF59E5C008D8BBC /* Geometry */ = {
@@ -546,8 +560,10 @@
 				64E9111C1CF75E39008D8BBC /* cornell_box.mtl in Resources */,
 				64E9112A1CF8153F008D8BBC /* default.png in Resources */,
 				64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */,
+				64E17F441D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf in Resources */,
 				64BCBC071CFFBE7200D24401 /* goldsmith_salmon_87.pdf in Resources */,
 				6407772D1CEE4EF00022008A /* default.mtl in Resources */,
+				64E17F461D063AB500F46C7E /* c29.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -81,16 +81,21 @@ struct PathTracer: Integrator {
             // update the accumulated weight
             cf = cf * c
             
-            // check if the contribution is too low
-            guard reduce_max(cf) > 0.01 else { break }
+            // russian roulette after a few iterations
+            depth = depth + 1
+            if depth > 3 {
+                let p = reduce_max(cf)
+                guard Real(drand48()) < p else { break }
+                cf = cf * (1/p)
+            }
 
+            // max iterations termination (note: biased)
+//            guard depth < 10 else { break }
+        
             // setup the new ray
             let d = wi
             let o = ray.x + d * Real.Eps
             ray.reset(o:o, d: d)
-            
-            depth = depth + 1
-            guard depth < 10 else { break }
         }
 
         return cl
