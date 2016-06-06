@@ -1,24 +1,13 @@
+# RGB wavelengths: 650nm, 510nm, 475nm
 newmtl white
-Ka 0 0 0
-Kd 1 1 1
-Ks 0 0 0
+Kd 0.7295 0.7355 0.729
 
 newmtl red
-Ka 0 0 0
-Kd 1 0 0
-Ks 0 0 0
+Kd 0.6300 0.0650 0.0500
 
 newmtl green
-Ka 0 0 0
-Kd 0 1 0
-Ks 0 0 0
-
-newmtl blue
-Ka 0 0 0
-Kd 0 0 1
-Ks 0 0 0
+Kd 0.117 0.4125 0.115
 
 newmtl light
-Ka 20 20 20
-Kd 1 1 1
-Ks 0 0 0
+Ke 16.86 10.76 3.7
+Kd .78

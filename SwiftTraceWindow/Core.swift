@@ -63,7 +63,7 @@ struct _Ray {
     /// origin of the ray
     var o: Vector
     /// direction of the ray
-    var d: Vector
+    var d, invd: Vector
     /// near segment
     var tmin: Real = 0
     /// far segment
@@ -87,11 +87,13 @@ struct _Ray {
     init(o: Vector, d: Vector) {
         self.o = o
         self.d = d
+        self.invd = recip(d)
     }
 
     init(o: Vector, d: Vector, tmin: Real, tmax: Real) {
         self.o = o
         self.d = d
+        self.invd = recip(d)
         self.tmin = tmin
         self.tmax = tmax
     }
@@ -100,6 +102,7 @@ struct _Ray {
     mutating func reset(o o: Vector, d: Vector) {
         self.o = o
         self.d = d
+        self.invd = recip(d)
         tmax = Real.infinity
         gid = IndexType.Invalid
     }
@@ -151,7 +154,7 @@ struct _Scene {
 
     /// AABB for a 3d primitve
     struct Box {
-        /// the opposed sqaures of the box
+        /// the opposed squares of the box
         let a, b: Vector
         /// the geometric center of the box
         let c: Vector
@@ -161,6 +164,9 @@ struct _Scene {
         /// the empty box (degenerate)
         static let empty = Box(a: Vector.Inf, b: -Vector.Inf)
         
+        /// Returns the union of two boes
+        static func merge(lhs: Box, _ rhs: Box) -> Box { return Box(a: min(lhs.a, rhs.a), b: max(lhs.b, rhs.b)) }
+
         init(a: Vector, b: Vector) {
             let ba = b-a
 
@@ -328,7 +334,7 @@ struct _Scene {
             guard _Scene.materialFromId(materialid, buffer: &buffer) == MaterialIndex.Invalid
             else { throw MaterialLoaderError.InvalidMaterial("the material name \(key) is repeated") }
             
-            buffer.material.append(_Material(name: materialid, Kd: value.Kd.color, Ke: value.Ka.color))
+            buffer.material.append(_Material(name: materialid, Kd: value.Kd.color, Ke: value.Ke.color))
         }
         
         // now the shapes
@@ -464,9 +470,8 @@ struct _Scene {
     static func boxIntersect(a a: Vector, b: Vector, ray: _Ray) -> Bool {
         // SIMD version of the slabs method
         // This is *not* numerically stable
-        let inv = recip(ray.d)
-        let t1: Vector = (a - ray.o) * inv
-        let t2: Vector = (b - ray.o) * inv
+        let t1: Vector = (a - ray.o) * ray.invd
+        let t2: Vector = (b - ray.o) * ray.invd
         
         let tmin = reduce_max(min(t1, t2))
         let tmax = reduce_min(max(t1, t2))
@@ -562,7 +567,7 @@ struct _Scene {
 
     /// BVH traversal
     private func intersect(ni: BVHIndex, inout ray: _Ray) -> Bool {
-//        ray.count += 1    
+        ray.count += 1
         let node = buffer.bvh[ni]
 
         switch node.type {
@@ -616,11 +621,21 @@ struct _Scene {
             let rbool = intersect(r, ray: &ray)
             
             return lbool || rbool
+        
+        // check an intersection with a list of primitives
+        case let .List(i, c):
+            guard _Scene.boxIntersect(a: node.box.a, b: node.box.b, ray: ray) else { return false }
+            
+            var result = false
+            for index in i..<(i+c) { result = result || intersect(index, ray: &ray) }
+        
+            return result
         }
     }
 
     /// Contains the BVH tree
     struct BVH {
+        /// Contains a primitive and a precalculated bounding box
         /// We use this structure only when building the tree
         struct NodeBox {
             /// Encapsulates the AABB of the node
@@ -629,70 +644,119 @@ struct _Scene {
             let pid: IndexType
         }
         
+        /// The bvh node type
         enum NodeType {
+            /// Contains a single primitive (note the traversal doesn't check the bounding box)
             case Leaf(i: IndexType)
+            /// Contains a list of primitives (the bounding box is checked, and then sequentially all nodes)
+            case List(i: IndexType, c: Int)
+            /// Contains two other nodes (the traversal checks the bounding box and then recursively both nodes)
             case Node(l: BVHIndex, r: BVHIndex)
         }
-
+    
+        /// The node type
         let type: NodeType
+        /// The bounding box
         let box: Box
 
-        /// Returns the union of two AABB
-        static func merge(lhs: Box, _ rhs: Box) -> Box { return Box(a: min(lhs.a, rhs.a), b: max(lhs.b, rhs.b)) }
-
+        /// Creates a BVH node with a single primitive
+        init(_ node: NodeBox, inout nodes: ContiguousArray<BVH>) throws {
+            type = .Leaf(i: node.pid)
+            box = node.box
+            nodes.append(self)
+            return
+        }
+        
+        /// Creates a BVH node with a list of primitives
         init(_ list: [NodeBox], inout nodes: ContiguousArray<BVH>) throws {
-            guard list.count > 0 else { throw _SceneError.BuildingTree("BVH Node needs at least one node") }
-            guard list.count > 1 else {
-                type = .Leaf(i: list[0].pid)
-                box = list[0].box
-                nodes.append(self)
+            let t = list.count
+
+            guard t > 0 else { throw _SceneError.BuildingTree("BVH Node needs at least one node") }
+            guard t > 1 else {
+                // assign a leaf node
+                self = try BVH(list[0], nodes: &nodes)
+                return
+            }
+            // for two nodes, it seems faster a node than a two-element list
+            guard t > 2 else {
+                // insert the two nodes
+                let li = nodes.endIndex
+                _ = try BVH(list[0], nodes: &nodes)
+                _ = try BVH(list[1], nodes: &nodes)
+
+                type = .Node(l: li, r: li+1)
+                box = Box.merge(list[0].box, list[1].box)
                 return
             }
             
             // constants for the sah score (cost traversal and cost intersection)
             let Ct: Real = 1.0
-            let Ci: Real = 4.0
+            let Ci: Real = 8.0
 
             // compute the bounding box for this node
-            let p: Box = list.reduce(Box.empty, combine: { BVH.merge($0, $1.box) })
-            let t = list.count
+            let p: Box = list.reduce(Box.empty, combine: { Box.merge($0, $1.box) })
 
-            // choose an random axis and sort over it
-            // FIXME: compute the sah score over the three axis and choose the smallest
-            let axis = Int(drand48() * 3)
-            let sorted = list.sort({ $0.box.c[axis] < $1.box.c[axis] })
-
-            // iterate over all possible paritions in this axis
-            let (_, index) = sorted.indices.reduce((Real.infinity, IndexType.Invalid), combine: {
-                // skip the first and last iteration
-                guard $1>0 && $1<t else { return $0 }
+            // compute the sah score over the three axis and choose the smallest
+            var best_score: Real = Real.infinity
+            var best_list = [NodeBox]()
+            var best_index: IndexType = IndexType.Invalid
             
-                let l: Box = sorted[0..<$1].reduce(Box.empty, combine: { BVH.merge($0, $1.box) })
-                let r: Box = sorted[$1..<t].reduce(Box.empty, combine: { BVH.merge($0, $1.box) })
+            for axis in 0...2 {
+                let sorted = list.sort({ $0.box.c[axis] < $1.box.c[axis] })
                 
-                // compute sah for this partition
-                let ls = l.s * Real($1)
-                let rs = r.s * Real(t - $1)
-                let sah = Ct + Ci * (ls + rs) / p.s
+                // iterate over all possible paritions in this axis
+                let (score, index) = sorted.indices.reduce((Real.infinity, IndexType.Invalid), combine: {
+                    // skip the first and last iteration
+                    guard $1>0 && $1<t else { return $0 }
+                    
+                    // compute the boundix boxes for this partition
+                    let l: Box = sorted[0..<$1].reduce(Box.empty, combine: { Box.merge($0, $1.box) })
+                    let r: Box = sorted[$1..<t].reduce(Box.empty, combine: { Box.merge($0, $1.box) })
+                    
+                    // compute sah for this partition
+                    let ls = l.s * Real($1)
+                    let rs = r.s * Real(t - $1)
+                    let sah = Ct + Ci * (ls + rs) / p.s
+//                    print("score: \(sah)")
+                    return sah < $0.0 ? (sah, $1) : $0
+                })
+                
+                if score < best_score {
+                    best_score = score
+                    best_list = sorted
+                    best_index = index
+                }
+            }
             
-                return sah < $0.0 ? (sah, $1) : $0
-            })
+            print("best_score: \(best_score) [\(best_index):\(t)]")
             
-            // split the array in two
-            let left  = []+sorted[0..<index]
-            let right = []+sorted[index..<t]
+            // if the best score is less than Ci + Ct * 2,
+            // it means than iterating is better than traversing
+            if best_score < (Ci + Ct * 2) {
+                let bi = nodes.endIndex
+                for n in best_list { _ = try BVH(n, nodes: &nodes) }
             
-            // insert the two nodes
-            let ln = try BVH(left, nodes: &nodes)
-            let li = nodes.endIndex
-            nodes.append(ln)
-            let rn = try BVH(right, nodes: &nodes)
-            let ri = nodes.endIndex
-            nodes.append(rn)
-            
-            // initialize the node
-            type = .Node(l: li, r: ri)
-            box = p
+                // initialize the node
+                type = .List(i: bi, c: t)
+                box = p
+            } else {
+                // split the array in two
+                let left  = []+best_list[0..<best_index]
+                let right = []+best_list[best_index..<t]
+                
+                // store each node and their children consecutively
+                let ln = try BVH(left, nodes: &nodes)
+                let li = nodes.endIndex
+                nodes.append(ln)
+                
+                let rn = try BVH(right, nodes: &nodes)
+                let ri = nodes.endIndex
+                nodes.append(rn)
+                
+                // initialize the node
+                type = .Node(l: li, r: ri)
+                box = p
+            }
         }
     }
 }

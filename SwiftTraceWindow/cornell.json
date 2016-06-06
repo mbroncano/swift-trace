@@ -1,10 +1,10 @@
 {
-    "camera": {
+   "camera": {
         "look_from": [278, 273, -800],
         "look_at": [278, 273, 0],
         "vec_up": [0, 1, 0],
         "fov": 40,
-        "aspect": 1.33,
+        "aspect": 1.0,
         "aperture": 0.2
     },
 

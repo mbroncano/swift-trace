@@ -680,7 +680,7 @@
                                     <constraint firstAttribute="height" constant="240" id="ctW-6C-zqD"/>
                                     <constraint firstAttribute="width" secondItem="00F-PE-ZZr" secondAttribute="height" multiplier="4:3" id="i3t-KR-gsT"/>
                                 </constraints>
-                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageAlignment="topRight" imageScaling="proportionallyUpOrDown" imageFrameStyle="grayBezel" id="iia-lm-Cg0"/>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" imageFrameStyle="grayBezel" id="iia-lm-Cg0"/>
                             </imageView>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="QS8-mT-LqS" userLabel="Render View">
                                 <rect key="frame" x="17" y="17" width="646" height="486"/>
@@ -688,7 +688,7 @@
                                     <constraint firstAttribute="width" secondItem="QS8-mT-LqS" secondAttribute="height" multiplier="4:3" id="7I3-wO-df6"/>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="480" id="yK6-6N-RIp"/>
                                 </constraints>
-                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageAlignment="left" imageScaling="proportionallyUpOrDown" imageFrameStyle="grayBezel" id="02P-JK-ubc"/>
+                                <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" imageFrameStyle="grayBezel" id="02P-JK-ubc"/>
                             </imageView>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OB4-g5-gHA">
                                 <rect key="frame" x="666" y="233" width="324" height="19"/>

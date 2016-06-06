@@ -48,11 +48,13 @@ public struct Pixel {
     
     /// Default initializer with Color type
     /// -Parameter color: Color type variable
-    init(color: Vector) {
+    init(color: Vector, gamma: Real = 2.2) {
         var m = clamp(color, min: 0, max: 1)
-        m.x = pow(m.x, 0.45)
-        m.y = pow(m.y, 0.45)
-        m.z = pow(m.z, 0.45)
+
+        let invGamma = 1.0 / gamma
+        m.x = pow(m.x, invGamma)
+        m.y = pow(m.y, invGamma)
+        m.z = pow(m.z, invGamma)
         
         let c = m * Real(Byte.Max)
         (r, g, b, a) = (Byte(c[0]), Byte(c[1]), Byte(c[2]), 0)
