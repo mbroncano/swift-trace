@@ -1,0 +1,31 @@
+{
+    "camera": {
+        "look_from": [0, 2, 2],
+        "look_at": [0, 0.5, 0],
+        "vec_up": [0, 1, 0],
+        "fov": 60,
+        "aspect": 1.0,
+        "aperture": 0.2
+    },
+    
+    "material":
+    [{ "name": "red", "Kd": [1, 0, 0], "Ke": [] },
+     { "name": "green", "Kd": [0, 1, 0], "Ke": [] },
+     { "name": "blue", "Kd": [0, 0, 1], "Ke": [] },
+     { "name": "white", "Kd": [1], "Ke": [] },
+     { "name": "black", "Kd": [0], "Ke": [] },
+     { "name": "lite", "Kd": [], "Ke": [5] }],
+    
+    "primi":
+    [{ "type": "g", "m": "lite", "transform": { "scale": [0.2], "translate": [-4, 4, -1] }, "l":
+     [{ "type": "t", "v": [[-1, 0, -1], [-1, 0, 1], [1, 0, -1]] },
+      { "type": "t", "v": [[1, 0, 1], [1, 0, -1], [-1, 0, 1]] }
+      ]},
+     { "type": "g", "m": "blue", "transform": { "scale": [1] }, "l":
+     [{ "type": "t", "v": [[-10, 0, -10], [-10, 0, 10], [10, 0, -10]] },
+      { "type": "t", "v": [[10, 0, 10], [10, 0, -10], [-10, 0, 10]] }
+      ]}],
+    
+    "object" :
+    [{ "file": "bunny.obj", "transform": { "scale": [5] }}]
+}

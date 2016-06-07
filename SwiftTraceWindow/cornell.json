@@ -9,5 +9,7 @@
     },
 
     "object" :
-        [ { "file": "cornell_box.obj"} ]
+        [{ "file": "cornell_box.obj"} ,
+         { "file": "bunny.obj", "transform": { "scale": [700], "translate": [200, 165, 200] } } ]
+
 }

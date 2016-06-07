@@ -34,7 +34,6 @@ extension _Scene.Shape: Decodable {
         case "s": return _Scene.Shape.Sphere(center: try json => "p", radius: try json => "r")
         case "t": return _Scene.Shape.Triangle(v: try json => "v" as [Vector], n: [], t: [])
         case "g": return _Scene.Shape.Group(shapes: try json => "l")
-//        case "o": return try _Scene.importObject(try ObjectLibrary(name: try json => "file"))
         default:
             throw GeometryError.InvalidShape("The shape type is invalid: \(type)")
         }
@@ -61,7 +60,9 @@ extension _Material: Decodable {
 
 extension ObjectLibrary: Decodable {
     internal static func decode(json: AnyObject) throws -> ObjectLibrary {
-        return try ObjectLibrary(name: try json => "file")
+        return try ObjectLibrary(
+            name: try json => "file",
+            transform: try json =>? "transform")
     }
 }
 
@@ -90,14 +91,16 @@ extension _Camera: Decodable {
 extension Transform: Decodable {
     internal static func decode(json: AnyObject) throws -> Transform {
     
-        let scale: Vector = try json => "scale"
-        let rotate: Vector = try json => "rotate"
-        let translate: Vector = try json => "translate"
+        var transform = Transform.Identity
+    
+        if let scale: Vector = try json =>? "scale" {
+            transform = transform + Transform(scale: scale)
+        }
+
+        if let translate: Vector = try json =>? "translate" {
+            transform = transform + Transform(translate: translate)
+        }
         
-        return Transform(scale: scale) +
-               Transform(rotate_x: rotate.x) +
-               Transform(rotate_y: rotate.y) +
-               Transform(rotate_z: rotate.z) +
-               Transform(translate: translate)
+        return transform
         }
 }

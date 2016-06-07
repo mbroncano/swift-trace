@@ -36,6 +36,8 @@
 		64E17F421D05C8C300F46C7E /* CornellBox-Sphere.mtl in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F411D05C8C300F46C7E /* CornellBox-Sphere.mtl */; };
 		64E17F441D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */; };
 		64E17F461D063AB500F46C7E /* c29.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F451D063AB500F46C7E /* c29.pdf */; };
+		64E17F491D06402A00F46C7E /* bunny.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F481D06402A00F46C7E /* bunny.json */; };
+		64E17F4B1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F4A1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf */; };
 		64E911141CF66517008D8BBC /* scene.json in Resources */ = {isa = PBXBuildFile; fileRef = 640777191CECEB390022008A /* scene.json */; };
 		64E911161CF67464008D8BBC /* cornell.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E911151CF67464008D8BBC /* cornell.json */; };
 		64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */; };
@@ -154,6 +156,8 @@
 		64E17F411D05C8C300F46C7E /* CornellBox-Sphere.mtl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "CornellBox-Sphere.mtl"; sourceTree = "<group>"; };
 		64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf; sourceTree = "<group>"; };
 		64E17F451D063AB500F46C7E /* c29.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = c29.pdf; sourceTree = "<group>"; };
+		64E17F481D06402A00F46C7E /* bunny.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = bunny.json; sourceTree = "<group>"; };
+		64E17F4A1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Fast MinimumStorage RayTriangle Intersection.pdf"; sourceTree = "<group>"; };
 		64E910C41CF59E1C008D8BBC /* Triangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Triangle.swift; sourceTree = "<group>"; };
 		64E910C61CF59E44008D8BBC /* Sphere.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sphere.swift; sourceTree = "<group>"; };
 		64E910C91CF59E82008D8BBC /* PrimitiveList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrimitiveList.swift; sourceTree = "<group>"; };
@@ -254,6 +258,7 @@
 		64BCBBFC1CFB72D300D24401 /* Docs */ = {
 			isa = PBXGroup;
 			children = (
+				64E17F4A1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf */,
 				64E17F471D063ABB00F46C7E /* Russian Roulette */,
 				64292E041D04623F00AEB722 /* GI */,
 				64BCBC0A1CFFBFF900D24401 /* BVH */,
@@ -382,6 +387,7 @@
 				64DBD3751CEC24CD00727B71 /* earth.jpg */,
 				640777191CECEB390022008A /* scene.json */,
 				64E911151CF67464008D8BBC /* cornell.json */,
+				64E17F481D06402A00F46C7E /* bunny.json */,
 				642247A51CF5769200A35907 /* bunny.obj */,
 				64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */,
 				64E9111B1CF75E39008D8BBC /* cornell_box.mtl */,
@@ -540,6 +546,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */,
+				64E17F4B1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf in Resources */,
 				64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */,
 				64BCBC091CFFBFE800D24401 /* mcdonalds_booth_89.pdf in Resources */,
 				64E911141CF66517008D8BBC /* scene.json in Resources */,
@@ -559,6 +566,7 @@
 				640777351CEF5E3D0022008A /* dragon.obj in Resources */,
 				64E9111C1CF75E39008D8BBC /* cornell_box.mtl in Resources */,
 				64E9112A1CF8153F008D8BBC /* default.png in Resources */,
+				64E17F491D06402A00F46C7E /* bunny.json in Resources */,
 				64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */,
 				64E17F441D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf in Resources */,
 				64BCBC071CFFBE7200D24401 /* goldsmith_salmon_87.pdf in Resources */,

@@ -117,6 +117,8 @@ struct _Scene {
         case Sphere(ic: VertexIndex, rad: Real)
         /// A single triangle
         case Triangle(i1: VertexIndex, i2: VertexIndex, i3: VertexIndex)
+        /// An instance
+        case Instance(ni: BVHIndex)
     }
     
     /// Geometry shapes
@@ -157,17 +159,26 @@ struct _Scene {
     /// AABB for a 3d primitve
     struct Box {
         /// the opposed squares of the box
-        let a, b: Vector
+        var a, b: Vector
         /// the geometric center of the box
-        let c: Vector
+        var c: Vector
         /// the surface area of the box
-        let s: Real
+        var s: Real
         
         /// the empty box (degenerate)
         static let empty = Box(a: Vector.Inf, b: -Vector.Inf)
         
         /// Returns the union of two boes
         static func merge(lhs: Box, _ rhs: Box) -> Box { return Box(a: min(lhs.a, rhs.a), b: max(lhs.b, rhs.b)) }
+
+        mutating func merge(box: Box) {
+            a = min(a, box.a)
+            b = max(b, box.b)
+
+            let ba = b-a
+            c = a + ba * 0.5
+            s = 2 * (ba.x*ba.y + ba.x*ba.z + ba.y*ba.z)
+        }
 
         init(a: Vector, b: Vector) {
             let ba = b-a
@@ -263,7 +274,7 @@ struct _Scene {
         buffer.geometry.append(Geometry(shape: geometry.shape, material: geometry.material, transform: geometry.transform))
     }
     
-    static func addPrimitive(ptype: _Scene.PrimitiveType, gid: GeometryId, pid: PrimitiveId, mid: MaterialIndex, box: Box, inout buffer: BufferSOA, transform: Transform? = nil) {
+    static func addPrimitive(ptype: _Scene.PrimitiveType, gid: GeometryId, pid: PrimitiveId, mid: MaterialIndex, tid: TransformId, box: Box, inout buffer: BufferSOA) {
         // if the primitive belongs to a light, add it to the light array
         if buffer.material[mid].isLight {
             buffer.light.append(buffer.primitive.endIndex)
@@ -271,11 +282,8 @@ struct _Scene {
 
         // if there's a transform, add it and apply transform to bounding box
         var box = box
-        var tid = TransformId.Invalid
-        if let t = transform {
-            tid = buffer.transform.endIndex
-            buffer.transform.append(transform!)
-        
+        if tid != TransformId.Invalid {
+            let t = buffer.transform[tid]
             box = Box(a: t.apply(point: box.a), b: t.apply(point: box.b))
         }
         buffer.box.append(box)
@@ -289,6 +297,17 @@ struct _Scene {
     static func addShape(shape: Shape, gid: GeometryId, pid: PrimitiveId, mid: MaterialIndex, inout buffer: BufferSOA, transform: Transform? = nil) throws {
         let vi = buffer.vertex.endIndex
 
+        var tid = TransformId.Invalid
+        if let transform = transform {
+            // check if there is already the same transform
+            if let index = buffer.transform.indexOf(transform) {
+                tid = index
+            } else {
+                tid = buffer.transform.endIndex
+                buffer.transform.append(transform)
+            }
+        }
+
         switch shape {
         case let .Triangle(v, _, _):
             guard v.count == 3 else { throw GeometryError.InvalidShape("A triangle needs three vertices") }
@@ -300,10 +319,10 @@ struct _Scene {
             let ptype = PrimitiveType.Triangle(i1: vi, i2: vi+1, i3: vi+2)
             let box = Box(a: min(min(v[0], v[1]), v[2]), b: max(max(v[0], v[1]), v[2]))
      
-            addPrimitive(ptype, gid: gid, pid: pid, mid: mid, box: box, buffer: &buffer, transform: transform)
+            addPrimitive(ptype, gid: gid, pid: pid, mid: mid, tid: tid, box: box, buffer: &buffer)
             
-            // HACK
-            print("{ \"type\": \"t\", \"v\": [[\(v[0].x), \(v[0].y), \(v[0].z)], [\(v[1].x), \(v[1].y), \(v[1].z)], [\(v[2].x), \(v[2].y), \(v[2].z)]] },")
+            // debug
+//            print("{ \"type\": \"t\", \"v\": [[\(v[0].x), \(v[0].y), \(v[0].z)], [\(v[1].x), \(v[1].y), \(v[1].z)], [\(v[2].x), \(v[2].y), \(v[2].z)]] },")
         
         case let .Sphere(center, radius):
             guard radius != 0 else { throw GeometryError.InvalidShape("A sphere needs volume") }
@@ -313,7 +332,7 @@ struct _Scene {
             let ptype = PrimitiveType.Sphere(ic: vi, rad: radius)
             let box = Box(a: center-Vector(radius), b: center+Vector(radius))
             
-            addPrimitive(ptype, gid: gid, pid: pid, mid: mid, box: box, buffer: &buffer, transform: transform)
+            addPrimitive(ptype, gid: gid, pid: pid, mid: mid, tid: tid, box: box, buffer: &buffer)
         
         case let .Group(shapes):
             try shapes.enumerate().forEach({ (index, shape) in
@@ -372,17 +391,17 @@ struct _Scene {
                     mid = _Scene.materialFromId(MaterialId(material: material_key), buffer: &buffer)
                 }
 
-                try addShape(Shape.Triangle(v: p, n: n, t: t), gid: gid, pid: pid, mid: mid, buffer: &buffer)
+                try addShape(Shape.Triangle(v: p, n: n, t: t), gid: gid, pid: pid, mid: mid, buffer: &buffer, transform: obj.transform)
                 pid += 1
                 
-                shapes += [_Scene.Shape.Triangle(v: p, n: n, t: t)]
+                shapes.append(_Scene.Shape.Triangle(v: p, n: n, t: t))
             }
         }
 
         // add the geometry but avoid re-adding the shapes
         // FIXME: find a better solution for the compound material library
         let gmid = MaterialId(material: "__mtllib__")
-        let group = Geometry(shape: _Scene.Shape.Group(shapes: shapes), material: gmid, transform: nil)
+        let group = Geometry(shape: _Scene.Shape.Group(shapes: shapes), material: gmid, transform: obj.transform)
         try addGeometry(group, buffer: &buffer, addShapes: false)
     }
     
@@ -425,17 +444,15 @@ struct _Scene {
     func sampleLight(pid: PrimitiveId, ray: _Ray) throws -> (Real, Vector, MaterialId) {
         let p = buffer.primitive[pid]
         
-        // transform hit point from world to object
-//        let hit = ray.x
-//        if p.tid != TransformId.Invalid {
-//            hit = buffer.transform[p.tid].reverse().apply(point: ray.x)
-//        }
-        
         let pdf: Real
         var sample: Vector
         
         // check the intersection with the primitive
         switch p.type {
+        case .Instance:
+            // FIXME: find a solution for this (e.g. a proper light class)
+            throw _SceneError.InvalidMaterial("An instance is not a valid light source")
+        
         case let .Sphere(ic, r):
             // FIXME: this is wrong, use the cone/disk sampling
             let center = buffer.vertex[ic]
@@ -444,6 +461,7 @@ struct _Scene {
 
             // compute the point on the (local coordinates) sphere surface
             sample = center + r * sample
+            
         case let .Triangle(i1, i2, i3):
             let v1 = buffer.vertex[i1]
             let v2 = buffer.vertex[i2]
@@ -454,19 +472,22 @@ struct _Scene {
             let e2 = v3 - v1
             let (u, v) = _Scene.uniformSampleTriangle(Real(drand48()), Real(drand48()))
             sample = v1 + e1*u + e2*v
+            var cross_edges = cross(e2, e1)
+
+            // transform sample and normal from object to world
+            if p.tid != TransformId.Invalid {
+                let t = buffer.transform[p.tid]
+                sample = t.apply(point: ray.x)
+                cross_edges = t.apply(normal: cross_edges)
+            }
             
             // compute the subtended triangle area for the sample to hit vector
-            let area = length(cross(e2, e1)) * 0.5
-            let normal_l = normalize(cross(e2, e1))
+            let area = length(cross_edges) * 0.5
+            let normal_l = normalize(cross_edges)
             let sample_hit = normalize(ray.x-sample)
             let cos_l = abs(dot(normal_l, sample_hit))
             pdf = length_squared(ray.x-sample) / (area * cos_l)
         }
-        
-        // transform from local back to world
-//        if p.tid != TransformId.Invalid {
-//            sample = buffer.transform[p.tid].apply(point: sample)
-//        }
         
         return (pdf, sample, p.mid)
     }
@@ -581,12 +602,12 @@ struct _Scene {
             let p = buffer.primitive[i]
             
             // check if the geometry contains a transform
-//            var tray = ray
-//            if p.tid != TransformId.Invalid {
-//                let t = buffer.transform[p.tid].reverse()
-//                tray.o = t.apply(point: ray.o)
-//                tray.d = t.apply(vector: ray.d)
-//            }
+            var tray = ray
+            if p.tid != TransformId.Invalid {
+                let t = buffer.transform[p.tid].reverse()
+                tray.o = t.apply(point: ray.o)
+                tray.d = normalize(t.apply(vector: ray.d))
+            }
 
             let result: Bool
             
@@ -596,19 +617,30 @@ struct _Scene {
                 let v1 = buffer.vertex[i1]
                 let v2 = buffer.vertex[i2]
                 let v3 = buffer.vertex[i3]
-                result = _Scene.triangleIntersect(v1: v1, v2: v2, v3: v3, ray: &ray)
+                result = _Scene.triangleIntersect(v1: v1, v2: v2, v3: v3, ray: &tray)
                 
             case let .Sphere(ic, r):
                 let center = buffer.vertex[ic]
-                result = _Scene.sphereIntersect(pos: center, rad: r, ray: &ray)
+                result = _Scene.sphereIntersect(pos: center, rad: r, ray: &tray)
+            
+            case let .Instance(ni):
+                result = intersect(ni, ray: &tray)
             }
             
             // reverse the transform and recover the original ray
-//            if p.tid != TransformId.Invalid {
-//                tray.o = ray.o
-//                tray.d = ray.d
-//            }
-//            ray = tray
+            if p.tid != TransformId.Invalid {
+                if result == true {
+                  // object to world hit point and normal
+                  let t = buffer.transform[p.tid]
+                  tray.x = t.apply(point: tray.x)
+                  tray.n = t.apply(normal: tray.n)
+                  tray.tmax = length(tray.x - tray.o)
+                }
+
+                tray.o = ray.o
+                tray.d = ray.d
+            }
+            ray = tray
             
             // if successful, update ray with the primitive information
             if result {
@@ -641,6 +673,8 @@ struct _Scene {
 
     /// Contains the BVH tree
     struct BVH {
+        typealias NodeBoxArray = ContiguousArray<NodeBox>
+    
         /// Contains a primitive and a precalculated bounding box
         /// We use this structure only when building the tree
         struct NodeBox {
@@ -704,18 +738,17 @@ struct _Scene {
 
             // compute the sah score over the three axis and choose the smallest
             var best_score: Real = Real.infinity
-            var best_list = [NodeBox]()
+            var best_list = NodeBoxArray()
             var best_index: IndexType = IndexType.Invalid
             
             for axis in 0...2 {
-                let sorted = list.sort({ $0.box.c[axis] < $1.box.c[axis] })
+                let sorted = NodeBoxArray(list.sort({ $0.box.c[axis] < $1.box.c[axis] }))
                 
                 // iterate over all possible paritions in this axis
                 let (score, index) = sorted.indices.reduce((Real.infinity, IndexType.Invalid), combine: {
                     // skip the first and last iteration
                     guard $1>0 && $1<t else { return $0 }
                     
-                    // compute the boundix boxes for this partition
                     let l: Box = sorted[0..<$1].reduce(Box.empty, combine: { Box.merge($0, $1.box) })
                     let r: Box = sorted[$1..<t].reduce(Box.empty, combine: { Box.merge($0, $1.box) })
                     
@@ -723,7 +756,7 @@ struct _Scene {
                     let ls = l.s * Real($1)
                     let rs = r.s * Real(t - $1)
                     let sah = Ct + Ci * (ls + rs) / p.s
-//                    print("score: \(sah)")
+//                    print("score: [\($1):\(t):\(axis)] \(sah)")
                     return sah < $0.0 ? (sah, $1) : $0
                 })
                 

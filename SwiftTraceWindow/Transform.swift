@@ -187,3 +187,31 @@ func + (lhs:Transform, rhs: Transform) -> Transform {
     let inv = rhs.inverse * lhs.inverse
     return Transform(transform: mat, inverse: inv)
 }
+
+func ==(lhs: Transform, rhs: Transform) -> Bool {
+    return lhs.hashValue == rhs.hashValue
+}
+
+extension Transform: Equatable {
+    internal var hashValue: Int { get {
+        let (c0, c1, c2, c3) = transform.cmatrix.columns
+        
+        return
+            unsafeBitCast(c0.x, Int64.self).hashValue ^
+            unsafeBitCast(c0.y, Int64.self).hashValue ^
+            unsafeBitCast(c0.z, Int64.self).hashValue ^
+            unsafeBitCast(c0.w, Int64.self).hashValue ^
+            unsafeBitCast(c1.x, Int64.self).hashValue ^
+            unsafeBitCast(c1.y, Int64.self).hashValue ^
+            unsafeBitCast(c1.z, Int64.self).hashValue ^
+            unsafeBitCast(c1.w, Int64.self).hashValue ^
+            unsafeBitCast(c2.x, Int64.self).hashValue ^
+            unsafeBitCast(c2.y, Int64.self).hashValue ^
+            unsafeBitCast(c2.z, Int64.self).hashValue ^
+            unsafeBitCast(c2.w, Int64.self).hashValue ^
+            unsafeBitCast(c3.x, Int64.self).hashValue ^
+            unsafeBitCast(c3.y, Int64.self).hashValue ^
+            unsafeBitCast(c3.z, Int64.self).hashValue ^
+            unsafeBitCast(c3.w, Int64.self).hashValue
+    }}
+}

@@ -178,9 +178,11 @@ struct ObjectLibrary {
     var faces = [Face]()
     var mtllib = [String: MaterialTemplate]()
     let name: String
+    let transform: Transform?
 
-    init(name: String) throws {
-        self.name = name    
+    init(name: String, transform: Transform? = nil) throws {
+        self.name = name
+        self.transform = transform
         guard
             let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
             let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
