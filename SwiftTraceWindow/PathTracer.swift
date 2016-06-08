@@ -32,7 +32,15 @@ struct PathTracer: Integrator {
         
         // radiance weight
         var cf: Vector = Vector(1)
+        
+        // iterations
         var depth = 0
+
+        // light sample
+        var sample = _Scene.LightSample()
+        
+        // shadow ray
+        var sray = _Ray(o: Vector(), d: Vector())
 
         while true {
             // intersection with the world
@@ -41,42 +49,39 @@ struct PathTracer: Integrator {
             // this shouldn't happen
 //            guard ray.gid != IndexType.Invalid  else { throw RendererError.InvalidGeometry("geometry not found") }
             
-            // retrieve the material
-            let material = scene.material(ray.mid)
+            // retrieve the material for the primitive
+            let material = scene.material(pid: ray.pid)
             
             // if we hit a light, just return
-            guard !material.isLight else { cl = cl + cf * material.Ke; break }
+            guard material.isLight == false else { cl += cf * material.Ke; break }
 
             // compute direct lighting from area lights
-            // FIXME: refactor this, create a proper light class
+            // FIXME: create a proper light class
+            
+            sample.hit = ray.x
             
             for lid in scene.buffer.light {
                 // retrieve the geometry and choose a random point over the surface
-                let (lpdf, lsample, lmid) = try scene.sampleLight(lid, ray: ray)
+                try scene.sampleLight(lid, sample: &sample)
                 
-                // check the sample is pointing to us
-                guard lpdf > 0 else { continue }
+                // check the sample pdf
+                guard sample.pdf >= 0 else { continue }
                 
-                // create the shadow ray
-                let ldir = normalize(lsample - ray.x)
-                let ldist = length(lsample - ray.x) 
-                var sray = _Ray(o: ray.x, d: ldir, tmin: Real.Eps, tmax: ldist)
+                // setup the shadow ray
+                sray.reset(o: sample.hit, d: sample.dir, tmin: Real.Eps, tmax: sample.dist)
 
                 // check the occlusion of the shadow ray
-                if try scene.intersect(&sray) { continue }
-                
-                // compute the emitter radiance arriving per solid angle
-                let lmaterial = scene.material(lmid)
-                let radiance = lmaterial.Ke * (1 / lpdf)
+                guard try scene.intersect(&sray) == false else { continue }
                 
                 // compute the resulting radiance
-                let color = radiance * material.eval(sray, n: ray.n, wi: sray.d)
+                let power = sample.weight * scene.material(pid: lid).Ke
+                let color = power * material.eval(ray, n: ray.n, wi: sample.dir)
                 cl += cf * color
             }
             
-            // compute the BRDF
+            // sample the material and compute the BRDF
             let (pdf, wi) = material.sample(ray)
-            let c = material.eval(ray, n: ray.n, wi: wi) * (1/pdf)
+            let c = material.eval(ray, n: ray.n, wi: wi) * recip(pdf)
             
             // update the accumulated weight
             cf = cf * c
@@ -93,9 +98,7 @@ struct PathTracer: Integrator {
 //            guard depth < 10 else { break }
         
             // setup the new ray
-            let d = wi
-            let o = ray.x + d * Real.Eps
-            ray.reset(o:o, d: d)
+            ray.reset(o: ray.x, d: wi, tmin: Real.Eps, tmax: Real.infinity)
         }
 
         return cl

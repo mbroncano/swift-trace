@@ -8,6 +8,9 @@ Kd 0.6300 0.0650 0.0500
 newmtl green
 Kd 0.117 0.4125 0.115
 
+newmtl blue
+Kd 0.161 0.133 0.427
+
 newmtl light
 Ke 16.86 10.76 3.7
 Kd .78

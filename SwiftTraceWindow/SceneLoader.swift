@@ -33,7 +33,7 @@ extension _Scene.Shape: Decodable {
         switch type {
         case "s": return _Scene.Shape.Sphere(center: try json => "p", radius: try json => "r")
         case "t": return _Scene.Shape.Triangle(v: try json => "v" as [Vector], n: [], t: [])
-        case "g": return _Scene.Shape.Group(shapes: try json => "l")
+        case "g": return _Scene.Shape.Group(name: "group", shapes: try json => "l")
         default:
             throw GeometryError.InvalidShape("The shape type is invalid: \(type)")
         }
@@ -54,7 +54,8 @@ extension _Material: Decodable {
         return _Material(
             name: MaterialId(material: try json => "name" as String),
             Kd: try json => "Kd",
-            Ke: try json => "Ke")
+            Ke: try json => "Ke",
+            Ks: try json => "Ks")
     }
 }
 
@@ -70,7 +71,7 @@ extension _Scene: Decodable {
     internal static func decode(json: AnyObject) throws -> _Scene {
         return try _Scene(
             camera: try json => "camera",
-            geometry: try json =>? "primi",
+            geometry: try json =>? "geometry",
             material: try json =>? "material",
             object: try json =>? "object")
     }

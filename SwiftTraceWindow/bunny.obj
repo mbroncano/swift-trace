@@ -2,8 +2,8 @@
 # vertex count = 2503
 # face count = 4968
 
-mtllib default.mtl
-usemtl default
+mtllib cornell_box.mtl
+usemtl blue
 
 v -3.4101800e-003 1.3031957e-001 2.1754370e-002
 v -8.1719160e-002 1.5250145e-001 2.9656090e-002

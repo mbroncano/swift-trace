@@ -24,10 +24,10 @@ public typealias Vector = simd.double3
 extension Vector {
     static let Inf = Vector(Real.infinity)
     
-    var localFrame: simd.double3x3 { get {
+    var localFrame: Matrix3x3 { get {
         let v1 = normalize(self)
-        let v2 = v1.x > v1.y ? Vector(-v1.z, 0.0, v1.x) : Vector(0.0, v1.z, -v1.y)
-        let v3 = cross(normalize(v2), v1)
+        let v2 = normalize(v1.x > v1.y ? Vector(-v1.z, 0.0, v1.x) : Vector(0.0, v1.z, -v1.y))
+        let v3 = cross(v2, v1)
         return Matrix3x3([v1,v2,v3])
         }}
 }
@@ -101,11 +101,12 @@ struct _Ray {
     }
     
     // resets direction and some hit information for the ray
-    mutating func reset(o o: Vector, d: Vector) {
+    mutating func reset(o o: Vector, d: Vector, tmin: Real, tmax: Real) {
         self.o = o
         self.d = d
         self.invd = recip(d)
-        tmax = Real.infinity
+        self.tmin = tmin
+        self.tmax = tmax
         gid = IndexType.Invalid
     }
 }
@@ -128,7 +129,7 @@ struct _Scene {
         /// A single triangle with optional normals and texture coordinates
         case Triangle(v: [Vector], n: [Vector], t:[Vector])
         /// A group of shapes (note: only a single depth level allowed)
-        case Group(shapes: [Shape])
+        case Group(name: String, shapes: [Shape])
 //        case Mesh(f: [[IndexType]], v: [Vector], vn: [Vector], vt: [Vector])
     }
     
@@ -334,7 +335,7 @@ struct _Scene {
             
             addPrimitive(ptype, gid: gid, pid: pid, mid: mid, tid: tid, box: box, buffer: &buffer)
         
-        case let .Group(shapes):
+        case let .Group(_, shapes):
             try shapes.enumerate().forEach({ (index, shape) in
                 if case .Group = shape { throw GeometryError.InvalidShape("Nesting shape groups not supported") }
                 try addShape(shape, gid: gid, pid: index, mid: mid, buffer: &buffer, transform: transform)
@@ -347,6 +348,10 @@ struct _Scene {
     /// per face, we process and insert the shapes directly from here, as the geometry struct
     /// support a single material per instance, unlike the meshes in an obj file
     static func addObject(obj: ObjectLibrary, inout buffer: BufferSOA) throws {
+        // FIXME: add instancing by checking the name
+        // FIXME: add object caching in object library to avoid loading it twice
+    
+    
         // first import the materials
         for (key, value) in obj.mtllib {
             let name = "\(obj.name)/\(key)"
@@ -355,7 +360,7 @@ struct _Scene {
             guard _Scene.materialFromId(materialid, buffer: &buffer) == MaterialIndex.Invalid
             else { throw MaterialLoaderError.InvalidMaterial("the material name \(key) is repeated") }
             
-            buffer.material.append(_Material(name: materialid, Kd: value.Kd.color, Ke: value.Ke.color))
+            buffer.material.append(_Material(name: materialid, Kd: value.Kd.color, Ke: value.Ke.color, Ks: value.Ks.color))
         }
         
         // now the shapes
@@ -391,17 +396,17 @@ struct _Scene {
                     mid = _Scene.materialFromId(MaterialId(material: material_key), buffer: &buffer)
                 }
 
-                try addShape(Shape.Triangle(v: p, n: n, t: t), gid: gid, pid: pid, mid: mid, buffer: &buffer, transform: obj.transform)
+                let shape = _Scene.Shape.Triangle(v: p, n: n, t: t)
+                try addShape(shape, gid: gid, pid: pid, mid: mid, buffer: &buffer, transform: obj.transform)
+                shapes.append(shape)
                 pid += 1
-                
-                shapes.append(_Scene.Shape.Triangle(v: p, n: n, t: t))
             }
         }
 
         // add the geometry but avoid re-adding the shapes
         // FIXME: find a better solution for the compound material library
-        let gmid = MaterialId(material: "__mtllib__")
-        let group = Geometry(shape: _Scene.Shape.Group(shapes: shapes), material: gmid, transform: obj.transform)
+        let gmid = MaterialId(material: "\(obj.name)/mtllib")
+        let group = Geometry(shape: _Scene.Shape.Group(name: obj.name, shapes: shapes), material: gmid, transform: obj.transform)
         try addGeometry(group, buffer: &buffer, addShapes: false)
     }
     
@@ -410,59 +415,86 @@ struct _Scene {
         return Spectrum(0.1, 0.1, 0.1) // some greish color
     }
     
-    func material(mid: MaterialIndex) -> _Material {
+    func material(mid mid: MaterialIndex) -> _Material {
         return buffer.material[mid]
     }
+
+    func material(pid pid: PrimitiveId) -> _Material {
+        return buffer.material[buffer.primitive[pid].mid]
+    }
+
     
-    /// Returns a cosine weigthed hemisphere sample oriented to a normal
-    static func cosineSampleHemisphere(u1: Real, _ u2: Real, _ n: Vector) -> (Real, Vector) {
-        let r = sqrt(u1)
-        let theta = 2 * M_PI * u2
+    /// Represents a sampled point over the surface of a light source for a hit point
+    struct LightSample {
+        /// Hit point
+        var hit: Vector = Vector()
+        /// Normalized direction from the hit point
+        var dir: Vector = Vector()
+        /// Distance to the sample from the hit point
+        var dist: Real = 0
+        /// PDF for the sample
+        var pdf: Real = 0
+        /// Fraction of the power that the hit point receives
+        var weight: Real = 0
         
-        let x = r * cos(theta)
-        let y = r * sin(theta)
-        let z = sqrt(max(0.0, 1 - u1))
-        
-        let u = cross(n.x > 0 ? Vector(0, 1, 0) : Vector(1, 0, 0), n)
-        let v = cross(n, u)
-        
-        let d = u*x + v*y + v*z
-        
-        return (M_2_PI, d)
+//        init() { self.init(hit: Vector()) }
+//        init(hit: Vector) { self.hit = hit }
     }
     
-    static func uniformSampleTriangle(u1: Real, _ u2: Real) -> (Real, Real) {
-        let u1s = sqrt(u1)
-        let u = 1 - u1s
-        let v = u2 * u1s
-        
-        return (u, v)
-    }
-    
-    /// Sample an emissive primitive
-    /// - Returns: the pdf, the sample and the material index
-    func sampleLight(pid: PrimitiveId, ray: _Ray) throws -> (Real, Vector, MaterialId) {
+    /// Sample an (possible emissive) primitive from a hit point
+    /// - Returns: the weight, the pdf, the sample direction from the hit point and distance
+    func sampleLight(pid: PrimitiveId, inout sample: LightSample) throws {
         let p = buffer.primitive[pid]
         
+        let weight: Real
+        let ndir: Vector
+        let dist: Real
         let pdf: Real
-        var sample: Vector
         
         // check the intersection with the primitive
         switch p.type {
         case .Instance:
-            // FIXME: find a solution for this (e.g. a proper light class)
-            throw _SceneError.InvalidMaterial("An instance is not a valid light source")
-        
-        case let .Sphere(ic, r):
-            // FIXME: this is wrong, use the cone/disk sampling
-            let center = buffer.vertex[ic]
-            // generate the sample, rotated toward the hit point
-            (pdf, sample) = _Scene.cosineSampleHemisphere(Real(drand48()), Real(drand48()), normalize(ray.x - center))
+            throw _SceneError.InvalidMaterial("An instance is not a valid light source yet")
+        case let .Sphere(ic, rad):
+            // we will assume this is a point light with an optional radius
+//            throw _SceneError.InvalidMaterial("An instance is not a valid light source yet")
+          
+            var center = buffer.vertex[ic]
 
-            // compute the point on the (local coordinates) sphere surface
-            sample = center + r * sample
+            // transform sample and normal from object to world
+            if p.tid != TransformId.Invalid {
+                let t = buffer.transform[p.tid]
+                center = t.apply(point: center)
+            }
+
+            let dir = sample.hit - center
+            let dist2 = dot(dir, dir)
+            let invdist = rsqrt(dist2)
+            let normal_dir = dir * invdist
+            dist = recip(invdist)
+            
+            // we subtentd a substantial angle and the light has a radius
+            let sinTheta = rad * invdist
+            if sinTheta > Real.Eps && rad > 0 {
+                // dist > rad => we're out of the sphere
+                // FIXME: compute the right distance
+                if sinTheta < 1 {
+                    (pdf, ndir) = Sampler.cosineSampleHemisphere(normal: normal_dir, cosAngle: sinTheta)
+                    weight = invdist
+                } else {
+                    // inside the sphere
+                    (pdf, ndir) = Sampler.cosineSampleHemisphere(normal: normal_dir)
+                    weight = invdist
+                }
+            } else {
+                // effectively a point light
+                weight = invdist
+                pdf = Real.infinity
+                ndir = normal_dir
+            }
             
         case let .Triangle(i1, i2, i3):
+            // this is a so-called area light
             let v1 = buffer.vertex[i1]
             let v2 = buffer.vertex[i2]
             let v3 = buffer.vertex[i3]
@@ -470,26 +502,38 @@ struct _Scene {
             // compute a random point on the triangle
             let e1 = v2 - v1
             let e2 = v3 - v1
-            let (u, v) = _Scene.uniformSampleTriangle(Real(drand48()), Real(drand48()))
-            sample = v1 + e1*u + e2*v
+            let (u, v) = Sampler.uniformSampleTriangle()
+            
+            // these are in object coordinates
+            var triangle_sample = v1 + e1*u + e2*v
             var cross_edges = cross(e2, e1)
 
             // transform sample and normal from object to world
             if p.tid != TransformId.Invalid {
                 let t = buffer.transform[p.tid]
-                sample = t.apply(point: ray.x)
+                triangle_sample = t.apply(point: triangle_sample)
                 cross_edges = t.apply(normal: cross_edges)
             }
             
+            // ligh sample direction
+            let dir = triangle_sample - sample.hit
+            let dist2 = dot(dir, dir)
+            let invdist = rsqrt(dist2)
+            ndir = dir * invdist
+            dist = recip(invdist)
+            
             // compute the subtended triangle area for the sample to hit vector
-            let area = length(cross_edges) * 0.5
-            let normal_l = normalize(cross_edges)
-            let sample_hit = normalize(ray.x-sample)
-            let cos_l = abs(dot(normal_l, sample_hit))
-            pdf = length_squared(ray.x-sample) / (area * cos_l)
+            let area = length(cross_edges) * 0.5    // this is equivalent to 1/pdf
+            let normal = normalize(cross_edges)     // normal on the surface
+            let cos_l = abs(dot(ndir, normal))
+            weight = (area * cos_l) / dist2
+            pdf = recip(area)
         }
         
-        return (pdf, sample, p.mid)
+        sample.weight = weight
+        sample.pdf = pdf
+        sample.dir = ndir
+        sample.dist = dist
     }
     
 
@@ -800,16 +844,6 @@ struct _Scene {
     }
 }
 
-struct Sampler {
-    /// Sample point in unit disk
-    static func sampleDisk() -> Vector {
-        var v: Vector
-        repeat {
-            v = 2.0 * Vector(Real(drand48()), Real(drand48()), 0) - Vector(1, 1, 0)
-        } while (dot(v, v) >= 1.0)
-        return v
-    }
-}
 
 // Complex camera with arbitrary positioning, DOF/antialias
 struct _Camera {
@@ -870,6 +904,16 @@ extension MaterialId {
     init(material: String) { self.init(material.hashValue) }
 }
 
+/*
+struct BRDF {
+    let Ns: Real
+    let Ni: Real
+    let Ka: Spectrum
+    let Kd: Spectrum
+    let Ks: Spectrum
+}
+*/
+
 /// Lambertian material
 struct _Material {
     // id
@@ -878,6 +922,8 @@ struct _Material {
     let Kd: Spectrum
     // emission
     let Ke: Spectrum
+    // specular
+    let Ks: Spectrum
     
     var isLight: Bool { get { return reduce_max(Ke) > 0 } }
     
@@ -890,25 +936,58 @@ struct _Material {
     }
     
     func sample(ray: _Ray) -> (Real, Vector) {
-        // cosine weighted sampling
-        let r1 = Real(2*M_PI) * Real(drand48())
-        let r2 = Real(drand48())
-        let r2s = sqrt(r2)
-
-        // corrected normal (always exterior)
-        let w = dot(ray.n, ray.d) < 0 ? ray.n: ray.n * -1
-        
-        // normal frame
-        let u = normalize(cross((fabs(w.x) > 0 ? Vector(0, 1, 0) : Vector(1, 0, 0)), w))
-        let v = cross(w, u)
-        
-        // compute the coordinates
-        let x = u * cos(r1) * r2s
-        let y = v * sin(r1) * r2s
-        let z = w * sqrt(1 - r2)
-        
-        let d = normalize(x + y + z)
-
-        return (M_2_PI, d)
+        return Sampler.cosineSampleHemisphere(normal: ray.n)
     }
 }
+
+
+struct Sampler {
+    /// Sample point in unit disk
+    static func sampleDisk() -> Vector {
+        var v: Vector
+        repeat { v = 2.0 * Vector(Real(drand48()), Real(drand48()), 0) - Vector(1, 1, 0) }
+            while (dot(v, v) >= 1.0)
+        
+        return v
+    }
+    
+    static func cosineSampleHemisphere(normal n: Vector, cosAngle: Real = 0) -> (Real, Vector) {
+        let u1 = Real(drand48())
+        let u2 = Real(drand48())
+        
+        // cosine weighted sampling
+        let r1 = Real(2*M_PI) * u1
+        let r2 = u2 * (1-cosAngle)
+        let r2s = sqrt(r2)
+        
+        // compute the cartesian coordinates
+        let x = cos(r1) * r2s
+        let y = sin(r1) * r2s
+        let z = sqrt(1 - r2)
+        
+        // compute the normal frame (local coordinates)
+        let u = cross((abs(n.x) > 0 ? Vector(0, 1, 0) : Vector(1, 0, 0)), n)
+        let v = cross(n, u)
+        
+        // rotate the sample around to the normal [u, v, n] * (x, y, z)
+        // note: u,v,n are always normal, same for (x,y,z) and so is dir
+        let xr = u * x
+        let yr = v * y
+        let zr = n * z
+        let dir = xr + yr + zr
+        
+        return (M_2_PI*recip(1-cosAngle), dir)
+    }
+    
+    static func uniformSampleTriangle() -> (Real, Real) {
+        let u1 = Real(drand48())
+        let u2 = Real(drand48())
+        
+        let u1s = sqrt(u1)
+        let u = 1 - u1s
+        let v = u2 * u1s
+        
+        return (u, v)
+    }
+}
+
