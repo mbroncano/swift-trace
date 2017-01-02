@@ -23,15 +23,15 @@ class ViewController: NSViewController {
 
     func loadScene() {
         // dispatch the main routine
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0)) {
-            let width = 512, height = 512
+        DispatchQueue.global(qos: .background).async {
+            let width = 128, height = 128
             let scene: _Scene
             let render: Renderer
 
             do {
-                let file = NSBundle.mainBundle().pathForResource("cornell", ofType: "json")!
-                let data = NSData(contentsOfFile: file)!
-                let json = try NSJSONSerialization.JSONObjectWithData(data, options: [])
+                let file = Bundle.main.path(forResource: "cornell", ofType: "json")!
+                let data = try! Data(contentsOf: URL(fileURLWithPath: file))
+                let json = try JSONSerialization.jsonObject(with: data, options: [])
                 scene = try _Scene.decode(json)
             } catch {
                 print(error)
@@ -46,18 +46,18 @@ class ViewController: NSViewController {
             var framebuffer = Framebuffer(width: width, height: height)
             (0..<width*height).forEach({ framebuffer.ptr[$0] = Vector() })
 
-            
-            var totalFrameTime:NSTimeInterval = 0
-            var lastFrameDisplayed: NSTimeInterval = NSDate().timeIntervalSince1970
+            // main rendering loop
+            var totalFrameTime:TimeInterval = 0
+            var lastFrameDisplayed: TimeInterval = Date().timeIntervalSince1970
             var totalHits = 0
             while true {
-                let lastFrameStart = NSDate().timeIntervalSince1970
+                let lastFrameStart = Date().timeIntervalSince1970
                 
                 // render a frame
                 render.render(&framebuffer) //Tile(size: 64)
                 
                 // compute stats
-                let lastFrameDuration = NSDate().timeIntervalSince1970 - lastFrameStart
+                let lastFrameDuration = Date().timeIntervalSince1970 - lastFrameStart
                 totalFrameTime = totalFrameTime + lastFrameDuration
                 let lastFrameTime = Int(lastFrameDuration * 1000)
                 let avgFrameTime = Int(totalFrameTime * 1000 / Double(framebuffer.samples))
@@ -69,34 +69,34 @@ class ViewController: NSViewController {
                 let hps = Real(totalHits) / Real(framebuffer.samples) / Real(lastFrameDuration)
 
                 // update window on the main loop
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     self.hitsPerSecond!.stringValue = "Avg. hits: \(Int(hps/1e6)) Mh/s"
                     self.profilerTextField!.stringValue = "Frame in \(lastFrameTime)ms, Avg. \(avgFrameTime)ms"
                     self.view.window!.title = "Samples \(framebuffer.samples)"
                 }
                 
                 // update the UI at least twice a second 
-                if NSDate().timeIntervalSince1970 - lastFrameDisplayed < 0.5 { continue }
-                lastFrameDisplayed = NSDate().timeIntervalSince1970
+                if Date().timeIntervalSince1970 - lastFrameDisplayed < 0.5 { continue }
+                lastFrameDisplayed = Date().timeIntervalSince1970
                 
                 // FIXME: warn the user if there is any problem
                 guard let image = framebuffer.cgImage() else { continue }
                 guard let hitImage = framebuffer.hitImage() else { continue }
                 
-                dispatch_async(dispatch_get_main_queue()) {
-                    self.imageView!.image = NSImage(CGImage: image, size: NSZeroSize)
-                    self.hitImageView!.image = NSImage(CGImage: hitImage, size: NSZeroSize)
+                DispatchQueue.main.async {
+                    self.imageView!.image = NSImage(cgImage: image, size: NSZeroSize)
+                    self.hitImageView!.image = NSImage(cgImage: hitImage, size: NSZeroSize)
                 }
             }
         }
     }
-    
+/*
     override var representedObject: AnyObject? {
         didSet {
             // Update the view, if already loaded.
         }
     }
-
+*/
 
 }
 

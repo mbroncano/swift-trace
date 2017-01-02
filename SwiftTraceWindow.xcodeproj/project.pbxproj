@@ -13,7 +13,6 @@
 		640777351CEF5E3D0022008A /* dragon.obj in Resources */ = {isa = PBXBuildFile; fileRef = 640777331CEF5E3D0022008A /* dragon.obj */; };
 		642247A61CF5769200A35907 /* bunny.obj in Resources */ = {isa = PBXBuildFile; fileRef = 642247A51CF5769200A35907 /* bunny.obj */; };
 		64292E031D034C6A00AEB722 /* Texture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E9111F1CF7C211008D8BBC /* Texture.swift */; };
-		64292E061D04624E00AEB722 /* TotalCompendium.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64292E051D04624E00AEB722 /* TotalCompendium.pdf */; };
 		646752A71C2B76490084CBE3 /* Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646752A61C2B76490084CBE3 /* Renderer.swift */; };
 		646B42E71D026C8600BDC7F5 /* Transform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64E910D11CF59F2E008D8BBC /* Transform.swift */; };
 		646B42EE1D026F4300BDC7F5 /* SceneLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 646B42ED1D026F4300BDC7F5 /* SceneLoader.swift */; };
@@ -23,10 +22,6 @@
 		647648E11BF9737A00C4EAC0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 647648DF1BF9737A00C4EAC0 /* Main.storyboard */; };
 		647BBDB21BFE5E650017A888 /* SwiftTraceWindowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDB11BFE5E650017A888 /* SwiftTraceWindowTests.swift */; };
 		647BBDC01BFEDDB50017A888 /* Framebuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 647BBDBF1BFEDDB50017A888 /* Framebuffer.swift */; };
-		64BCBC011CFB73BE00D24401 /* appel_68.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC001CFB73BE00D24401 /* appel_68.pdf */; };
-		64BCBC031CFB740200D24401 /* veach_98.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC021CFB740200D24401 /* veach_98.pdf */; };
-		64BCBC071CFFBE7200D24401 /* goldsmith_salmon_87.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */; };
-		64BCBC091CFFBFE800D24401 /* mcdonalds_booth_89.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */; };
 		64BCBC0E1D009A8B00D24401 /* Core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64BCBC0D1D009A8B00D24401 /* Core.swift */; };
 		64BCBC1B1D01E07200D24401 /* ObjectLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6407771B1CEE10E60022008A /* ObjectLoader.swift */; };
 		64C5FCB81BFBC60C004F783E /* PathTracer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C5FCB71BFBC60C004F783E /* PathTracer.swift */; };
@@ -34,8 +29,6 @@
 		64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 64DBD3771CEC35DF00727B71 /* skydome.jpg */; };
 		64E17F3E1D05C88700F46C7E /* CornellBox-Sphere.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F3D1D05C88700F46C7E /* CornellBox-Sphere.obj */; };
 		64E17F421D05C8C300F46C7E /* CornellBox-Sphere.mtl in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F411D05C8C300F46C7E /* CornellBox-Sphere.mtl */; };
-		64E17F441D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */; };
-		64E17F461D063AB500F46C7E /* c29.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F451D063AB500F46C7E /* c29.pdf */; };
 		64E17F491D06402A00F46C7E /* bunny.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F481D06402A00F46C7E /* bunny.json */; };
 		64E911141CF66517008D8BBC /* scene.json in Resources */ = {isa = PBXBuildFile; fileRef = 640777191CECEB390022008A /* scene.json */; };
 		64E911161CF67464008D8BBC /* cornell.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E911151CF67464008D8BBC /* cornell.json */; };
@@ -44,6 +37,9 @@
 		64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E9111D1CF75F69008D8BBC /* cornell_box.obj */; };
 		64E911281CF811FF008D8BBC /* teapot.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E911271CF811FF008D8BBC /* teapot.obj */; };
 		64E9112A1CF8153F008D8BBC /* default.png in Resources */ = {isa = PBXBuildFile; fileRef = 64E911291CF8153F008D8BBC /* default.png */; };
+		C73F7E501E1ACCC90098895F /* Decodable.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C73F7E4F1E1ACCC90098895F /* Decodable.framework */; };
+		C73F7E541E1AD3470098895F /* Decodable.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C73F7E4F1E1ACCC90098895F /* Decodable.framework */; };
+		C73F7E551E1AD3470098895F /* Decodable.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C73F7E4F1E1ACCC90098895F /* Decodable.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,49 +50,21 @@
 			remoteGlobalIDString = 647648D51BF9737A00C4EAC0;
 			remoteInfo = SwiftTraceWindow;
 		};
-		C73F7E3A1E1AC9050098895F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8FE7B5621B4C9FB900837609;
-			remoteInfo = "Decodable-iOS";
-		};
-		C73F7E3C1E1AC9050098895F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8FE7B56C1B4C9FB900837609;
-			remoteInfo = "DecodableTests-iOS";
-		};
-		C73F7E3E1E1AC9050098895F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 17FB80F71B530FED0012F106;
-			remoteInfo = "Decodable-Mac";
-		};
-		C73F7E401E1AC9050098895F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 17FB81001B530FED0012F106;
-			remoteInfo = "DecodableTests-Mac";
-		};
-		C73F7E421E1AC9050098895F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D0DC546F1B7814D200F79CB0;
-			remoteInfo = "Decodable-watchOS";
-		};
-		C73F7E441E1AC9050098895F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 57FCDE651BA283C900130C48;
-			remoteInfo = "Decodable-tvOS";
-		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C73F7E561E1AD3480098895F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C73F7E551E1AD3470098895F /* Decodable.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		640777191CECEB390022008A /* scene.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = scene.json; sourceTree = "<group>"; };
@@ -167,10 +135,9 @@
 		64E9111D1CF75F69008D8BBC /* cornell_box.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cornell_box.obj; sourceTree = "<group>"; };
 		64E9111F1CF7C211008D8BBC /* Texture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Texture.swift; sourceTree = "<group>"; };
 		64E911211CF7C3DD008D8BBC /* MaterialLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialLoader.swift; sourceTree = "<group>"; };
-		64E911231CF7CA96008D8BBC /* Documents */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Documents; sourceTree = "<group>"; };
 		64E911271CF811FF008D8BBC /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
 		64E911291CF8153F008D8BBC /* default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = default.png; path = cube/default.png; sourceTree = "<group>"; };
-		C73F7E311E1AC9050098895F /* Decodable.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Decodable.xcodeproj; path = Decodable/Decodable.xcodeproj; sourceTree = "<group>"; };
+		C73F7E4F1E1ACCC90098895F /* Decodable.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Decodable.framework; path = Carthage/Build/Mac/Decodable.framework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +145,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C73F7E541E1AD3470098895F /* Decodable.framework in Frameworks */,
+				C73F7E501E1ACCC90098895F /* Decodable.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,7 +172,6 @@
 		647648CD1BF9737A00C4EAC0 = {
 			isa = PBXGroup;
 			children = (
-				C73F7E311E1AC9050098895F /* Decodable.xcodeproj */,
 				647648D81BF9737A00C4EAC0 /* SwiftTraceWindow */,
 				647BBDB01BFE5E650017A888 /* SwiftTraceWindowTests */,
 				647648D71BF9737A00C4EAC0 /* Products */,
@@ -231,6 +199,7 @@
 				64E910DD1CF5A16A008D8BBC /* Loader */,
 				64BCBBFC1CFB72D300D24401 /* Docs */,
 				64E910DE1CF5A18D008D8BBC /* Models */,
+				C73F7E4F1E1ACCC90098895F /* Decodable.framework */,
 				647648DD1BF9737A00C4EAC0 /* Assets.xcassets */,
 				647648DF1BF9737A00C4EAC0 /* Main.storyboard */,
 				647648E21BF9737A00C4EAC0 /* Info.plist */,
@@ -287,7 +256,6 @@
 			isa = PBXGroup;
 			children = (
 				6407771D1CEE148D0022008A /* wavefront.txt */,
-				64E911231CF7CA96008D8BBC /* Documents */,
 			);
 			name = Format;
 			path = ../Documents/Format;
@@ -394,19 +362,6 @@
 			name = Models;
 			sourceTree = "<group>";
 		};
-		C73F7E321E1AC9050098895F /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				C73F7E3B1E1AC9050098895F /* Decodable.framework */,
-				C73F7E3D1E1AC9050098895F /* DecodableTests-iOS.xctest */,
-				C73F7E3F1E1AC9050098895F /* Decodable.framework */,
-				C73F7E411E1AC9050098895F /* DecodableTests-Mac.xctest */,
-				C73F7E431E1AC9050098895F /* Decodable.framework */,
-				C73F7E451E1AC9050098895F /* Decodable.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -417,6 +372,7 @@
 				647648D21BF9737A00C4EAC0 /* Sources */,
 				647648D31BF9737A00C4EAC0 /* Frameworks */,
 				647648D41BF9737A00C4EAC0 /* Resources */,
+				C73F7E561E1AD3480098895F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -452,14 +408,16 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0710;
-				LastUpgradeCheck = 0710;
+				LastUpgradeCheck = 0820;
 				ORGANIZATIONNAME = "Manuel Broncano Rodriguez";
 				TargetAttributes = {
 					647648D51BF9737A00C4EAC0 = {
 						CreatedOnToolsVersion = 7.1.1;
+						LastSwiftMigration = 0820;
 					};
 					647BBDAE1BFE5E650017A888 = {
 						CreatedOnToolsVersion = 7.1.1;
+						LastSwiftMigration = 0820;
 						TestTargetID = 647648D51BF9737A00C4EAC0;
 					};
 				};
@@ -475,12 +433,6 @@
 			mainGroup = 647648CD1BF9737A00C4EAC0;
 			productRefGroup = 647648D71BF9737A00C4EAC0 /* Products */;
 			projectDirPath = "";
-			projectReferences = (
-				{
-					ProductGroup = C73F7E321E1AC9050098895F /* Products */;
-					ProjectRef = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
-				},
-			);
 			projectRoot = "";
 			targets = (
 				647648D51BF9737A00C4EAC0 /* SwiftTraceWindow */,
@@ -489,51 +441,6 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXReferenceProxy section */
-		C73F7E3B1E1AC9050098895F /* Decodable.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Decodable.framework;
-			remoteRef = C73F7E3A1E1AC9050098895F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		C73F7E3D1E1AC9050098895F /* DecodableTests-iOS.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = "DecodableTests-iOS.xctest";
-			remoteRef = C73F7E3C1E1AC9050098895F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		C73F7E3F1E1AC9050098895F /* Decodable.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Decodable.framework;
-			remoteRef = C73F7E3E1E1AC9050098895F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		C73F7E411E1AC9050098895F /* DecodableTests-Mac.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = "DecodableTests-Mac.xctest";
-			remoteRef = C73F7E401E1AC9050098895F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		C73F7E431E1AC9050098895F /* Decodable.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Decodable.framework;
-			remoteRef = C73F7E421E1AC9050098895F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		C73F7E451E1AC9050098895F /* Decodable.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = Decodable.framework;
-			remoteRef = C73F7E441E1AC9050098895F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
-
 /* Begin PBXResourcesBuildPhase section */
 		647648D41BF9737A00C4EAC0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
@@ -541,10 +448,7 @@
 			files = (
 				64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */,
 				64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */,
-				64BCBC091CFFBFE800D24401 /* mcdonalds_booth_89.pdf in Resources */,
 				64E911141CF66517008D8BBC /* scene.json in Resources */,
-				64292E061D04624E00AEB722 /* TotalCompendium.pdf in Resources */,
-				64BCBC011CFB73BE00D24401 /* appel_68.pdf in Resources */,
 				640777341CEF5E3D0022008A /* dragon.mtl in Resources */,
 				64DBD3761CEC24CD00727B71 /* earth.jpg in Resources */,
 				64E17F3E1D05C88700F46C7E /* CornellBox-Sphere.obj in Resources */,
@@ -554,17 +458,13 @@
 				64E17F421D05C8C300F46C7E /* CornellBox-Sphere.mtl in Resources */,
 				647648E11BF9737A00C4EAC0 /* Main.storyboard in Resources */,
 				642247A61CF5769200A35907 /* bunny.obj in Resources */,
-				64BCBC031CFB740200D24401 /* veach_98.pdf in Resources */,
 				64E911281CF811FF008D8BBC /* teapot.obj in Resources */,
 				640777351CEF5E3D0022008A /* dragon.obj in Resources */,
 				64E9111C1CF75E39008D8BBC /* cornell_box.mtl in Resources */,
 				64E9112A1CF8153F008D8BBC /* default.png in Resources */,
 				64E17F491D06402A00F46C7E /* bunny.json in Resources */,
 				64DBD3781CEC35DF00727B71 /* skydome.jpg in Resources */,
-				64E17F441D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf in Resources */,
-				64BCBC071CFFBE7200D24401 /* goldsmith_salmon_87.pdf in Resources */,
 				6407772D1CEE4EF00022008A /* default.mtl in Resources */,
-				64E17F461D063AB500F46C7E /* c29.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -638,8 +538,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -682,8 +584,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -702,6 +606,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
 		};
@@ -710,11 +615,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = SwiftTraceWindow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MBR.SwiftTraceWindow;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -723,6 +633,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				GCC_OPTIMIZATION_LEVEL = fast;
 				INFOPLIST_FILE = SwiftTraceWindow/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
@@ -730,6 +644,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_DISABLE_SAFETY_CHECKS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};
@@ -742,6 +657,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MBR.SwiftTraceWindowTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SwiftTraceWindow.app/Contents/MacOS/SwiftTraceWindow";
 			};
 			name = Debug;
@@ -755,6 +671,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = MBR.SwiftTraceWindowTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SwiftTraceWindow.app/Contents/MacOS/SwiftTraceWindow";
 			};
 			name = Release;

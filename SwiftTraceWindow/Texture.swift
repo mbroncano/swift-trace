@@ -13,8 +13,8 @@ extension TextureId {
     init(texture: String) { self = texture.hashValue }
 }
 
-enum TextureError: ErrorType {
-    case InvalidFile(String)
+enum TextureError: Error {
+    case invalidFile(String)
 }
 
 struct Texture {
@@ -23,36 +23,36 @@ struct Texture {
     
     init(name: String) throws {
         guard
-        let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
-        let data = NSData(contentsOfFile: path),
-        let source = CGDataProviderCreateWithCFData(data)
-        else { throw TextureError.InvalidFile("file <\(name)> not found or invalid") }
+        let path = Bundle.main.path(forResource: name, ofType: ""),
+        let data = try? Data(contentsOf: URL(fileURLWithPath: path)),
+        let source = CGDataProvider(data: data as CFData)
+        else { throw TextureError.invalidFile("file <\(name)> not found or invalid") }
 
         let image: CGImage?
         let ext = NSString(string: path).pathExtension
         switch ext {
             case "jpg":
-                image = CGImageCreateWithJPEGDataProvider(source, nil, false, CGColorRenderingIntent.RenderingIntentDefault)
+                image = CGImage(jpegDataProviderSource: source, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)
             case "png":
-                image = CGImageCreateWithPNGDataProvider(source, nil, false, CGColorRenderingIntent.RenderingIntentDefault)
+                image = CGImage(pngDataProviderSource: source, decode: nil, shouldInterpolate: false, intent: CGColorRenderingIntent.defaultIntent)
             default:
-                throw TextureError.InvalidFile("extension <\(ext)> is not supported")
+                throw TextureError.invalidFile("extension <\(ext)> is not supported")
         }
         
-        width = CGImageGetWidth(image)
-        height = CGImageGetHeight(image)
-        bytesPerRow = CGImageGetBytesPerRow(image)
-        bitsPerPixel = CGImageGetBitsPerPixel(image)
-        pixels = UnsafeMutablePointer<Pixel>.alloc(width*height)
+        width = (image?.width)!
+        height = (image?.height)!
+        bytesPerRow = (image?.bytesPerRow)!
+        bitsPerPixel = (image?.bitsPerPixel)!
+        pixels = UnsafeMutablePointer<Pixel>.allocate(capacity: width*height)
         
-        let space = CGImageGetColorSpace(image)
-        let bitmapInfo = CGImageGetBitmapInfo(image)
-        let alphaInfo = CGImageAlphaInfo.PremultipliedLast //CGImageGetAlphaInfo(image)
-        guard let context = CGBitmapContextCreate(pixels, width, height, 8, bytesPerRow, space, bitmapInfo.rawValue | alphaInfo.rawValue)
-        else { throw TextureError.InvalidFile("unsupported file format") }
+        let space = image?.colorSpace
+        let bitmapInfo = image?.bitmapInfo
+        let alphaInfo = CGImageAlphaInfo.premultipliedLast //CGImageGetAlphaInfo(image)
+        guard let context = CGContext(data: pixels, width: width, height: height, bitsPerComponent: 8, bytesPerRow: bytesPerRow, space: space!, bitmapInfo: (bitmapInfo?.rawValue)! | alphaInfo.rawValue)
+        else { throw TextureError.invalidFile("unsupported file format") }
         
-        CGContextDrawImage(context, CGRect(x: 0, y: 0, width: width, height: height), image)
-        CGContextFlush(context)
+        context.draw(image!, in: CGRect(x: 0, y: 0, width: width, height: height))
+        context.flush()
     }
 
     subscript(textCoord: Vector) -> Pixel { get {

@@ -12,7 +12,7 @@ import simd
 struct PathTracer: Integrator {
 
     // non-recursive path tracing
-    static func radiance(scene: _Scene, inout ray: _Ray) throws -> Vector {
+    static func radiance(_ scene: _Scene, ray: inout _Ray) throws -> Vector {
         // L0 = Le0 + f0*(L1)
         //    = Le0 + f0*(Le1 + f1*L2)
         //    = Le0 + f0*(Le1 + f1*(Le2 + f2*(L3))
@@ -47,8 +47,8 @@ struct PathTracer: Integrator {
             guard try scene.intersect(&ray) else { cl += cf * scene.background(ray); break }
 
             // this shouldn't happen
-//            guard ray.gid != IndexType.Invalid  else { throw RendererError.InvalidGeometry("geometry not found") }
-            
+            guard ray.gid != IndexType.Invalid else { throw RendererError.invalidGeometry("geometry not found") }
+
             // retrieve the material for the primitive
             let material = scene.material(pid: ray.pid)
             
@@ -91,11 +91,11 @@ struct PathTracer: Integrator {
             if depth > 3 {
                 let p = reduce_max(cf)
                 guard Real(drand48()) < p else { break }
-                cf = cf * (1/p)
+                cf = cf * recip(p)
             }
 
             // max iterations termination (note: biased)
-//            guard depth < 10 else { break }
+            guard depth < 10 else { break }
         
             // setup the new ray
             ray.reset(o: ray.x, d: wi, tmin: Real.Eps, tmax: Real.infinity)

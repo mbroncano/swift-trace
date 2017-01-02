@@ -16,17 +16,17 @@ extension Vector {
     init(_ v: VertexNormal)  { self.init(v.i, v.j, v.k) }
 }
 
-enum ObjectLoaderError: ErrorType {
-    case InvalidVertex(String)
-    case InvalidFace(String)
-    case InvalidFile(String)
+enum ObjectLoaderError: Error {
+    case invalidVertex(String)
+    case invalidFace(String)
+    case invalidFile(String)
 }
 
-enum MaterialLoaderError: ErrorType {
-    case InvalidIlluminationModel(String)
-    case InvalidColor(String)
-    case InvalidScalarParameter(String)
-    case InvalidMaterial(String)
+enum MaterialLoaderError: Error {
+    case invalidIlluminationModel(String)
+    case invalidColor(String)
+    case invalidScalarParameter(String)
+    case invalidMaterial(String)
 }
 
 typealias FaceVertexIndex = Int
@@ -36,7 +36,7 @@ extension FaceVertexIndex {
     init(str: String, count: Int) throws {
         guard str != "" else { self = 0; return } // empty string is a valid case
         
-        guard let number = Int(str) where number != 0 else { throw ObjectLoaderError.InvalidVertex("vertex index must not be zero") }
+        guard let number = Int(str), number != 0 else { throw ObjectLoaderError.invalidVertex("vertex index must not be zero") }
         
         // correct negative indices
         self = number < 0 ? number + count + 1 : number
@@ -46,11 +46,11 @@ extension FaceVertexIndex {
 typealias VertexCoordinate = Real
 extension VertexCoordinate {
     init(str: String) throws {
-        guard str.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0
-        else { throw ObjectLoaderError.InvalidVertex("vertex coordinate must not be empty") } // empty string is a *not* valid case
+        guard str.lengthOfBytes(using: String.Encoding.utf8) > 0
+        else { throw ObjectLoaderError.invalidVertex("vertex coordinate must not be empty") } // empty string is a *not* valid case
         
-        guard let s = VertexCoordinate(str) where (s.isFinite)
-        else { throw ObjectLoaderError.InvalidVertex("invalid vertex coordinate <\(str)>") }
+        guard let s = VertexCoordinate(str), (s.isFinite)
+        else { throw ObjectLoaderError.invalidVertex("invalid vertex coordinate <\(str)>") }
         
         self = s
     }
@@ -66,7 +66,7 @@ struct Vertex: FaceVertex, CustomStringConvertible {
     
     init(_ array: [String]) throws {
         guard 3...4 ~= array.count
-        else { throw ObjectLoaderError.InvalidVertex("invalid vertex coordinate count") }
+        else { throw ObjectLoaderError.invalidVertex("invalid vertex coordinate count") }
         
         self.x = try VertexCoordinate(str: array[0])
         self.y = try VertexCoordinate(str: array[1])
@@ -81,7 +81,7 @@ struct TextureVertex: FaceVertex, CustomStringConvertible {
 
     init(_ array: [String]) throws {
         guard 2...3 ~= array.count
-        else { throw ObjectLoaderError.InvalidVertex("invalid texture vertex coordinate count") }
+        else { throw ObjectLoaderError.invalidVertex("invalid texture vertex coordinate count") }
         
         self.u = try VertexCoordinate(str: array[0])
         self.v = try VertexCoordinate(str: array[1])
@@ -95,7 +95,7 @@ struct VertexNormal: FaceVertex, CustomStringConvertible {
 
     init(_ array: [String]) throws {
         guard 3 == array.count
-        else { throw ObjectLoaderError.InvalidVertex("invalid vertex normal coordinate count") }
+        else { throw ObjectLoaderError.invalidVertex("invalid vertex normal coordinate count") }
         
         self.i = try VertexCoordinate(str: array[0])
         self.j = try VertexCoordinate(str: array[1])
@@ -105,17 +105,17 @@ struct VertexNormal: FaceVertex, CustomStringConvertible {
 
 struct FaceElement: CustomStringConvertible {
     enum FaceElementType: Int {
-        case VertexOnly = 1
-        case VertexAndTexture = 3
-        case VertexAndNormal = 5
-        case VertexAndTextureAndNormal = 7
+        case vertexOnly = 1
+        case vertexAndTexture = 3
+        case vertexAndNormal = 5
+        case vertexAndTextureAndNormal = 7
     }
     
     var type: FaceElementType? { // it'd be a waste to store this
         get {
-            let v = Int(vi != 0)
-            let t = Int(ti != 0) * 2
-            let n = Int(ni != 0) * 4
+            let v = vi != 0 ? Int(1) : Int(0)
+            let t = ti != 0 ? Int(2) : Int(0)
+            let n = ni != 0 ? Int(4) : Int(0)
             
             return FaceElementType(rawValue: v+t+n)
         }
@@ -124,11 +124,11 @@ struct FaceElement: CustomStringConvertible {
     let vi, ti, ni: FaceVertexIndex
     var description: String { get { return "(\(vi), \(ti), \(ni))" } }
 
-    private static let slash = NSCharacterSet(charactersInString: "/")
+    fileprivate static let slash = CharacterSet(charactersIn: "/")
     
     init(str: String, count: [Int]) throws {
-        let indices = str.componentsSeparatedByCharactersInSet(FaceElement.slash)
-        guard 1...3 ~= indices.count else { throw ObjectLoaderError.InvalidVertex("Invalid string") }
+        let indices = str.components(separatedBy: FaceElement.slash)
+        guard 1...3 ~= indices.count else { throw ObjectLoaderError.invalidVertex("Invalid string") }
         
         self.vi = try FaceVertexIndex(str: indices[0], count: count[0])
         self.ti = indices.count > 1 ? try FaceVertexIndex(str: indices[1], count: count[1]) : 0
@@ -141,7 +141,7 @@ struct Face {
     let material: String?
 
     init(_ array: [String], count: [Int], material: String? = nil) throws {
-        guard array.count >= 3 else { throw ObjectLoaderError.InvalidFace("A face need at least three elements") }
+        guard array.count >= 3 else { throw ObjectLoaderError.invalidFace("A face need at least three elements") }
     
         var temp = [FaceElement]()
     
@@ -149,8 +149,8 @@ struct Face {
             let element = try FaceElement(str: str, count: count)
             
             if temp.count > 0 {
-            guard let type = element.type where /*temp.count > 0 &&*/ type == temp[0].type!
-            else { throw ObjectLoaderError.InvalidFace("Face element types must be the same within a single face")  }
+            guard let type = element.type, /*temp.count > 0 &&*/ type == temp[0].type!
+            else { throw ObjectLoaderError.invalidFace("Face element types must be the same within a single face")  }
             }
          
             temp.append(element)
@@ -161,10 +161,10 @@ struct Face {
     }
 }
 
-extension _ArrayType where Generator.Element: FaceVertex {
-    subscript(index index: FaceVertexIndex) -> Generator.Element? {
+extension _ArrayProtocol where Iterator.Element: FaceVertex {
+    subscript(index index: FaceVertexIndex) -> Iterator.Element? {
         guard index.isValid else { return nil }
-        let ofs = index < 0 ? index.advancedBy(self.count) : index.advancedBy(-1)
+        let ofs = index < 0 ? index.advanced(by: self.count) : index.advanced(by: -1)
         guard ofs < self.count else { return nil }
         
         return self[ofs]
@@ -184,26 +184,26 @@ struct ObjectLibrary {
         self.name = name
         self.transform = transform
         guard
-            let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
-            let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-        else { throw ObjectLoaderError.InvalidFile("object file not found") }
+            let path = Bundle.main.path(forResource: name, ofType: ""),
+            let text = try? NSString(contentsOfFile: path, encoding: String.Encoding.utf8.rawValue)
+        else { throw ObjectLoaderError.invalidFile("object file not found") }
         
-        let scanner = NSScanner(string: text as String)
+        let scanner = Scanner(string: text as String)
         
-        var start = NSDate().timeIntervalSince1970
+        var start = Date().timeIntervalSince1970
 
         var currentMaterial: String? = nil
         var line: NSString?
-        while scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet(), intoString: &line) {
+        while scanner.scanUpToCharacters(from: CharacterSet.newlines, into: &line) {
             
-            if (NSDate().timeIntervalSince1970 - start) > 1 {
-                start = NSDate().timeIntervalSince1970
+            if (Date().timeIntervalSince1970 - start) > 1 {
+                start = Date().timeIntervalSince1970
                 let percentage = 100 * scanner.scanLocation / text.length
                 print("[\(name):loading]\t\(percentage)%")
             }
             
-            guard var tokenArray = line?.componentsSeparatedByCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
-            else { throw ObjectLoaderError.InvalidFile("invalid file line") }
+            guard var tokenArray = line?.components(separatedBy: CharacterSet.whitespaces)
+            else { throw ObjectLoaderError.invalidFile("invalid file line") }
             
             tokenArray = tokenArray.filter({ s in s != "" })
             let token = tokenArray.removeFirst()
@@ -250,18 +250,18 @@ struct MaterialLoader {
 
     init(name: String) throws {
         guard
-        let path = NSBundle.mainBundle().pathForResource(name, ofType: ""),
-        let text = try? NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding)
-        else { throw ObjectLoaderError.InvalidFile("material file not found") }
+        let path = Bundle.main.path(forResource: name, ofType: ""),
+        let text = try? NSString(contentsOfFile: path, encoding: String.Encoding.utf8.rawValue)
+        else { throw ObjectLoaderError.invalidFile("material file not found") }
         
-        let scanner = NSScanner(string: text as String)
+        let scanner = Scanner(string: text as String)
         
         var current: String?
         var line: NSString?
-        while scanner.scanUpToCharactersFromSet(NSCharacterSet.newlineCharacterSet(), intoString: &line) {
+        while scanner.scanUpToCharacters(from: CharacterSet.newlines, into: &line) {
             
-            guard var tokenArray = line?.componentsSeparatedByCharactersInSet(NSCharacterSet.whitespaceCharacterSet())
-            else { throw ObjectLoaderError.InvalidFile("invalid file line") }
+            guard var tokenArray = line?.components(separatedBy: CharacterSet.whitespaces)
+            else { throw ObjectLoaderError.invalidFile("invalid file line") }
             
             tokenArray = tokenArray.filter({ s in s != "" })
             let token = tokenArray.removeFirst()
@@ -306,8 +306,8 @@ struct MaterialLoader {
 /// Definition for an MTL item
 struct MaterialTemplate {
     static func parameter(safe str: String) throws -> Real {
-        guard let s = Real(str) where s.isFinite
-        else { throw MaterialLoaderError.InvalidScalarParameter("invalid scalar parameter \(str)") }
+        guard let s = Real(str), s.isFinite
+        else { throw MaterialLoaderError.invalidScalarParameter("invalid scalar parameter \(str)") }
         
         return s
     }
@@ -316,12 +316,12 @@ struct MaterialTemplate {
         let color: Spectrum
         var description: String { get { return "(\(color.x), \(color.y), \(color.z)" } }
         
-        static func RGBColorComponent(color: String) throws -> Real {
-            guard color.lengthOfBytesUsingEncoding(NSUTF8StringEncoding) > 0
-            else { throw MaterialLoaderError.InvalidColor("color component must not be empty") }
+        static func RGBColorComponent(_ color: String) throws -> Real {
+            guard color.lengthOfBytes(using: String.Encoding.utf8) > 0
+            else { throw MaterialLoaderError.invalidColor("color component must not be empty") }
             
-            guard let s = Real(color) where s.isFinite && s >= 0
-            else { throw ObjectLoaderError.InvalidVertex("invalid color component <\(color)>") }
+            guard let s = Real(color), s.isFinite && s >= 0
+            else { throw ObjectLoaderError.invalidVertex("invalid color component <\(color)>") }
             
             return s
         }
@@ -330,8 +330,8 @@ struct MaterialTemplate {
         init(color: Spectrum) { self.color = color }
         
         init(_ array: [String]) throws {
-            guard array[0] != "xyz" else { throw MaterialLoaderError.InvalidColor("CIE XYZ colors not supported yet") }
-            guard array[0] != "spectral" else { throw MaterialLoaderError.InvalidColor("spectral curves not supported yet") }
+            guard array[0] != "xyz" else { throw MaterialLoaderError.invalidColor("CIE XYZ colors not supported yet") }
+            guard array[0] != "spectral" else { throw MaterialLoaderError.invalidColor("spectral curves not supported yet") }
             
             switch array.count {
             case 1:
@@ -340,38 +340,38 @@ struct MaterialTemplate {
                 self.color = Spectrum(try MaterialColor.RGBColorComponent(array[0]),
                                       try MaterialColor.RGBColorComponent(array[1]),
                                       try MaterialColor.RGBColorComponent(array[2]))
-            default: throw MaterialLoaderError.InvalidColor("RGB color can have only 0 or 3 components")
+            default: throw MaterialLoaderError.invalidColor("RGB color can have only 0 or 3 components")
             }
         }
     }
 
     enum IlluminationModel: Int {
         /// 0. Color on and Ambient off
-        case ColorOnAndAmbientOff = 0
+        case colorOnAndAmbientOff = 0
         /// 1. Color on and Ambient on
-        case ColorOnAndAmbientOn
+        case colorOnAndAmbientOn
         /// 2. Highlight on
-        case HighlightOn
+        case highlightOn
         /// 3. Reflection on and Ray trace on
-        case ReflectionOnAndRayTraceOn
+        case reflectionOnAndRayTraceOn
         /// 4. Transparency: Glass on, Reflection: Ray trace on
-        case Transparency4
+        case transparency4
         /// 5. Reflection: Fresnel on and Ray trace on
-        case Reflection5
+        case reflection5
         /// 6. Transparency: Refraction on, Reflection: Fresnel off and Ray trace on
-        case Transparency6
+        case transparency6
         /// 7. Transparency: Refraction on, Reflection: Fresnel on and Ray trace on
-        case Transparency7
+        case transparency7
         /// 8. Reflection on and Ray trace off
-        case Reflection8
+        case reflection8
         /// 9. Transparency: Glass on, Reflection: Ray trace off
-        case Transparency9
+        case transparency9
         /// 10. Casts shadows onto invisible surfaces    
-        case CastShadowsOntoInvisibleSurfaces
+        case castShadowsOntoInvisibleSurfaces
         
         init(_ str: String) throws {
             guard let i = Int(str), let illum = MaterialTemplate.IlluminationModel(rawValue: i)
-            else { throw MaterialLoaderError.InvalidIlluminationModel("The illumination model \(str) is not supported") }
+            else { throw MaterialLoaderError.invalidIlluminationModel("The illumination model \(str) is not supported") }
             
             self = illum
         }
@@ -395,7 +395,7 @@ struct MaterialTemplate {
     /// Ranges from 1.0 (opaque) to 0.0 (completely dissolved)
     var d: Real = 1.0
     /// Illumination model
-    var illum: IlluminationModel = .ColorOnAndAmbientOn
+    var illum: IlluminationModel = .colorOnAndAmbientOn
     /// The ambient texture map
     var map_Ka: Texture? = nil
     /// The diffuse texture map

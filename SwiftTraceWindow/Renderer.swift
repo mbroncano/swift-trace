@@ -9,15 +9,15 @@
 import Foundation
 import simd
 
-enum RendererError: ErrorType {
-    case InvalidSample(String)
-    case InvalidGeometry(String)
+enum RendererError: Error {
+    case invalidSample(String)
+    case invalidGeometry(String)
 }
 
 /// Implements an integrator
 protocol Integrator {
     /// Computes the radiance (Li) for a given ray
-    static func radiance(scene: _Scene, inout ray: _Ray) throws -> Vector
+    static func radiance(_ scene: _Scene, ray: inout _Ray) throws -> Vector
 }
 
 /// Implements a generic scene renderer
@@ -31,14 +31,14 @@ struct Renderer {
     }
 
     /// Renders a frame in parallel, dispatching pixels
-    func render(inout framebuffer: Framebuffer) {
+    func render(_ framebuffer: inout Framebuffer) {
         let nx = framebuffer.width
         let ny = framebuffer.height
         
         framebuffer.samples += 1
 
         // first compute the ray
-        dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+        DispatchQueue.concurrentPerform(iterations: framebuffer.length) {
             let x = $0 % nx
             let y = ny - ($0 / nx) - 1
             let c = self.scene.camera
@@ -47,14 +47,14 @@ struct Renderer {
         }
 
         // now compute the samples
-        dispatch_apply(framebuffer.length, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
+        DispatchQueue.concurrentPerform(iterations: framebuffer.length) {
             do {
-                let ray = framebuffer.ray.advancedBy($0)
-                let li = try PathTracer.radiance(self.scene, ray: &ray.memory)
+                let ray = framebuffer.ray.advanced(by: $0)
+                let li = try PathTracer.radiance(self.scene, ray: &ray.pointee)
                 
                 // check that the sample is correct
                 guard !(li.x.isNaN || li.y.isNaN || li.z.isNaN) else {
-                    throw RendererError.InvalidSample("an invalid sample was generated")
+                    throw RendererError.invalidSample("an invalid sample was generated")
                 }
         
                 framebuffer.ptr[$0] += li
@@ -66,7 +66,7 @@ struct Renderer {
     }
     
     /// Renders a frame in parallel, dispatching tiles
-    func renderTile(size size: Int = 16) {
+    func renderTile(size: Int = 16) {
     /*
         framebuffer.samples += 1
 

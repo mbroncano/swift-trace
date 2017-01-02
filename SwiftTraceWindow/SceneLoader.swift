@@ -9,10 +9,10 @@
 import Foundation
 import Decodable
 
-extension Float: Castable {}
+//extension Float: Castable {}
 
 extension Vector: Decodable {
-    public static func decode(json: AnyObject) throws -> Vector {
+    public static func decode(_ json: Any) throws -> Vector {
         return try Vector(v: json as! [Real])
     }
 
@@ -22,26 +22,26 @@ extension Vector: Decodable {
         case 1: self.init(Real(v[0]))
         case 3: self.init(Real(v[0]), Real(v[1]), Real(v[2]))
         default:
-            throw GeometryError.InvalidShape("Vector can only have 0, 1 or 3 elements")
+            throw GeometryError.invalidShape("Vector can only have 0, 1 or 3 elements")
         }
     }
 }
 
 extension _Scene.Shape: Decodable {
-    internal static func decode(json: AnyObject) throws -> _Scene.Shape {
+    internal static func decode(_ json: Any) throws -> _Scene.Shape {
         let type = try json => "type" as String
         switch type {
-        case "s": return _Scene.Shape.Sphere(center: try json => "p", radius: try json => "r")
-        case "t": return _Scene.Shape.Triangle(v: try json => "v" as [Vector], n: [], t: [])
-        case "g": return _Scene.Shape.Group(name: "group", shapes: try json => "l")
+        case "s": return _Scene.Shape.sphere(center: try json => "p", radius: try json => "r")
+        case "t": return _Scene.Shape.triangle(v: try json => "v" as [Vector], n: [], t: [])
+        case "g": return _Scene.Shape.group(name: "group", shapes: try json => "l")
         default:
-            throw GeometryError.InvalidShape("The shape type is invalid: \(type)")
+            throw GeometryError.invalidShape("The shape type is invalid: \(type)")
         }
     }
 }
 
 extension _Scene.Geometry: Decodable {
-    internal static func decode(json: AnyObject) throws -> _Scene.Geometry {
+    internal static func decode(_ json: Any) throws -> _Scene.Geometry {
         return _Scene.Geometry(
             shape: try _Scene.Shape.decode(json),
             material: MaterialId(material: try json => "m"),
@@ -50,7 +50,7 @@ extension _Scene.Geometry: Decodable {
 }
 
 extension _Material: Decodable {
-    internal static func decode(json: AnyObject) throws -> _Material {
+    internal static func decode(_ json: Any) throws -> _Material {
         return _Material(
             name: MaterialId(material: try json => "name" as String),
             Kd: try json => "Kd",
@@ -60,7 +60,7 @@ extension _Material: Decodable {
 }
 
 extension ObjectLibrary: Decodable {
-    internal static func decode(json: AnyObject) throws -> ObjectLibrary {
+    internal static func decode(_ json: Any) throws -> ObjectLibrary {
         return try ObjectLibrary(
             name: try json => "file",
             transform: try json =>? "transform")
@@ -68,7 +68,7 @@ extension ObjectLibrary: Decodable {
 }
 
 extension _Scene: Decodable {
-    internal static func decode(json: AnyObject) throws -> _Scene {
+    internal static func decode(_ json: Any) throws -> _Scene {
         return try _Scene(
             camera: try json => "camera",
             geometry: try json =>? "geometry",
@@ -78,7 +78,7 @@ extension _Scene: Decodable {
 }
 
 extension _Camera: Decodable {
-    static func decode(json: AnyObject) throws -> _Camera {
+    static func decode(_ json: Any) throws -> _Camera {
         return try _Camera(
             lookFrom: json => "look_from",
             lookAt: json => "look_at",
@@ -90,7 +90,7 @@ extension _Camera: Decodable {
 }
 
 extension Transform: Decodable {
-    internal static func decode(json: AnyObject) throws -> Transform {
+    internal static func decode(_ json: Any) throws -> Transform {
     
         var transform = Transform.Identity
     

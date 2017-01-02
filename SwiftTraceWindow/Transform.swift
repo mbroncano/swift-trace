@@ -197,21 +197,21 @@ extension Transform: Equatable {
         let (c0, c1, c2, c3) = transform.cmatrix.columns
         
         return
-            unsafeBitCast(c0.x, Int64.self).hashValue ^
-            unsafeBitCast(c0.y, Int64.self).hashValue ^
-            unsafeBitCast(c0.z, Int64.self).hashValue ^
-            unsafeBitCast(c0.w, Int64.self).hashValue ^
-            unsafeBitCast(c1.x, Int64.self).hashValue ^
-            unsafeBitCast(c1.y, Int64.self).hashValue ^
-            unsafeBitCast(c1.z, Int64.self).hashValue ^
-            unsafeBitCast(c1.w, Int64.self).hashValue ^
-            unsafeBitCast(c2.x, Int64.self).hashValue ^
-            unsafeBitCast(c2.y, Int64.self).hashValue ^
-            unsafeBitCast(c2.z, Int64.self).hashValue ^
-            unsafeBitCast(c2.w, Int64.self).hashValue ^
-            unsafeBitCast(c3.x, Int64.self).hashValue ^
-            unsafeBitCast(c3.y, Int64.self).hashValue ^
-            unsafeBitCast(c3.z, Int64.self).hashValue ^
-            unsafeBitCast(c3.w, Int64.self).hashValue
+            unsafeBitCast(c0.x, to: Int64.self).hashValue ^
+            unsafeBitCast(c0.y, to: Int64.self).hashValue ^
+            unsafeBitCast(c0.z, to: Int64.self).hashValue ^
+            unsafeBitCast(c0.w, to: Int64.self).hashValue ^
+            unsafeBitCast(c1.x, to: Int64.self).hashValue ^
+            unsafeBitCast(c1.y, to: Int64.self).hashValue ^
+            unsafeBitCast(c1.z, to: Int64.self).hashValue ^
+            unsafeBitCast(c1.w, to: Int64.self).hashValue ^
+            unsafeBitCast(c2.x, to: Int64.self).hashValue ^
+            unsafeBitCast(c2.y, to: Int64.self).hashValue ^
+            unsafeBitCast(c2.z, to: Int64.self).hashValue ^
+            unsafeBitCast(c2.w, to: Int64.self).hashValue ^
+            unsafeBitCast(c3.x, to: Int64.self).hashValue ^
+            unsafeBitCast(c3.y, to: Int64.self).hashValue ^
+            unsafeBitCast(c3.z, to: Int64.self).hashValue ^
+            unsafeBitCast(c3.w, to: Int64.self).hashValue
     }}
 }
