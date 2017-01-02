@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "448072CF1A6765E702D29ECC1BD02BC8A35FEA22",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "6D8BDBFF6203D72072FD4CBF632DCAE39B2F54F7" : 9223372036854775807,
+    "448072CF1A6765E702D29ECC1BD02BC8A35FEA22" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "125F9B7A-BBD2-4BB4-AC43-0CFB0B5BB6B6",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "6D8BDBFF6203D72072FD4CBF632DCAE39B2F54F7" : "swift-trace\/Decodable\/",
+    "448072CF1A6765E702D29ECC1BD02BC8A35FEA22" : "swift-trace\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "SwiftTraceWindow",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "SwiftTraceWindow.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/mbroncano\/swift-trace.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "448072CF1A6765E702D29ECC1BD02BC8A35FEA22"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/Anviking\/Decodable.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "6D8BDBFF6203D72072FD4CBF632DCAE39B2F54F7"
+    }
+  ]
+}

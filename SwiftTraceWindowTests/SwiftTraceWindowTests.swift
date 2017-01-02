@@ -20,7 +20,7 @@ class SwiftTraceWindowTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
+    /*
     func testScalar() {
         let a = Scalar(2.1)
         let b = Scalar(5.3)
@@ -71,7 +71,7 @@ class SwiftTraceWindowTests: XCTestCase {
         XCTAssert(c.isValid, "Intersection \(c) should be valid")
         
     }
-    
+    */
     /*
     func testPerformanceExample() {
         // This is an example of a performance test case.

@@ -37,7 +37,6 @@
 		64E17F441D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */; };
 		64E17F461D063AB500F46C7E /* c29.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F451D063AB500F46C7E /* c29.pdf */; };
 		64E17F491D06402A00F46C7E /* bunny.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F481D06402A00F46C7E /* bunny.json */; };
-		64E17F4B1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 64E17F4A1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf */; };
 		64E911141CF66517008D8BBC /* scene.json in Resources */ = {isa = PBXBuildFile; fileRef = 640777191CECEB390022008A /* scene.json */; };
 		64E911161CF67464008D8BBC /* cornell.json in Resources */ = {isa = PBXBuildFile; fileRef = 64E911151CF67464008D8BBC /* cornell.json */; };
 		64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */ = {isa = PBXBuildFile; fileRef = 64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */; };
@@ -55,61 +54,54 @@
 			remoteGlobalIDString = 647648D51BF9737A00C4EAC0;
 			remoteInfo = SwiftTraceWindow;
 		};
-		64E911061CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+		C73F7E3A1E1AC9050098895F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 8FE7B5621B4C9FB900837609;
 			remoteInfo = "Decodable-iOS";
 		};
-		64E911081CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+		C73F7E3C1E1AC9050098895F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 8FE7B56C1B4C9FB900837609;
 			remoteInfo = "DecodableTests-iOS";
 		};
-		64E9110A1CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+		C73F7E3E1E1AC9050098895F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 17FB80F71B530FED0012F106;
 			remoteInfo = "Decodable-Mac";
 		};
-		64E9110C1CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+		C73F7E401E1AC9050098895F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 17FB81001B530FED0012F106;
 			remoteInfo = "DecodableTests-Mac";
 		};
-		64E9110E1CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+		C73F7E421E1AC9050098895F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = D0DC546F1B7814D200F79CB0;
 			remoteInfo = "Decodable-watchOS";
 		};
-		64E911101CF65B6B008D8BBC /* PBXContainerItemProxy */ = {
+		C73F7E441E1AC9050098895F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+			containerPortal = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 57FCDE651BA283C900130C48;
 			remoteInfo = "Decodable-tvOS";
-		};
-		64E911121CF65B9B008D8BBC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 17FB80F61B530FED0012F106;
-			remoteInfo = "Decodable-Mac";
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		640777191CECEB390022008A /* scene.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = scene.json; sourceTree = "<group>"; };
 		6407771B1CEE10E60022008A /* ObjectLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectLoader.swift; sourceTree = "<group>"; };
-		6407771D1CEE148D0022008A /* wavefront.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = wavefront.txt; path = ../wavefront.txt; sourceTree = "<group>"; };
+		6407771D1CEE148D0022008A /* wavefront.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = wavefront.txt; path = Documents/wavefront.txt; sourceTree = "<group>"; };
 		640777211CEE1E3B0022008A /* NSScanner+Swift.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSScanner+Swift.swift"; sourceTree = "<group>"; };
 		6407772A1CEE4EEB0022008A /* cube.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = cube.obj; path = cube/cube.obj; sourceTree = "<group>"; };
 		6407772C1CEE4EF00022008A /* default.mtl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = default.mtl; path = cube/default.mtl; sourceTree = "<group>"; };
@@ -117,7 +109,7 @@
 		640777331CEF5E3D0022008A /* dragon.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dragon.obj; sourceTree = "<group>"; };
 		642247A51CF5769200A35907 /* bunny.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bunny.obj; sourceTree = "<group>"; };
 		6422711C1C0E2CD4007AD481 /* Random.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Random.swift; sourceTree = "<group>"; };
-		64292E051D04624E00AEB722 /* TotalCompendium.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = TotalCompendium.pdf; sourceTree = "<group>"; };
+		64292E051D04624E00AEB722 /* TotalCompendium.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = TotalCompendium.pdf; path = Documents/TotalCompendium.pdf; sourceTree = "<group>"; };
 		646752A21C28BBDF0084CBE3 /* Scene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Scene.swift; sourceTree = "<group>"; };
 		646752A41C28BC980084CBE3 /* Camera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Camera.swift; sourceTree = "<group>"; };
 		646752A61C2B76490084CBE3 /* Renderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
@@ -138,15 +130,15 @@
 		647BBDC21BFEDECD0017A888 /* Material.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Material.swift; sourceTree = "<group>"; };
 		64BCBBF11CF8E6A500D24401 /* DistributedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DistributedTracer.swift; sourceTree = "<group>"; };
 		64BCBBF91CFA7F7C00D24401 /* Sampling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sampling.swift; sourceTree = "<group>"; };
-		64BCBBFB1CFB72C500D24401 /* kajiya_84.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = kajiya_84.pdf; sourceTree = "<group>"; };
-		64BCBBFD1CFB730E00D24401 /* cook_86.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = cook_86.pdf; sourceTree = "<group>"; };
-		64BCBBFE1CFB733000D24401 /* cook_84.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = cook_84.pdf; sourceTree = "<group>"; };
-		64BCBBFF1CFB737C00D24401 /* whitted_79.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = whitted_79.pdf; sourceTree = "<group>"; };
-		64BCBC001CFB73BE00D24401 /* appel_68.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = appel_68.pdf; sourceTree = "<group>"; };
-		64BCBC021CFB740200D24401 /* veach_98.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = veach_98.pdf; sourceTree = "<group>"; };
+		64BCBBFB1CFB72C500D24401 /* kajiya_84.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = kajiya_84.pdf; path = Documents/kajiya_84.pdf; sourceTree = "<group>"; };
+		64BCBBFD1CFB730E00D24401 /* cook_86.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = cook_86.pdf; path = Documents/cook_86.pdf; sourceTree = "<group>"; };
+		64BCBBFE1CFB733000D24401 /* cook_84.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = cook_84.pdf; path = Documents/cook_84.pdf; sourceTree = "<group>"; };
+		64BCBBFF1CFB737C00D24401 /* whitted_79.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = whitted_79.pdf; path = Documents/whitted_79.pdf; sourceTree = "<group>"; };
+		64BCBC001CFB73BE00D24401 /* appel_68.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = appel_68.pdf; path = Documents/appel_68.pdf; sourceTree = "<group>"; };
+		64BCBC021CFB740200D24401 /* veach_98.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = veach_98.pdf; path = Documents/veach_98.pdf; sourceTree = "<group>"; };
 		64BCBC041CFD3F3300D24401 /* Shape.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shape.swift; sourceTree = "<group>"; };
-		64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = goldsmith_salmon_87.pdf; sourceTree = "<group>"; };
-		64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = mcdonalds_booth_89.pdf; sourceTree = "<group>"; };
+		64BCBC061CFFBE7200D24401 /* goldsmith_salmon_87.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = goldsmith_salmon_87.pdf; path = Documents/goldsmith_salmon_87.pdf; sourceTree = "<group>"; };
+		64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; name = mcdonalds_booth_89.pdf; path = Documents/mcdonalds_booth_89.pdf; sourceTree = "<group>"; };
 		64BCBC0D1D009A8B00D24401 /* Core.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core.swift; sourceTree = "<group>"; };
 		64C5FCB71BFBC60C004F783E /* PathTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathTracer.swift; sourceTree = "<group>"; };
 		64DBD36B1CEB661900727B71 /* WhittedTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhittedTracer.swift; sourceTree = "<group>"; };
@@ -157,7 +149,6 @@
 		64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf; sourceTree = "<group>"; };
 		64E17F451D063AB500F46C7E /* c29.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = c29.pdf; sourceTree = "<group>"; };
 		64E17F481D06402A00F46C7E /* bunny.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = bunny.json; sourceTree = "<group>"; };
-		64E17F4A1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "Fast MinimumStorage RayTriangle Intersection.pdf"; sourceTree = "<group>"; };
 		64E910C41CF59E1C008D8BBC /* Triangle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Triangle.swift; sourceTree = "<group>"; };
 		64E910C61CF59E44008D8BBC /* Sphere.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Sphere.swift; sourceTree = "<group>"; };
 		64E910C91CF59E82008D8BBC /* PrimitiveList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrimitiveList.swift; sourceTree = "<group>"; };
@@ -170,16 +161,16 @@
 		64E910D81CF5A04B008D8BBC /* Ray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ray.swift; sourceTree = "<group>"; };
 		64E910DA1CF5A06C008D8BBC /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		64E910DF1CF5F2C1008D8BBC /* Serializable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Serializable.swift; sourceTree = "<group>"; };
-		64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Decodable.xcodeproj; path = ../Decodable/Decodable.xcodeproj; sourceTree = "<group>"; };
 		64E911151CF67464008D8BBC /* cornell.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = cornell.json; sourceTree = "<group>"; };
 		64E911191CF75D42008D8BBC /* cornell_box_multimaterial.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cornell_box_multimaterial.obj; sourceTree = "<group>"; };
 		64E9111B1CF75E39008D8BBC /* cornell_box.mtl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cornell_box.mtl; sourceTree = "<group>"; };
 		64E9111D1CF75F69008D8BBC /* cornell_box.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cornell_box.obj; sourceTree = "<group>"; };
 		64E9111F1CF7C211008D8BBC /* Texture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Texture.swift; sourceTree = "<group>"; };
 		64E911211CF7C3DD008D8BBC /* MaterialLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MaterialLoader.swift; sourceTree = "<group>"; };
-		64E911231CF7CA96008D8BBC /* material.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = material.txt; sourceTree = "<group>"; };
+		64E911231CF7CA96008D8BBC /* Documents */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Documents; sourceTree = "<group>"; };
 		64E911271CF811FF008D8BBC /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
 		64E911291CF8153F008D8BBC /* default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = default.png; path = cube/default.png; sourceTree = "<group>"; };
+		C73F7E311E1AC9050098895F /* Decodable.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Decodable.xcodeproj; path = Decodable/Decodable.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -206,12 +197,13 @@
 				64292E051D04624E00AEB722 /* TotalCompendium.pdf */,
 			);
 			name = GI;
+			path = ../Documents/GI;
 			sourceTree = "<group>";
 		};
 		647648CD1BF9737A00C4EAC0 = {
 			isa = PBXGroup;
 			children = (
-				64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */,
+				C73F7E311E1AC9050098895F /* Decodable.xcodeproj */,
 				647648D81BF9737A00C4EAC0 /* SwiftTraceWindow */,
 				647BBDB01BFE5E650017A888 /* SwiftTraceWindowTests */,
 				647648D71BF9737A00C4EAC0 /* Products */,
@@ -258,7 +250,6 @@
 		64BCBBFC1CFB72D300D24401 /* Docs */ = {
 			isa = PBXGroup;
 			children = (
-				64E17F4A1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf */,
 				64E17F471D063ABB00F46C7E /* Russian Roulette */,
 				64292E041D04623F00AEB722 /* GI */,
 				64BCBC0A1CFFBFF900D24401 /* BVH */,
@@ -275,6 +266,7 @@
 				64BCBC081CFFBFE800D24401 /* mcdonalds_booth_89.pdf */,
 			);
 			name = BVH;
+			path = ../Documents/BVH;
 			sourceTree = "<group>";
 		};
 		64BCBC0B1CFFC00A00D24401 /* Render */ = {
@@ -288,15 +280,17 @@
 				64BCBC021CFB740200D24401 /* veach_98.pdf */,
 			);
 			name = Render;
+			path = ../Documents/Render;
 			sourceTree = "<group>";
 		};
 		64BCBC0C1CFFC01600D24401 /* Format */ = {
 			isa = PBXGroup;
 			children = (
 				6407771D1CEE148D0022008A /* wavefront.txt */,
-				64E911231CF7CA96008D8BBC /* material.txt */,
+				64E911231CF7CA96008D8BBC /* Documents */,
 			);
 			name = Format;
+			path = ../Documents/Format;
 			sourceTree = "<group>";
 		};
 		64BCBC1D1D02372100D24401 /* Core */ = {
@@ -321,6 +315,7 @@
 				64E17F431D063A4500F46C7E /* Arvo_J__Particle_Transport_and_Image_Synthesis_1990.pdf */,
 			);
 			name = "Russian Roulette";
+			path = "../Documents/Russian Roulette";
 			sourceTree = "<group>";
 		};
 		64E910C81CF59E5C008D8BBC /* Geometry */ = {
@@ -399,15 +394,15 @@
 			name = Models;
 			sourceTree = "<group>";
 		};
-		64E910FE1CF65B6B008D8BBC /* Products */ = {
+		C73F7E321E1AC9050098895F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				64E911071CF65B6B008D8BBC /* Decodable.framework */,
-				64E911091CF65B6B008D8BBC /* DecodableTests-iOS.xctest */,
-				64E9110B1CF65B6B008D8BBC /* Decodable.framework */,
-				64E9110D1CF65B6B008D8BBC /* DecodableTests-Mac.xctest */,
-				64E9110F1CF65B6B008D8BBC /* Decodable.framework */,
-				64E911111CF65B6B008D8BBC /* Decodable.framework */,
+				C73F7E3B1E1AC9050098895F /* Decodable.framework */,
+				C73F7E3D1E1AC9050098895F /* DecodableTests-iOS.xctest */,
+				C73F7E3F1E1AC9050098895F /* Decodable.framework */,
+				C73F7E411E1AC9050098895F /* DecodableTests-Mac.xctest */,
+				C73F7E431E1AC9050098895F /* Decodable.framework */,
+				C73F7E451E1AC9050098895F /* Decodable.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -426,7 +421,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				64E911131CF65B9B008D8BBC /* PBXTargetDependency */,
 			);
 			name = SwiftTraceWindow;
 			productName = SwiftTraceWindow;
@@ -483,8 +477,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 64E910FE1CF65B6B008D8BBC /* Products */;
-					ProjectRef = 64E910FD1CF65B6B008D8BBC /* Decodable.xcodeproj */;
+					ProductGroup = C73F7E321E1AC9050098895F /* Products */;
+					ProjectRef = C73F7E311E1AC9050098895F /* Decodable.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -496,46 +490,46 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		64E911071CF65B6B008D8BBC /* Decodable.framework */ = {
+		C73F7E3B1E1AC9050098895F /* Decodable.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Decodable.framework;
-			remoteRef = 64E911061CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			remoteRef = C73F7E3A1E1AC9050098895F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		64E911091CF65B6B008D8BBC /* DecodableTests-iOS.xctest */ = {
+		C73F7E3D1E1AC9050098895F /* DecodableTests-iOS.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = "DecodableTests-iOS.xctest";
-			remoteRef = 64E911081CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			remoteRef = C73F7E3C1E1AC9050098895F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		64E9110B1CF65B6B008D8BBC /* Decodable.framework */ = {
+		C73F7E3F1E1AC9050098895F /* Decodable.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Decodable.framework;
-			remoteRef = 64E9110A1CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			remoteRef = C73F7E3E1E1AC9050098895F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		64E9110D1CF65B6B008D8BBC /* DecodableTests-Mac.xctest */ = {
+		C73F7E411E1AC9050098895F /* DecodableTests-Mac.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = "DecodableTests-Mac.xctest";
-			remoteRef = 64E9110C1CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			remoteRef = C73F7E401E1AC9050098895F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		64E9110F1CF65B6B008D8BBC /* Decodable.framework */ = {
+		C73F7E431E1AC9050098895F /* Decodable.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Decodable.framework;
-			remoteRef = 64E9110E1CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			remoteRef = C73F7E421E1AC9050098895F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		64E911111CF65B6B008D8BBC /* Decodable.framework */ = {
+		C73F7E451E1AC9050098895F /* Decodable.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Decodable.framework;
-			remoteRef = 64E911101CF65B6B008D8BBC /* PBXContainerItemProxy */;
+			remoteRef = C73F7E441E1AC9050098895F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -546,7 +540,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				64E9111E1CF75F69008D8BBC /* cornell_box.obj in Resources */,
-				64E17F4B1D06785300F46C7E /* Fast MinimumStorage RayTriangle Intersection.pdf in Resources */,
 				64E9111A1CF75D42008D8BBC /* cornell_box_multimaterial.obj in Resources */,
 				64BCBC091CFFBFE800D24401 /* mcdonalds_booth_89.pdf in Resources */,
 				64E911141CF66517008D8BBC /* scene.json in Resources */,
@@ -617,11 +610,6 @@
 			isa = PBXTargetDependency;
 			target = 647648D51BF9737A00C4EAC0 /* SwiftTraceWindow */;
 			targetProxy = 647BBDB41BFE5E650017A888 /* PBXContainerItemProxy */;
-		};
-		64E911131CF65B9B008D8BBC /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "Decodable-Mac";
-			targetProxy = 64E911121CF65B9B008D8BBC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
